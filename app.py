@@ -5,7 +5,12 @@ from lightning.app.components.serve import ServeGradio
 
 
 class StableDiffusionUI(ServeGradio):
-    inputs = gr.inputs.Textbox(default='cat reading a book', label='Enter the text prompt')
+    inputs = [
+        gr.inputs.Textbox(default='cat reading a book', label='Enter the text prompt'),
+        gr.Number(value=1, label="Number of images"),
+        gr.Slider(value=512, maximum=800, label="Image width"),
+        gr.Slider(value=512, maximum=800, label="Image height")
+        ]
     outputs = gr.outputs.Image(type="pil")
     examples = [["golden puppy playing in a pool"], ["cat reading a book"]]
 
@@ -31,10 +36,11 @@ class StableDiffusionUI(ServeGradio):
         print("model loaded")
         return pipe
 
-    def predict(self, prompt):
+    def predict(self, prompt, num_images, height, width):
         from torch import autocast
+        prompt = [prompt]* int(num_images)
         with autocast("cuda"):
-            image = self.model(prompt)["sample"][0]
+            image = self.model(prompt, height=height, width=width)["sample"][0]
         return image
 
 
