@@ -7,7 +7,7 @@ from lightning.app.components.serve import ServeGradio
 class StableDiffusionUI(ServeGradio):
     inputs = gr.inputs.Textbox(default='cat reading a book', label='Enter the text prompt')
     outputs = gr.outputs.Image(type="pil")
-    examples = [["golden puppy playing in a pool", "cat reading a book"]]
+    examples = [["golden puppy playing in a pool"], ["cat reading a book"]]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
