@@ -5,15 +5,16 @@ import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
 
+from PIL import Image
 
 class StableDiffusionUI(ServeGradio):
     inputs = [
         gr.inputs.Textbox(default="cat reading a book", label="Enter the text prompt"),
-        gr.Number(value=1, label="Number of images"),
+        gr.Slider(value=1, minimum=1, maximum=9, step=1, label="Number of images"),
         gr.Slider(value=512, maximum=800, label="Image width"),
         gr.Slider(value=512, maximum=800, label="Image height"),
     ]
-    outputs = gr.outputs.Image(type="pil")
+    outputs = gr.Gallery(type="pil")
     examples = [["golden puppy playing in a pool"], ["cat reading a book"]]
 
     def __init__(self, *args, **kwargs):
@@ -44,8 +45,8 @@ class StableDiffusionUI(ServeGradio):
 
         prompt = [prompt] * int(num_images)
         with autocast("cuda"):
-            image = self.model(prompt, height=height, width=width)["sample"][0]
-        return image
+            images = self.model(prompt, height=height, width=width)["sample"]
+        return images
 
     def run(self, *args, **kwargs):
         if self._model is None:
