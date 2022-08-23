@@ -1,20 +1,20 @@
 import os
 from functools import partial
+from secrets import choice
 
 import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
 from PIL import Image
 
-image_size_choices = [64, 256, 512, 1024]
+image_size_choices = [256, 512, 1024]
 
 
 class StableDiffusionUI(ServeGradio):
     inputs = [
         gr.inputs.Textbox(default="cat reading a book", label="Enter the text prompt"),
         gr.Slider(value=1, minimum=1, maximum=9, step=1, label="Number of images"),
-        gr.Dropdown(value=512, choices=image_size_choices, label="Image width"),
-        gr.Dropdown(value=512, choices=image_size_choices, label="Image height"),
+        gr.Radio(value=512, choices=image_size_choices),
     ]
     outputs = gr.Gallery(type="pil")
     examples = [["golden puppy playing in a pool"], ["cat reading a book"]]
@@ -42,15 +42,18 @@ class StableDiffusionUI(ServeGradio):
         print("model loaded")
         return pipe
 
-    def predict(self, prompt, num_images, height, width):
+    def predict(self, prompt, num_images, image_size):
         from torch import autocast
 
+        height, width = image_size, image_size
         prompt = [prompt] * int(num_images)
         with autocast("cuda"):
             images = self.model(prompt, height=height, width=width)["sample"]
         return images
 
     def run(self, *args, **kwargs):
+        self.inputs[-1].style(item_container=True, container=True)
+
         if self._model is None:
             self._model = self.build_model()
         fn = partial(self.predict, *args, **kwargs)
@@ -80,8 +83,8 @@ class RootFlow(L.LightningFlow):
         return [
             {"name": "Visualize your words", "content": self.model_demo},
             {
-                "name": "Launch Blog",
-                "content": "https://stability.ai/blog/stable-diffusion-announcement",
+                "name": "About us",
+                "content": "https://stability.ai/",
             },
         ]
 
