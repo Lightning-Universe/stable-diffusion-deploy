@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img width="250" alt="logo" src="https://raw.githubusercontent.com/Lightning-AI/LAI-Stable-Diffusion-App/main/assets/thumbnail.jpg?token=GHSAT0AAAAAABXCKPPFIOJNBYHJ5TAMBE62YYE3RKQ"/>
+  <img width="250" alt="logo" src="https://i.ibb.co/CVN5N5J/a-thumbnail-for-the-lightning-app-with-a-cute-cloud.jpg"/>
   <br>
   <strong>Visualize your words with Stable Diffusion Lightning App</strong>
   <br>
@@ -15,8 +15,7 @@
 This App can generate images from text prompts. Get creative and generate some art!
 
 
-<img src="https://raw.githubusercontent.com/Lightning-AI/LAI-Stable-Diffusion-App/main/assets/demo.png?token=GHSAT0AAAAAABXCKPPEU666CX2ZFNRYNTSIYYE3MWA">
-
+![alt text](./assets/demo.png)
 
 ## Getting started
 
