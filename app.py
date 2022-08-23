@@ -54,7 +54,11 @@ class StableDiffusionUI(ServeGradio):
         fn = partial(self.predict, *args, **kwargs)
         fn.__name__ = self.predict.__name__
         gr.Interface(
-            fn=fn, inputs=self.inputs, outputs=self.outputs, examples=self.examples, title="Stable Diffusion",
+            fn=fn,
+            inputs=self.inputs,
+            outputs=self.outputs,
+            examples=self.examples,
+            title="Stable Diffusion",
         ).launch(
             server_name=self.host,
             server_port=self.port,
