@@ -58,7 +58,7 @@ class StableDiffusionUI(ServeGradio):
             inputs=self.inputs,
             outputs=self.outputs,
             examples=self.examples,
-            title="Stable Diffusion",
+            title="Visualize your words",
         ).launch(
             server_name=self.host,
             server_port=self.port,
@@ -75,7 +75,7 @@ class RootFlow(L.LightningFlow):
         self.model_demo.run()
 
     def configure_layout(self):
-        return [{"name": "Model Demo", "content": self.model_demo}]
+        return [{"name": "Visualize your words", "content": self.model_demo}, {"Launch Blog": "https://stability.ai/blog/stable-diffusion-announcement"}]
 
 
 if __name__ == "__main__":
