@@ -2,8 +2,7 @@ import gradio as gr
 import os
 import lightning as L
 from lightning.app.components.serve import ServeGradio
-
-
+from functools import partial
 class StableDiffusionUI(ServeGradio):
     inputs = [
         gr.inputs.Textbox(default='cat reading a book', label='Enter the text prompt'),
@@ -42,6 +41,18 @@ class StableDiffusionUI(ServeGradio):
         with autocast("cuda"):
             image = self.model(prompt, height=height, width=width)["sample"][0]
         return image
+
+    def run(self, *args, **kwargs):
+        if self._model is None:
+            self._model = self.build_model()
+        fn = partial(self.predict, *args, **kwargs)
+        fn.__name__ = self.predict.__name__
+        gr.Interface(fn=fn, inputs=self.inputs, outputs=self.outputs, examples=self.examples).launch(
+            server_name=self.host,
+            server_port=self.port,
+            enable_queue=self.enable_queue,
+            title="Stable Diffusion"   
+        )
 
 
 class RootFlow(L.LightningFlow):
