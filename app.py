@@ -84,7 +84,7 @@ class RootFlow(L.LightningFlow):
             {"name": "Visualize your words", "content": self.model_demo},
             {
                 "name": "About us",
-                "content": "https://stability.ai/",
+                "content": "https://stability.ai/blog/stable-diffusion-public-release",
             },
         ]
 
