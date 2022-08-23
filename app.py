@@ -4,15 +4,17 @@ from functools import partial
 import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
-
 from PIL import Image
+
+image_size_choices = [64, 256, 512, 1024]
+
 
 class StableDiffusionUI(ServeGradio):
     inputs = [
         gr.inputs.Textbox(default="cat reading a book", label="Enter the text prompt"),
         gr.Slider(value=1, minimum=1, maximum=9, step=1, label="Number of images"),
-        gr.Slider(value=512, maximum=800, label="Image width"),
-        gr.Slider(value=512, maximum=800, label="Image height"),
+        gr.Dropdown(value=512, choices=image_size_choices, label="Image width"),
+        gr.Dropdown(value=512, choices=image_size_choices, label="Image height"),
     ]
     outputs = gr.Gallery(type="pil")
     examples = [["golden puppy playing in a pool"], ["cat reading a book"]]
@@ -75,7 +77,13 @@ class RootFlow(L.LightningFlow):
         self.model_demo.run()
 
     def configure_layout(self):
-        return [{"name": "Visualize your words", "content": self.model_demo}, {"Launch Blog": "https://stability.ai/blog/stable-diffusion-announcement"}]
+        return [
+            {"name": "Visualize your words", "content": self.model_demo},
+            {
+                "name": "Launch Blog",
+                "content": "https://stability.ai/blog/stable-diffusion-announcement",
+            },
+        ]
 
 
 if __name__ == "__main__":
