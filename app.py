@@ -10,12 +10,15 @@ description = """
 
 Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
 
+<img src="https://i.ibb.co/dKmydFG/Generate-Image-from-Text.jpg", alt="generate image from text">
+
 Enter a text in the app below and click on the submit button to generate images.
 """
 
 article = """
 <br>
-[Stable Diffusion](#stable-diffusion-v1) is an AI model that will empower billions of people to create stunning art within seconds.
+
+Stable Diffusion is an AI model that will empower billions of people to create stunning art within seconds.
 It is a breakthrough in speed and quality meaning that it can run on consumer GPUs.
 
 Read the <a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion Public Release</a> blog post from Stability AI

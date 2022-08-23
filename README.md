@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img width="250" alt="logo" src="https://i.ibb.co/CVN5N5J/a-thumbnail-for-the-lightning-app-with-a-cute-cloud.jpg"/>
+  <img width="250" alt="logo" src="https://i.ibb.co/dKmydFG/Generate-Image-from-Text.jpg"/>
   <br>
   <strong>Visualize your words with Stable Diffusion Lightning App</strong>
   <br>
