@@ -6,11 +6,9 @@ from lightning.app.components.serve import ServeGradio
 
 image_size_choices = [256, 512, 1024]
 
-description = """
+description = """Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
 
-Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
-
-<img src="https://i.ibb.co/dKmydFG/Generate-Image-from-Text.jpg", alt="generate image from text">
+<img src="https://i.ibb.co/dKmydFG/Generate-Image-from-Text.jpg" alt="generate image from text">
 
 Enter a text in the app below and click on the submit button to generate images.
 """
