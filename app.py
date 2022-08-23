@@ -1,6 +1,5 @@
 import os
 from functools import partial
-from secrets import choice
 
 import gradio as gr
 import lightning as L
@@ -8,6 +7,18 @@ from lightning.app.components.serve import ServeGradio
 from PIL import Image
 
 image_size_choices = [256, 512, 1024]
+
+description = """
+[Stable Diffusion](#stable-diffusion-v1) is a text-to-image model that will empower billions of people to create stunning art within seconds.
+It is a breakthrough in speed and quality meaning that it can run on consumer GPUs.
+You can try the model yourself by entering a prompt in this app.
+
+"""
+
+article = """
+
+Read the <a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion Public Release</a> blog post from Stability AI
+"""
 
 
 class StableDiffusionUI(ServeGradio):
@@ -17,7 +28,7 @@ class StableDiffusionUI(ServeGradio):
         gr.Radio(value=512, choices=image_size_choices, label="Image Size"),
     ]
     outputs = gr.Gallery(type="pil")
-    examples = [["golden puppy playing in a pool"], ["cat reading a book"]]
+    examples = [["a photograph of an astronaut riding a horse"], ["cat reading a book"]]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,6 +75,8 @@ class StableDiffusionUI(ServeGradio):
             outputs=self.outputs,
             examples=self.examples,
             title="Visualize your words",
+            description=description,
+            article=article,
         ).launch(
             server_name=self.host,
             server_port=self.port,
