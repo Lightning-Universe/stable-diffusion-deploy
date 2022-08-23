@@ -1,8 +1,15 @@
-# Visualize your words with Stable Diffusion Lightning App
-<center><img src="https://raw.githubusercontent.com/Lightning-AI/LAI-Stable-Diffusion-App/main/assets/thumbnail.jpg?token=GHSAT0AAAAAABXCKPPFIOJNBYHJ5TAMBE62YYE3RKQ">
+# LAI-stable-diffusion-App
 
-This thumbnail is generated with Stable Diffusion
-</center>
+
+<p align="center">
+  <img width="250" alt="logo" src="https://raw.githubusercontent.com/Lightning-AI/LAI-Stable-Diffusion-App/main/assets/thumbnail.jpg?token=GHSAT0AAAAAABXCKPPFIOJNBYHJ5TAMBE62YYE3RKQ"/>
+  <br>
+  <strong>Visualize your words with Stable Diffusion Lightning App</strong>
+  <br>
+  <p align="center" style="color:grey">This thumbnail is generated with Stable Diffusion</p>
+</p>
+<p align="center">
+</p>
 
 
 This App can generate images from text prompts. Get creative and generate some art!
