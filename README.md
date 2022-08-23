@@ -11,6 +11,7 @@
 <p align="center">
 </p>
 
+---
 
 This App can generate images from text prompts. Get creative and generate some art!
 
