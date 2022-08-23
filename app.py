@@ -1,11 +1,8 @@
-import os
 from functools import partial
-from secrets import choice
 
 import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
-from PIL import Image
 
 image_size_choices = [256, 512, 1024]
 
@@ -14,11 +11,10 @@ description = """
 Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
 
 Enter a text in the app below and click on the submit button to generate images.
-
 """
 
 article = """
-
+<br>
 [Stable Diffusion](#stable-diffusion-v1) is an AI model that will empower billions of people to create stunning art within seconds.
 It is a breakthrough in speed and quality meaning that it can run on consumer GPUs.
 
@@ -102,7 +98,7 @@ class RootFlow(L.LightningFlow):
             {"name": "Visualize your words", "content": self.model_demo},
             {
                 "name": "Blog",
-                "content": "https://analyticsindiamag.com/free-text-to-image-ai-tool-stable-diffusion-is-now-publicly-available/",
+                "content": "https://wandb.ai/telidavies/ml-news/reports/Stable-Diffusion-A-Model-To-Rival-DALL-E-2-With-Fewer-Restrictions--VmlldzoyNDY3NTU5",
             },
         ]
 
