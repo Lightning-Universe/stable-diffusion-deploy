@@ -14,7 +14,7 @@ class StableDiffusionUI(ServeGradio):
     inputs = [
         gr.inputs.Textbox(default="cat reading a book", label="Enter the text prompt"),
         gr.Slider(value=1, minimum=1, maximum=9, step=1, label="Number of images"),
-        gr.Radio(value=512, choices=image_size_choices),
+        gr.Radio(value=512, choices=image_size_choices, label="Image Size"),
     ]
     outputs = gr.Gallery(type="pil")
     examples = [["golden puppy playing in a pool"], ["cat reading a book"]]
