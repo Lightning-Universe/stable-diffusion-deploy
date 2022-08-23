@@ -1,4 +1,5 @@
 import gradio as gr
+import os
 import lightning as L
 from lightning.app.components.serve import ServeGradio
 
@@ -13,10 +14,10 @@ class StableDiffusionUI(ServeGradio):
 
     def build_model(self):
         import os
-        os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-        os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
         import torch
         from diffusers import StableDiffusionPipeline
+
+        access_token = os.environ.get("access_token")
 
         # make sure you're logged in with `huggingface-cli login`
         print("loading model...")
@@ -24,7 +25,7 @@ class StableDiffusionUI(ServeGradio):
             "CompVis/stable-diffusion-v1-4",
             revision="fp16",
             torch_dtype=torch.float16,
-            use_auth_token=True,
+            use_auth_token=access_token,
         )
         pipe = pipe.to("cuda")
         print("model loaded")
