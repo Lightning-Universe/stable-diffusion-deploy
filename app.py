@@ -31,6 +31,7 @@ class StableDiffusionUI(ServeGradio):
     ]
     outputs = gr.Gallery(type="pil")
     examples = [["a photograph of an astronaut riding a horse"], ["cat reading a book"]]
+    enable_queue = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,10 +60,12 @@ class StableDiffusionUI(ServeGradio):
         from torch import autocast
 
         height, width = image_size, image_size
-        prompt = [prompt] * int(num_images)
+        prompts = [prompt] * int(num_images)
+        results = []
         with autocast("cuda"):
-            images = self.model(prompt, height=height, width=width)["sample"]
-        return images
+            for prompt in prompts:
+                results.append(self.model(prompt, height=height, width=width)["sample"][0])
+        return results
 
     def run(self, *args, **kwargs):
         self.inputs[-1].style(item_container=True, container=True)
