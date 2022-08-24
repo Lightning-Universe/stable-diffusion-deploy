@@ -9,7 +9,7 @@ from torch import autocast
 # 512, 1 => 7639MiB
 # 512,2 => 10779MiB
 # 512, 4 => 17039MiB
-# 512, 9 => 18877MiB
+# 512, 9 => 23786MiB
 
 image_size_choices = [256, 512]
 
@@ -66,24 +66,15 @@ class StableDiffusionUI(ServeGradio):
     def predict(self, prompt, num_images, image_size):
         height, width = image_size, image_size
         prompts = [prompt] * int(num_images)
+        results = []
         with autocast("cuda"):
             # predicting in chunks to save cuda out of memory error
-            chunk_size = 4
-            if num_images > chunk_size:
-                print("predicting in chunks")
-                return (
-                    self.model(prompts[:chunk_size], height=height, width=width)[
-                        "sample"
-                    ]
-                    + self.model(prompts[chunk_size:], height=height, width=width)[
-                        "sample"
-                    ]
-                )
-            return self.model(prompts, height=height, width=width)["sample"]
+            chunk_size = 3
+            for i in range(1, num_images, chunk_size):
+                results.extend(self.model(prompts[i:i+chunk_size], height=height, width=width)["sample"])
+            return results
 
     def run(self, *args, **kwargs):
-        self.inputs[-1].style(item_container=True, container=True)
-
         if self._model is None:
             self._model = self.build_model()
         fn = partial(self.predict, *args, **kwargs)
