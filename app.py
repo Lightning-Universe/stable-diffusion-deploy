@@ -3,6 +3,7 @@ from functools import partial
 import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
+from torch import autocast
 
 # GPU Usage with different settings (image size , num images):
 # 512, 1 => 7639MiB
@@ -63,14 +64,13 @@ class StableDiffusionUI(ServeGradio):
         return pipe
 
     def predict(self, prompt, num_images, image_size):
-        from torch import autocast
-
         height, width = image_size, image_size
         prompts = [prompt] * int(num_images)
         with autocast("cuda"):
             # predicting in chunks to save cuda out of memory error
             chunk_size = 4
             if num_images > chunk_size:
+                print("predicting in chunks")
                 return (
                     self.model(prompts[:chunk_size], height=height, width=width)[
                         "sample"
