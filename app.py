@@ -70,8 +70,12 @@ class StableDiffusionUI(ServeGradio):
         with autocast("cuda"):
             # predicting in chunks to save cuda out of memory error
             chunk_size = 3
-            for i in range(1, num_images, chunk_size):
-                results.extend(self.model(prompts[i:i+chunk_size], height=height, width=width)["sample"])
+            for i in range(0, num_images, chunk_size):
+                results.extend(
+                    self.model(prompts[i : i + chunk_size], height=height, width=width)[
+                        "sample"
+                    ]
+                )
             return results
 
     def run(self, *args, **kwargs):
