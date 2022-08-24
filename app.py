@@ -3,8 +3,15 @@ from functools import partial
 import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
+from torch import autocast
 
-image_size_choices = [256, 512, 1024]
+# GPU Usage with different settings (image size , num images):
+# 512, 1 => 7639MiB
+# 512,2 => 10779MiB
+# 512, 4 => 17039MiB
+# 512, 9 => 23786MiB
+
+image_size_choices = [256, 512]
 
 description = """Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
 
@@ -31,6 +38,7 @@ class StableDiffusionUI(ServeGradio):
     ]
     outputs = gr.Gallery(type="pil")
     examples = [["a photograph of an astronaut riding a horse"], ["cat reading a book"]]
+    enable_queue = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,19 +64,21 @@ class StableDiffusionUI(ServeGradio):
         return pipe
 
     def predict(self, prompt, num_images, image_size):
-        from torch import autocast
-
         height, width = image_size, image_size
         prompts = [prompt] * int(num_images)
         results = []
         with autocast("cuda"):
-            for prompt in prompts:
-                results.append(self.model(prompt, height=height, width=width)["sample"][0])
-        return results
+            # predicting in chunks to save cuda out of memory error
+            chunk_size = 3
+            for i in range(0, num_images, chunk_size):
+                results.extend(
+                    self.model(prompts[i : i + chunk_size], height=height, width=width)[
+                        "sample"
+                    ]
+                )
+            return results
 
     def run(self, *args, **kwargs):
-        self.inputs[-1].style(item_container=True, container=True)
-
         if self._model is None:
             self._model = self.build_model()
         fn = partial(self.predict, *args, **kwargs)
