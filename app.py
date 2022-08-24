@@ -68,10 +68,16 @@ class StableDiffusionUI(ServeGradio):
         height, width = image_size, image_size
         prompts = [prompt] * int(num_images)
         with autocast("cuda"):
-            if num_images > 2:
+            # predicting in chunks to save cuda out of memory error
+            chunk_size = 4
+            if num_images > chunk_size:
                 return (
-                    self.model(prompts[:2], height=height, width=width)["sample"]
-                    + self.model(prompts[2:], height=height, width=width)["sample"]
+                    self.model(prompts[:chunk_size], height=height, width=width)[
+                        "sample"
+                    ]
+                    + self.model(prompts[chunk_size:], height=height, width=width)[
+                        "sample"
+                    ]
                 )
             return self.model(prompts, height=height, width=width)["sample"]
 
