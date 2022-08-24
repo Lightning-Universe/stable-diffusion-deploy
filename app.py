@@ -31,6 +31,7 @@ class StableDiffusionUI(ServeGradio):
     ]
     outputs = gr.Gallery(type="pil")
     examples = [["a photograph of an astronaut riding a horse"], ["cat reading a book"]]
+    enable_queue = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
