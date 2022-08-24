@@ -4,7 +4,7 @@ import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
 
-image_size_choices = [256, 512, 1024]
+image_size_choices = [256, 512, 600]
 
 description = """Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
 
