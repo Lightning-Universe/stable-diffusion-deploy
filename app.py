@@ -4,7 +4,13 @@ import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
 
-image_size_choices = [256, 512, 600]
+# GPU Usage with different settings (image size , num images):
+# 512, 1 => 7639MiB
+# 512,2 => 10779MiB
+# 512, 4 => 17039MiB
+# 512, 9 => 18877MiB
+
+image_size_choices = [256, 512]
 
 description = """Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
 
@@ -61,13 +67,19 @@ class StableDiffusionUI(ServeGradio):
 
         height, width = image_size, image_size
         prompts = [prompt] * int(num_images)
-        results = []
         with autocast("cuda"):
-            for prompt in prompts:
-                results.append(
-                    self.model(prompt, height=height, width=width)["sample"][0]
+            # predicting in chunks to save cuda out of memory error
+            chunk_size = 4
+            if num_images > chunk_size:
+                return (
+                    self.model(prompts[:chunk_size], height=height, width=width)[
+                        "sample"
+                    ]
+                    + self.model(prompts[chunk_size:], height=height, width=width)[
+                        "sample"
+                    ]
                 )
-        return results
+            return self.model(prompts, height=height, width=width)["sample"]
 
     def run(self, *args, **kwargs):
         self.inputs[-1].style(item_container=True, container=True)
