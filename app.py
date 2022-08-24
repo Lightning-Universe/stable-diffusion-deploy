@@ -64,7 +64,9 @@ class StableDiffusionUI(ServeGradio):
         results = []
         with autocast("cuda"):
             for prompt in prompts:
-                results.append(self.model(prompt, height=height, width=width)["sample"][0])
+                results.append(
+                    self.model(prompt, height=height, width=width)["sample"][0]
+                )
         return results
 
     def run(self, *args, **kwargs):
