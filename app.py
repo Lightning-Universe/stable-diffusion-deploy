@@ -1,6 +1,6 @@
 import lightning as L
 
-from components.slack_command import SlackCommandWork
+from components.slack_command import SlackCommandListener
 from components.stable_diffusion_ui import StableDiffusionUI
 
 
@@ -10,7 +10,7 @@ class RootWorkFlow(L.LightningFlow):
         self.model_demo = StableDiffusionUI(
             cloud_compute=L.CloudCompute("gpu"), parallel=True
         )
-        self.slack_work = SlackCommandWork(parallel=False)
+        self.slack_work = SlackCommandListener(parallel=False)
 
     def run(self):
         self.model_demo.run()
