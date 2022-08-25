@@ -3,7 +3,7 @@ import os
 import lightning as L
 
 
-class SlackCommandListener(L.LightningWork):
+class SlackCommandBot(L.LightningWork):
     """
     To run this components:
 
@@ -16,7 +16,7 @@ class SlackCommandListener(L.LightningWork):
     class SlackRootFlow(L.LightningFlow):
         def __init__(self):
             super().__init__()
-            self.slack_work = SlackCommandListener()
+            self.slack_work = SlackCommandBot()
 
         def run(self):
             self.slack_work.run()
@@ -32,6 +32,6 @@ class SlackCommandListener(L.LightningWork):
     def run(self, inference_server_url: str, *args, **kwargs) -> None:
         from ._slack_api import app as api
 
-        print("starting Slack Listener")
+        print("starting Slack Command Bot")
         api.url = inference_server_url
         api.run(host=self.host, port=self.port)
