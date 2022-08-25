@@ -23,6 +23,19 @@ client = slack.WebClient(token=os.environ["BOT_TOKEN"])
 BOT_ID = client.api_call("auth.test")["user_id"]
 
 
+def save_base64(b64_image, filename="generate.png"):
+    # open file with base64 string data
+    encoded_data = bytes(b64_image, "utf-8")
+    encoded_data = encoded_data.replace(b"data:image/png;base64,", b"")
+
+    # decode base64 string data
+    decoded_data = base64.b64decode(encoded_data)
+    # write the decoded data back to original format in  file
+    img_file = open(filename, "wb")
+    img_file.write(decoded_data)
+    img_file.close()
+
+
 def post_dream(data: dict):
     channel_id = data.get("channel_id")
     prompt = data.get("text")
@@ -38,12 +51,7 @@ def post_dream(data: dict):
     print(response.status_code)
     response.raise_for_status()
     generated_images: list = response.json()["data"][0]
-
-    with open("generated.png", "w") as fh:
-        image_str = generated_images[0]
-        print(image_str)
-        fh.write(image_str)
-
+    save_base64(generated_images[0], "./generated.png")
     client.files_upload(channels=channel_id, title=prompt, file="./generated.png")
 
 
