@@ -60,7 +60,6 @@ def handle_dream():
     data = request.form
     th = threading.Thread(target=post_dream, args=[data])
     th.start()
-    th.join()
     return Response(), 200
 
 
