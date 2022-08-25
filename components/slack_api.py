@@ -61,7 +61,7 @@ def handle_dream():
     prompt = data.get("text")
     th = threading.Thread(target=post_dream, args=[data])
     th.start()
-    msg = f":zap: Generating image for prompt: *{prompt}*"
+    msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on a private cloud for faster inference. Learn more at lightning.ai)"
     return msg, 200
 
 
