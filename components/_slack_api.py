@@ -2,17 +2,15 @@ import base64
 import json
 import os
 import threading
-from concurrent.futures import ThreadPoolExecutor
 
 import requests
 import slack
 from dotenv import load_dotenv
-from flask import Flask, Response, request
+from flask import Flask, request
 from slackeventsapi import SlackEventAdapter
 
 load_dotenv(".env")
 
-pool = ThreadPoolExecutor()
 app = Flask(__name__)
 
 slack_events_adapter = SlackEventAdapter(
@@ -56,7 +54,7 @@ def post_dream(data: dict):
 
 
 @app.route("/dream", methods=["post", "get"])
-def handle_dream():
+def handle_command():
     data: dict = request.form
     prompt = data.get("text")
     th = threading.Thread(target=post_dream, args=[data])
