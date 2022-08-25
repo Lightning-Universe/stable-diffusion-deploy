@@ -58,7 +58,9 @@ def post_dream(data: dict):
 @app.route("/dream", methods=["post", "get"])
 def handle_dream():
     data = request.form
-    post_dream(data)
+    th = threading.Thread(target=post_dream, args=[data])
+    th.start()
+    th.join()
     return Response(), 200
 
 
