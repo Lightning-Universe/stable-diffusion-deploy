@@ -19,6 +19,7 @@ slack_events_adapter = SlackEventAdapter(
 client = slack.WebClient(token=os.environ["BOT_TOKEN"])
 BOT_ID = client.api_call("auth.test")["user_id"]
 
+
 def post_dream(data: dict):
     channel_id = data.get("channel_id")
     prompt = data.get("text")
@@ -27,6 +28,7 @@ def post_dream(data: dict):
         kwargs=dict(channels=channel_id, title=prompt, file="./assets/demo.png"),
     )
     th.start()
+
 
 @app.route("/dream", methods=["post", "get"])
 def handle_dream():
