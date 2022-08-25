@@ -57,10 +57,12 @@ def post_dream(data: dict):
 
 @app.route("/dream", methods=["post", "get"])
 def handle_dream():
-    data = request.form
+    data: dict = request.form
+    prompt = data.get("text")
     th = threading.Thread(target=post_dream, args=[data])
     th.start()
-    return Response(), 200
+    msg = f":zap: Generating image for prompt: *{prompt}*"
+    return msg, 200
 
 
 if __name__ == "__main__":
