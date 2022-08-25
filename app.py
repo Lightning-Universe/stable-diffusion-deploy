@@ -10,11 +10,11 @@ class RootWorkFlow(L.LightningFlow):
         self.model_demo = StableDiffusionUI(
             cloud_compute=L.CloudCompute("gpu"), parallel=True
         )
-        self.slack_work = SlackCommandWork(parallel=True)
+        self.slack_work = SlackCommandWork(parallel=False)
 
     def run(self):
         self.model_demo.run()
-        if self.model_demo.is_running:
+        if self.model_demo.url:
             self.slack_work.run(self.model_demo.url)
 
     def configure_layout(self):

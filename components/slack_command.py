@@ -10,19 +10,20 @@ class SlackCommandWork(L.LightningWork):
         super().__init__(*args, **kwargs)
 
     def run(self, *args, **kwargs) -> None:
+        print("starting Slack Listener")
         print(args)
-        api.run(host=self.host, port=3000)
+        api.run(host=self.host, port=8001)
 
 
-class SlackRootFlow(L.LightningFlow):
-    def __init__(self):
-        super().__init__()
-        self.slack_work = SlackCommandWork()
+# class SlackRootFlow(L.LightningFlow):
+#     def __init__(self):
+#         super().__init__()
+#         self.slack_work = SlackCommandWork()
 
-    def run(self):
-        self.slack_work.run()
+#     def run(self):
+#         self.slack_work.run()
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    app = L.LightningApp(SlackRootFlow())
+#     app = L.LightningApp(SlackRootFlow())
