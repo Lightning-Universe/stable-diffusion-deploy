@@ -32,6 +32,6 @@ class SlackCommandListener(L.LightningWork):
     def run(self, inference_server_url: str, *args, **kwargs) -> None:
         from ._slack_api import app as api
 
-        print("starting Slack Listener", args)
+        print("starting Slack Listener")
         api.url = inference_server_url
-        api.run(host=self.host, port=8001)
+        api.run(host=self.host, port=self.port)
