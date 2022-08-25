@@ -2,3 +2,5 @@ diffusers
 transformers
 scipy
 gradio==3.1.7
+slack_bolt==1.14.3
+slackeventsapi
