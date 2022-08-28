@@ -13,9 +13,7 @@ load_dotenv(".env")
 
 app = Flask(__name__)
 
-slack_events_adapter = SlackEventAdapter(
-    os.environ["SIGNING_SECRET"], "/slack/events", app
-)
+slack_events_adapter = SlackEventAdapter(os.environ["SIGNING_SECRET"], "/slack/events", app)
 
 client = slack.WebClient(token=os.environ["BOT_TOKEN"])
 BOT_ID = client.api_call("auth.test")["user_id"]
@@ -59,7 +57,7 @@ def handle_command():
     prompt = data.get("text")
     th = threading.Thread(target=post_dream, args=[data])
     th.start()
-    msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on a private cloud for faster inference. Learn more at lightning.ai)"
+    msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on your own lightning.ai account for faster speeds.)"
     return msg, 200
 
 
