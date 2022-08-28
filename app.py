@@ -1,3 +1,5 @@
+import os
+
 import lightning as L
 
 from dream import SlackCommandBot, StableDiffusionUI
@@ -11,6 +13,8 @@ class RootWorkFlow(L.LightningFlow):
         self.printed_url = False
 
     def run(self):
+        if os.environ.get("TESTING_LAI"):
+            print("⚡ Lightning Dream App! ⚡")
         self.model_demo.run()
         if self.model_demo.url:
             self.slack_work.run(self.model_demo.url)
