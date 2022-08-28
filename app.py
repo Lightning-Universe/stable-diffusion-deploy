@@ -1,7 +1,6 @@
 import lightning as L
 
-from dream.slack_command_bot import SlackCommandBot
-from dream.stable_diffusion_ui import StableDiffusionUI
+from dream import SlackCommandBot, StableDiffusionUI
 
 
 class RootWorkFlow(L.LightningFlow):
