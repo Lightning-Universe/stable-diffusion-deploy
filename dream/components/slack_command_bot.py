@@ -4,8 +4,7 @@ import lightning as L
 
 
 class SlackCommandBot(L.LightningWork):
-    """
-    To run this components:
+    """To run this components:
 
     Step 1: Create a Slack App by logging in to https://api.slack.com
 
