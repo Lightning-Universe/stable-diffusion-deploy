@@ -9,8 +9,6 @@ import slack
 from flask import Flask, request
 from slack_command_bot import SlackCommandBot
 
-from dream import SlackCommandBot
-
 
 class DreamSlackCommandBot(SlackCommandBot):
     def handle_command(self, client: slack.WebClient):
