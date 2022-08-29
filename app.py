@@ -1,19 +1,20 @@
+import os
+
 import lightning as L
 
-from components.slack_command_bot import SlackCommandBot
-from components.stable_diffusion_ui import StableDiffusionUI
+from dream import SlackCommandBot, StableDiffusionUI
 
 
 class RootWorkFlow(L.LightningFlow):
     def __init__(self):
         super().__init__()
-        self.model_demo = StableDiffusionUI(
-            cloud_compute=L.CloudCompute("gpu"), parallel=True
-        )
+        self.model_demo = StableDiffusionUI(cloud_compute=L.CloudCompute("gpu"), parallel=True)
         self.slack_work = SlackCommandBot(parallel=True)
         self.printed_url = False
 
     def run(self):
+        if os.environ.get("TESTING_LAI"):
+            print("⚡ Lightning Dream App! ⚡")
         self.model_demo.run()
         if self.model_demo.url:
             self.slack_work.run(self.model_demo.url)

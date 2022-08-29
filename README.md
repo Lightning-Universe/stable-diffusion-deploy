@@ -1,6 +1,5 @@
 # LAI-stable-diffusion-App
 
-
 <p align="center">
   <img width="250" alt="logo" src="https://i.ibb.co/BrsfpBj/Visualize-Your-word-banner-small.jpg"/>
   <br>
@@ -11,10 +10,9 @@
 <p align="center">
 </p>
 
----
+______________________________________________________________________
 
 This App can generate images from text prompts. Get creative and generate some art!
-
 
 ![alt text](./assets/demo.png)
 
