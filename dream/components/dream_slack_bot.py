@@ -11,13 +11,19 @@ from slack_command_bot import SlackCommandBot
 
 
 class DreamSlackCommandBot(SlackCommandBot):
+    inference_url = None
+
     def handle_command(self, client: slack.WebClient):
         data: dict = request.form
         prompt = data.get("text")
-        th = threading.Thread(target=post_dream, args=[data])
+        th = threading.Thread(target=post_dream, args=[self.inference_url, data])
         th.start()
         msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on your own lightning.ai account for faster speeds.)"
         return msg, 200
+
+    def run(self, inference_url, *args, **kwargs) -> None:
+        self.inference_url = inference_url
+        return super().run(*args, **kwargs)
 
 
 def save_base64(b64_image, filename="generate.png"):
@@ -33,7 +39,7 @@ def save_base64(b64_image, filename="generate.png"):
     img_file.close()
 
 
-def post_dream(flask_app: Flask, client: slack.WebClient, data: dict):
+def post_dream(inference_url: str, client: slack.WebClient, data: dict):
     channel_id = data.get("channel_id")
     prompt = data.get("text")
     payload = {
@@ -44,7 +50,7 @@ def post_dream(flask_app: Flask, client: slack.WebClient, data: dict):
         ]
     }
     payload = json.dumps(payload)
-    response = requests.post(flask_app.url + "/api/predict", data=payload)
+    response = requests.post(inference_url + "/api/predict", data=payload)
     print(response.status_code)
     response.raise_for_status()
     generated_images: list = response.json()["data"][0]
