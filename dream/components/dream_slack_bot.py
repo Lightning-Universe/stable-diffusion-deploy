@@ -15,14 +15,15 @@ if typing.TYPE_CHECKING:
 
 
 class DreamSlackCommandBot(SlackCommandBot):
-    def __init__(self, signing_secret=None, bot_token=None, *args, **kwargs):
-        super().__init__(signing_secret, bot_token, *args, **kwargs)
+    def __init__(self, command, signing_secret=None, bot_token=None, *args, **kwargs):
+        super().__init__(command, signing_secret, bot_token, *args, **kwargs)
         self.inference_url = None
 
-    def handle_command(self, client: "slack.WebClient"):
+    def handle_command(self):
+        client = slack.WebClient(token=self.bot_token)
         data: dict = request.form
         prompt = data.get("text")
-        th = threading.Thread(target=post_dream, args=[self.inference_url, data])
+        th = threading.Thread(target=post_dream, args=[self.inference_url, client, data])
         th.start()
         msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on your own lightning.ai account for faster speeds.)"
         return msg, 200

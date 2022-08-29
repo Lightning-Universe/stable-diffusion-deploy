@@ -9,7 +9,7 @@ class RootWorkFlow(L.LightningFlow):
     def __init__(self):
         super().__init__()
         self.model_demo = StableDiffusionUI(cloud_compute=L.CloudCompute("gpu"), parallel=True)
-        self.slack_bot = DreamSlackCommandBot(parallel=True)
+        self.slack_bot = DreamSlackCommandBot(command="/dream", parallel=True)
         self.printed_url = False
 
     def run(self):
