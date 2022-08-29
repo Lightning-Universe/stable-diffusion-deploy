@@ -2,6 +2,7 @@ import base64
 import json
 import os
 import threading
+import typing
 
 import lightning as L
 import requests
@@ -9,11 +10,16 @@ import slack
 from flask import Flask, request
 from slack_command_bot import SlackCommandBot
 
+if typing.TYPE_CHECKING:
+    import slack
+
 
 class DreamSlackCommandBot(SlackCommandBot):
-    inference_url = None
+    def __init__(self, signing_secret=None, bot_token=None, *args, **kwargs):
+        super().__init__(signing_secret, bot_token, *args, **kwargs)
+        self.inference_url = None
 
-    def handle_command(self, client: slack.WebClient):
+    def handle_command(self, client: "slack.WebClient"):
         data: dict = request.form
         prompt = data.get("text")
         th = threading.Thread(target=post_dream, args=[self.inference_url, data])
@@ -39,7 +45,7 @@ def save_base64(b64_image, filename="generate.png"):
     img_file.close()
 
 
-def post_dream(inference_url: str, client: slack.WebClient, data: dict):
+def post_dream(inference_url: str, client: "slack.WebClient", data: dict):
     channel_id = data.get("channel_id")
     prompt = data.get("text")
     payload = {
