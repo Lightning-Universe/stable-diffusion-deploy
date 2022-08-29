@@ -1,8 +1,11 @@
+slack_command_bot@ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Component@main
 diffusers==0.2.4
 transformers==4.21.2
+ftfy==6.1.1
 scipy
 gradio==3.1.7
 slack_bolt==1.14.3
 slack-sdk==3.18.1
 slackeventsapi==3.0.1
+slackclient==2.9.4
 lightning
