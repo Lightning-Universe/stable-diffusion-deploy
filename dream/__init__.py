@@ -1,2 +1,2 @@
-from .components.slack_command_bot import SlackCommandBot
+from .components.slack_bot import DreamSlackCommandBot
 from .components.stable_diffusion_ui import StableDiffusionUI
