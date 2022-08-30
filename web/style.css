@@ -18,3 +18,12 @@
   padding: 8px 12px 8px 12px;
 
 }
+
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 25%;
+  padding: 5px;
+}

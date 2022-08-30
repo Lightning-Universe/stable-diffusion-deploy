@@ -6,9 +6,9 @@
 
 </head>
 
-<body>
+<body style="font-family: Abel;">
 
-<div style="text-align: center; font-family: Abel;">
+<div style="text-align: center;">
     <h1 class="primary-text">Lightning Dream Generator</h1>
     <p class="primary-text">Powered by <a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion</a></p>
 
@@ -17,14 +17,43 @@
     <br>
     <p>Create art instantly | <a href="https://lightning.ai">Run your own version</a> | Build a Slack or Twitter Integraton</p>
 
-    <a href="/view/Visualize%20your%20words"><button class="button" type="button">Start Generating Art</button></a>
+    <br><br>
+    <a id="demo_button" href="#"><button class="button" type="button">Start Generating Art</button></a>
     <br><br>
     <a href="https://twitter.com/LightningAI">Share With Us!</a>
 
 </div>
 
+<h3 class="primary-text">Browse Lightning <a href="#">Dream Gallery</a></h3>
+
+<div class="row">
+    <div class="column">
+        <img src="../assets/generated/g1.png" alt="Snow" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="../assets/generated/g2.png" alt="Forest" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="../assets/generated/g3.png" alt="Mountains" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="../assets/generated/g4.png" alt="Mountains" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="../assets/generated/g5.png" alt="Mountains" style="width:100%">
+    </div>
+</div>
+
 
 
 </body>
-
+<!-- <script>
+var a = document.getElementById('demo_button');
+const url = location.protocol + '//' + location.host;
+let domain = (new URL(url));
+console.log(domain)
+domain = domain.hostname;
+const new_url = domain + "/view/Visualize%20your%20words"
+a.href = new_url
+</script> -->
 </html>

@@ -20,14 +20,16 @@ class RootWorkFlow(L.LightningFlow):
         self.printed_url = False
 
     def run(self):
-        if os.environ.get("TESTING_LAI"):
-            print("⚡ Lightning Dream App! ⚡")
-        self.model_demo.run()
-        if self.model_demo.url:  # hack for getting the work url
-            self.slack_bot.run(self.model_demo.url)
-            if self.slack_bot.url and not self.printed_url:
-                print("Slack work ready with url=", self.slack_bot.url)
-                self.printed_url = True
+        self.web_page.run()
+        self.slack_bot.run(None)
+        # if os.environ.get("TESTING_LAI"):
+        #     print("⚡ Lightning Dream App! ⚡")
+        # self.model_demo.run()
+        # if self.model_demo.url:  # hack for getting the work url
+        #     self.slack_bot.run(self.model_demo.url)
+        #     if self.slack_bot.url and not self.printed_url:
+        #         print("Slack work ready with url=", self.slack_bot.url)
+        #         self.printed_url = True
 
     def configure_layout(self):
         return [
