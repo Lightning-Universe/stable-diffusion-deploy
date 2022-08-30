@@ -1,8 +1,14 @@
 import os
 
 import lightning as L
+from lightning.app.frontend import StaticWebFrontend
 
 from dream import DreamSlackCommandBot, StableDiffusionUI
+
+
+class WebPageComponent(L.LightningFlow):
+    def configure_layout(self):
+        return StaticWebFrontend(serve_dir="web")
 
 
 class RootWorkFlow(L.LightningFlow):
@@ -10,6 +16,7 @@ class RootWorkFlow(L.LightningFlow):
         super().__init__()
         self.model_demo = StableDiffusionUI(cloud_compute=L.CloudCompute("gpu"), parallel=True)
         self.slack_bot = DreamSlackCommandBot(command="/dream", parallel=True)
+        self.web_page = WebPageComponent()
         self.printed_url = False
 
     def run(self):
@@ -24,6 +31,7 @@ class RootWorkFlow(L.LightningFlow):
 
     def configure_layout(self):
         return [
+            {"name": "home", "content": self.web_page},
             {"name": "Visualize your words", "content": self.model_demo},
             {
                 "name": "Blog",

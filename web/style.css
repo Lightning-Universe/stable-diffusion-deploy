@@ -1,0 +1,20 @@
+.primary-text {
+    color: #792EE5;
+}
+
+
+.button {
+  background: linear-gradient(206.91deg, #792EE5 16.83%, #3EABB3 144.59%);
+  border: none;
+  color: white;
+  text-align: center;
+  display: inline-block;
+
+  height: 33px;
+  width: 265px;
+  left: -49px;
+  top: -66px;
+  border-radius: 20px;
+  padding: 8px 12px 8px 12px;
+
+}
