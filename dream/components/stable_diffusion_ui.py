@@ -1,8 +1,11 @@
 from functools import partial
 
+from PIL import Image
+import numpy as np
 import gradio as gr
 import lightning as L
 from lightning.app.components.serve import ServeGradio
+import torch
 from torch import autocast
 
 # GPU Usage with different settings (image size , num images):
@@ -53,13 +56,16 @@ class StableDiffusionUI(ServeGradio):
 
         # make sure you're logged in with `huggingface-cli login`
         print("loading model...")
-        pipe = StableDiffusionPipeline.from_pretrained(
-            "CompVis/stable-diffusion-v1-4",
-            revision="fp16",
-            torch_dtype=torch.float16,
-            use_auth_token=access_token,
-        )
-        pipe = pipe.to("cuda")
+        if torch.cuda.is_available():
+            pipe = StableDiffusionPipeline.from_pretrained(
+                "CompVis/stable-diffusion-v1-4",
+                revision="fp16",
+                torch_dtype=torch.float16,
+                use_auth_token=access_token,
+            )
+            pipe = pipe.to("cuda")
+        else:
+            pipe = None
         print("model loaded")
         return pipe
 
@@ -71,7 +77,10 @@ class StableDiffusionUI(ServeGradio):
             # predicting in chunks to save cuda out of memory error
             chunk_size = 3
             for i in range(0, num_images, chunk_size):
-                results.extend(self.model(prompts[i : i + chunk_size], height=height, width=width)["sample"])
+                if torch.cuda.is_available():
+                    results.extend(self.model(prompts[i : i + chunk_size], height=height, width=width)["sample"])
+                else:
+                    results.extend([Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))])
             return results
 
     def run(self, *args, **kwargs):
