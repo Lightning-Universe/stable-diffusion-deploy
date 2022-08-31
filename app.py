@@ -15,7 +15,12 @@ class RootWorkFlow(L.LightningFlow):
     def __init__(self):
         super().__init__()
         self.model_demo = StableDiffusionUI(cloud_compute=L.CloudCompute("gpu"), parallel=True)
-        self.slack_bot = DreamSlackCommandBot(command="/dream", parallel=True)
+
+        if "SIGNING_SECRET" in os.environ:
+            self.slack_bot = DreamSlackCommandBot(command="/dream", parallel=True)
+        else:
+            self.slack_bot = None
+
         self.printed_url = False
 
         self.dream_url = ""
@@ -28,10 +33,12 @@ class RootWorkFlow(L.LightningFlow):
         self.model_demo.run()
         if self.model_demo.url:  # hack for getting the work url
             self.dream_url = self.model_demo.url
-            self.slack_bot.run(self.model_demo.url)
-            if self.slack_bot.url and not self.printed_url:
-                print("Slack work ready with url=", self.slack_bot.url)
-                self.printed_url = True
+
+            if self.slack_bot is not None:
+                self.slack_bot.run(self.model_demo.url)
+                if self.slack_bot.url and not self.printed_url:
+                    print("Slack work ready with url=", self.slack_bot.url)
+                    self.printed_url = True
 
     def configure_layout(self):
         return [
