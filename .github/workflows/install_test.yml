@@ -1,10 +1,9 @@
 name: Test Installation
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-
+    branches: [main]
 
 jobs:
   pytest:
@@ -12,8 +11,8 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
-        python-version: [ 3.8 ]
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.8]
         include:
           - os: ubuntu-latest
             path: ~/.cache/pip
@@ -21,13 +20,12 @@ jobs:
             path: ~/Library/Caches/pip
     env:
       OS: ${{ matrix.os }}
-      PYTHON: '3.8'
-
+      PYTHON: "3.8"
 
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2

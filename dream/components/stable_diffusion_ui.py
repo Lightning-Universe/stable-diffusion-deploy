@@ -1,11 +1,10 @@
 from functools import partial
 
-from PIL import Image
-import numpy as np
 import gradio as gr
-import lightning as L
-from lightning.app.components.serve import ServeGradio
+import numpy as np
 import torch
+from lightning.app.components.serve import ServeGradio
+from PIL import Image
 from torch import autocast
 
 # GPU Usage with different settings (image size , num images):
@@ -15,22 +14,6 @@ from torch import autocast
 # 512, 9 => 23786MiB
 
 image_size_choices = [256, 512]
-
-description = """Picture says a thousand words! Generate image from text prompts with the latest AI technology "Stable Diffusion".
-
-<center><img src="https://i.ibb.co/dKmydFG/Generate-Image-from-Text.jpg" alt="generate image from text"></center>
-
-Enter a text in the app below and click on the submit button to generate images.
-"""
-
-article = """
-<br>
-
-Stable Diffusion is an AI model that will empower billions of people to create stunning art within seconds.
-It is a breakthrough in speed and quality meaning that it can run on consumer GPUs.
-
-Read the <a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion Public Release</a> blog post from Stability AI
-"""
 
 
 class StableDiffusionUI(ServeGradio):
@@ -94,8 +77,6 @@ class StableDiffusionUI(ServeGradio):
             outputs=self.outputs,
             examples=self.examples,
             title="Visualize your words",
-            description=description,
-            article=article,
         ).launch(
             server_name=self.host,
             server_port=self.port,

@@ -1,2 +1,2 @@
-export const LIGHTNING_PURPLE = "#6162D1";
-export const BREADCRUMBS_BACKGROUND = "#F7F8FB";
+export const LIGHTNING_PURPLE = '#6162D1';
+export const BREADCRUMBS_BACKGROUND = '#F7F8FB';

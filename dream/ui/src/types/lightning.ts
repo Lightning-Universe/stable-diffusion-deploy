@@ -28,7 +28,7 @@ export type LightingState = {
   };
 };
 
-export type ChildState = Omit<LightingState, "app_state">;
+export type ChildState = Omit<LightingState, 'app_state'>;
 
 export type Layout = LayoutBranch | LayoutLeaf;
 
@@ -45,13 +45,13 @@ export type LayoutLeaf = {
 };
 
 export enum LayoutType {
-  web = "web",
-  streamlit = "streamlit",
+  web = 'web',
+  streamlit = 'streamlit',
 }
 
 export enum AppStage {
-  blocking = "blocking",
-  restarting = "restarting",
-  running = "running",
-  stopping = "stopping",
+  blocking = 'blocking',
+  restarting = 'restarting',
+  running = 'running',
+  stopping = 'stopping',
 }

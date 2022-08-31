@@ -15,7 +15,7 @@ class RootWorkFlow(L.LightningFlow):
     def __init__(self):
         super().__init__()
         self.model_demo = StableDiffusionUI(cloud_compute=L.CloudCompute("gpu"), parallel=True)
-        # self.slack_bot = DreamSlackCommandBot(command="/dream", parallel=True)
+        self.slack_bot = DreamSlackCommandBot(command="/dream", parallel=True)
         self.printed_url = False
 
         self.dream_url = ""
@@ -28,10 +28,10 @@ class RootWorkFlow(L.LightningFlow):
         self.model_demo.run()
         if self.model_demo.url:  # hack for getting the work url
             self.dream_url = self.model_demo.url
-            # self.slack_bot.run(self.model_demo.url)
-            # if self.slack_bot.url and not self.printed_url:
-            #     print("Slack work ready with url=", self.slack_bot.url)
-            #     self.printed_url = True
+            self.slack_bot.run(self.model_demo.url)
+            if self.slack_bot.url and not self.printed_url:
+                print("Slack work ready with url=", self.slack_bot.url)
+                self.printed_url = True
 
     def configure_layout(self):
         return [
@@ -40,13 +40,6 @@ class RootWorkFlow(L.LightningFlow):
                 "content": self.ui,
             },
         ]
-        # return [
-        #     {"name": "Visualize your words", "content": self.model_demo},
-        #     {
-        #         "name": "Blog",
-        #         "content": "https://wandb.ai/telidavies/ml-news/reports/Stable-Diffusion-A-Model-To-Rival-DALL-E-2-With-Fewer-Restrictions--VmlldzoyNDY3NTU5",
-        #     },
-        # ]
 
 
 if __name__ == "__main__":

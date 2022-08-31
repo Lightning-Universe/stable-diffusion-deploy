@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-
-import type { LightingState } from "../types/lightning";
+import { useEffect, useState } from 'react';
+import type { LightingState } from '../types/lightning';
 
 interface LightningState {
   subscribe(handler: (state: any) => void): () => void;
