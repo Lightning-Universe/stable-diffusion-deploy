@@ -1,9 +1,10 @@
-from functools import partial
+import base64
+from dataclasses import dataclass
+from io import BytesIO
 
-import gradio as gr
+import lightning as L
 import numpy as np
 import torch
-from lightning.app.components.serve import ServeGradio
 from PIL import Image
 from torch import autocast
 
@@ -13,21 +14,18 @@ from torch import autocast
 # 512, 4 => 17039MiB
 # 512, 9 => 23786MiB
 
-image_size_choices = [256, 512]
+
+@dataclass
+class FastAPIBuildConfig(L.BuildConfig):
+
+    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
 
-class StableDiffusionUI(ServeGradio):
-    inputs = [
-        gr.inputs.Textbox(default="cat reading a book", label="Enter the text prompt"),
-        gr.Radio(value=1, choices=list(range(1, 10)), label="Number of images"),
-        gr.Radio(value=512, choices=image_size_choices, label="Image Size"),
-    ]
-    outputs = gr.Gallery(type="pil")
-    examples = [["a photograph of an astronaut riding a horse"], ["cat reading a book"]]
-    enable_queue = True
+class StableDiffusionServe(L.LightningWork):
+    def __init__(self, **kwargs):
+        super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(parallel=True, *args, **kwargs)
+        self._model = None
 
     def build_model(self):
         import os
@@ -53,33 +51,55 @@ class StableDiffusionUI(ServeGradio):
             print("model set to None")
         return pipe
 
-    def predict(self, prompt, num_images, image_size):
+    def predict(self, dream: str, num_images: int, image_size: int):
         height, width = image_size, image_size
-        prompts = [prompt] * int(num_images)
-        results = []
+        prompts = [dream] * int(num_images)
+        pil_results = []
         with autocast("cuda"):
             # predicting in chunks to save cuda out of memory error
             chunk_size = 3
             for i in range(0, num_images, chunk_size):
                 if torch.cuda.is_available():
-                    results.extend(self.model(prompts[i : i + chunk_size], height=height, width=width)["sample"])
+                    pil_results.extend(self._model(prompts[i : i + chunk_size], height=height, width=width)["sample"])
                 else:
-                    results.extend([Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))])
-            return results
+                    pil_results.extend([Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))])
 
-    def run(self, *args, **kwargs):
+        results = []
+        for image in pil_results:
+            buffered = BytesIO()
+            image.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+            results.append(f"data:image/png;base64,{img_str}")
+
+        return results
+
+    def run(self):
+        import uvicorn
+        from fastapi import FastAPI
+        from fastapi.middleware.cors import CORSMiddleware
+        from pydantic import BaseModel
+
         if self._model is None:
             self._model = self.build_model()
-        fn = partial(self.predict, *args, **kwargs)
-        fn.__name__ = self.predict.__name__
-        gr.Interface(
-            fn=fn,
-            inputs=self.inputs,
-            outputs=self.outputs,
-            examples=self.examples,
-            title="Visualize your words",
-        ).launch(
-            server_name=self.host,
-            server_port=self.port,
-            enable_queue=self.enable_queue,
+
+        app = FastAPI()
+
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
         )
+
+        class Data(BaseModel):
+            dream: str
+            num_images: int
+            image_size: int
+
+        @app.post("/api/predict/")
+        def predict(data: Data):
+            """Dream a dream."""
+            return self.predict(data.dream, data.num_images, data.image_size)
+
+        uvicorn.run(app, host=self.host, port=self.port)

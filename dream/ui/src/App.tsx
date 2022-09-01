@@ -36,7 +36,7 @@ function DreamSearch() {
       setRequestedDream(dream);
       const result = await postDream(dream, 1, 512, lightningState.vars.dream_url);
       console.log(result);
-      setResult(result['data'][0]);
+      setResult(result[0]);
     }
   };
 

@@ -21,6 +21,10 @@ repos:
       - id: check-toml
       - id: check-json
       - id: check-added-large-files
+        exclude: |
+          (?x)(
+              ^dream/ui/build
+          )
       - id: check-docstring-first
       - id: detect-private-key
 
