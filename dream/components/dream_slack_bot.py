@@ -1,5 +1,6 @@
 import base64
 import json
+import tempfile
 import threading
 
 import requests
@@ -9,8 +10,17 @@ from slack_command_bot import SlackCommandBot
 
 
 class DreamSlackCommandBot(SlackCommandBot):
-    def __init__(self, command, signing_secret=None, bot_token=None, *args, **kwargs):
-        super().__init__(command, signing_secret, bot_token, *args, **kwargs)
+    def __init__(
+        self,
+        command="/",
+        signing_secret=None,
+        bot_token=None,
+        slack_client_id=None,
+        client_secret=None,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
         self.inference_url = None
 
     def handle_command(self):
@@ -55,5 +65,6 @@ def post_dream(inference_url: str, client: "slack.WebClient", data: dict):
     print(response.status_code)
     response.raise_for_status()
     generated_images: list = response.json()["data"][0]
-    save_base64(generated_images[0], "./generated.png")
-    client.files_upload(channels=channel_id, title=prompt, file="./generated.png")
+    with tempfile.NamedTemporaryFile() as file:
+        save_base64(generated_images[0], file.name)
+        client.files_upload(channels=channel_id, title=prompt, file=file.name)
