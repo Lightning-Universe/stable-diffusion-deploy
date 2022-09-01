@@ -219,7 +219,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -374,3 +373,6 @@ wandb/
 flagged/
 .python-version
 github/
+
+node_modules/
+*node_modules/*

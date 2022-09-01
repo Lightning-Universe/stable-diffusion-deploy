@@ -1,17 +1,11 @@
 import base64
 import json
-import os
 import threading
-import typing
 
-import lightning as L
 import requests
 import slack
-from flask import Flask, request
+from flask import request
 from slack_command_bot import SlackCommandBot
-
-if typing.TYPE_CHECKING:
-    import slack
 
 
 class DreamSlackCommandBot(SlackCommandBot):
@@ -25,7 +19,7 @@ class DreamSlackCommandBot(SlackCommandBot):
         prompt = data.get("text")
         th = threading.Thread(target=post_dream, args=[self.inference_url, client, data])
         th.start()
-        msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on your own lightning.ai account for faster speeds.)"
+        msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on your own lightning.ai account for faster speeds.)"  # noqa: E501
         return msg, 200
 
     def run(self, inference_url, *args, **kwargs) -> None:

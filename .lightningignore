@@ -144,7 +144,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -320,3 +319,5 @@ github/
 _output/
 *.db
 .git/
+node_modules/
+*node_modules/*
