@@ -1,4 +1,4 @@
-import { Notes, Share } from '@mui/icons-material';
+import { Share } from '@mui/icons-material';
 import {
   Box,
   Container,
@@ -13,16 +13,9 @@ import {
 import { useTheme } from '@mui/system';
 import { useClipboard } from 'hooks/useClipboard';
 import { useLightningState } from 'hooks/useLightningState';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  SnackbarProvider,
-  Stack,
-} from 'lightning-ui/src/design-system/components';
+import { Button, SnackbarProvider, Stack } from 'lightning-ui/src/design-system/components';
 import ThemeProvider from 'lightning-ui/src/design-system/theme';
-import React, { useState } from 'react';
+import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { Input } from './Input';
@@ -170,37 +163,21 @@ const Typography = (props: TypographyProps) => {
   return <MuiTypography color={(theme: any) => theme.palette.grey['70']} {...props} />;
 };
 
-const License = () => {
-  const [showModal, setShowModal] = useState(false);
-  const onOpen = () => setShowModal(true);
-  const onClose = () => setShowModal(false);
-  return (
-    <>
-      <Dialog open={showModal}>
-        <DialogTitle text="License" onClick={onClose} />
-        <DialogContent>License and terms here.</DialogContent>
-      </Dialog>
-      <Fab
-        onClick={onOpen}
-        title={'License'}
-        sx={{
-          position: 'fixed',
-          right: '20px',
-          bottom: '20px',
-        }}>
-        <Tooltip title={'License'} placement={'top'}>
-          <Notes />
-        </Tooltip>
-      </Fab>
-    </>
-  );
-};
-
 const ShareWithFriends = () => {
   const copyToClipboard = useClipboard();
   const onPress = () => {
     copyToClipboard(window.location.origin);
   };
+  return (
+    <Fab onClick={onPress} title={'Share with friends'} sx={{ position: 'fixed', right: '20px', bottom: '20px' }}>
+      <Tooltip title={'Share with friends'} placement={'top'}>
+        <Share />
+      </Tooltip>
+    </Fab>
+  );
+};
+
+const License = () => {
   const theme = useTheme();
   return (
     <Box
@@ -210,7 +187,11 @@ const ShareWithFriends = () => {
         [theme.breakpoints.down('sm')]: { marginBottom: '50px', marginTop: '20px' },
         [theme.breakpoints.up('sm')]: { position: 'fixed', left: 0, right: 0, bottom: '30px' },
       }}>
-      <Button variant={'text'} text={'Share with a friend'} onClick={onPress} icon={<Share />} />
+      <Typography variant="caption">
+        <Link href={'https://huggingface.co/spaces/CompVis/stable-diffusion-license'} target={'_blank'}>
+          License of usage
+        </Link>
+      </Typography>
     </Box>
   );
 };
