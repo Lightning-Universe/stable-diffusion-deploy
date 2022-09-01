@@ -37,7 +37,7 @@ class RootWorkFlow(L.LightningFlow):
             if self.slack_bot is not None:
                 self.slack_bot.run(self.model_demo.url)
                 if self.slack_bot.url and not self.printed_url:
-                    print("Slack work ready with url=", self.slack_bot.url)
+                    print("Slack Bot Work ready with URL=", self.slack_bot.url)
                     self.printed_url = True
 
     def configure_layout(self):
