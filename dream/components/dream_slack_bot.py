@@ -15,8 +15,17 @@ if typing.TYPE_CHECKING:
 
 
 class DreamSlackCommandBot(SlackCommandBot):
-    def __init__(self, command, signing_secret=None, bot_token=None, *args, **kwargs):
-        super().__init__(command, signing_secret, bot_token, *args, **kwargs)
+    def __init__(
+        self,
+        command="/",
+        signing_secret=None,
+        bot_token=None,
+        slack_client_id=None,
+        client_secret=None,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
         self.inference_url = None
 
     def handle_command(self):
