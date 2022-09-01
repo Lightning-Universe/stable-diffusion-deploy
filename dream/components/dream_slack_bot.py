@@ -59,7 +59,7 @@ def post_dream(inference_url: str, client: "slack.WebClient", data: dict):
         "image_size": 512,  # represents selected choice of 'Image Size' Radio component
     }
     payload = json.dumps(payload)
-    response = requests.post(inference_url + "/api/predict", json=payload)
+    response = requests.post(inference_url + "/api/predict", data=payload)
     print(response.status_code)
     response.raise_for_status()
     generated_images: list = response.json()
