@@ -47,9 +47,10 @@ class StableDiffusionUI(ServeGradio):
                 use_auth_token=access_token,
             )
             pipe = pipe.to("cuda")
+            print("model loaded")
         else:
             pipe = None
-        print("model loaded")
+            print("model set to None")
         return pipe
 
     def predict(self, prompt, num_images, image_size):
