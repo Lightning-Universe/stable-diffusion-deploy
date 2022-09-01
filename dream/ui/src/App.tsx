@@ -1,7 +1,6 @@
 import { Notes, Share } from '@mui/icons-material';
 import {
   Box,
-  CircularProgress,
   Container,
   CssBaseline,
   Fab,
@@ -27,6 +26,7 @@ import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { Input } from './Input';
+import { ProgressBar } from './Loader';
 import { postDream } from './services/api';
 
 const queryClient = new QueryClient();
@@ -48,7 +48,7 @@ const shareWithUs = (domain: string) =>
 
 function Dream({ dream, image }: DreamProps) {
   if (dream && !image) {
-    return <CircularProgress />;
+    return <ProgressBar />;
   }
   if (image) {
     return (
