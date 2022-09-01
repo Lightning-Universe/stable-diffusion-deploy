@@ -27,7 +27,7 @@ class StableDiffusionUI(ServeGradio):
     enable_queue = True
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(parallel=True, *args, **kwargs)
 
     def build_model(self):
         import os
