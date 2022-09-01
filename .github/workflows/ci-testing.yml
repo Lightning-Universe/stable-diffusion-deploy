@@ -58,6 +58,12 @@ jobs:
         shell: bash
 
       - name: Tests
+        env:
+          BOT_TOKEN: ${{secrets.BOT_TOKEN}}
+          SLACK_TOKEN: ${{secrets.SLACK_TOKEN}}
+          SIGNING_SECRET: ${{secrets.SIGNING_SECRET}}
+          SLACK_CLIENT_ID: ${{secrets.SLACK_CLIENT_ID}}
+          CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
         run: |
           coverage run --source dream -m py.test dream tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
