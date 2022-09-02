@@ -27,7 +27,7 @@ class DreamSlackCommandBot(SlackCommandBot):
         client = slack.WebClient(token=self.bot_token)
         data: dict = request.form
         prompt = data.get("text")
-        th = threading.Thread(target=post_dream, args=[self.inference_url, client, data])
+        th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
         th.start()
         msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on your own lightning.ai account for faster speeds.)"  # noqa: E501
         return msg, 200
