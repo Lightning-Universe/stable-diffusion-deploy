@@ -32,7 +32,7 @@ type DreamProps = {
 enum Links {
   stableDiffusion = 'https://stability.ai/blog/stable-diffusion-public-release',
   runYouOwnVersion = 'https://lightning.ai/app/g1VJ8GZ7XF-AI-powered%20HackerNews', // todo: replace this with actual id from spreadsheet.
-  slack = 'https://join.slack.com/t/pytorch-lightning/shared_invite/zt-1dm4phlc0-84Jv9_8Mp_tWraICOJ467Q',
+  slack = 'https://wsvbs-01gbz6hpp0nx2ahp49ect17q2n.litng-ai-03.litng.ai/slack/install',
   twitter = 'https://twitter.com/LightningAI',
 }
 
@@ -94,25 +94,11 @@ function DreamSearch() {
           </Typography>
 
           <Box component={'div'} height={16} />
-          <Typography variant={'body2'}>
-            {' '}
-            Create art instantly |{' '}
-            <Link href={Links.runYouOwnVersion} target={'_blank'}>
-              {' '}
-              Run your own version{' '}
-            </Link>{' '}
-            | Build a{' '}
-            <Link href={Links.slack} target={'_blank'}>
-              {' '}
-              Slack{' '}
-            </Link>{' '}
-            or{' '}
-            <Link href={Links.twitter} target={'_blank'}>
-              {' '}
-              Twitter{' '}
-            </Link>{' '}
-            Integration{' '}
-          </Typography>
+          <iframe
+            src={Links.slack}
+            title={'slack link'}
+            style={{ margin: 0, border: 'none', height: 50, width: 155 }}
+          />
         </Stack>
 
         <Grid container spacing={1} justifyContent="center" alignItems="center">
