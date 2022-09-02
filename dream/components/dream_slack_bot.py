@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 import tempfile
 import threading
 
@@ -12,7 +13,7 @@ from slack_command_bot import SlackCommandBot
 class DreamSlackCommandBot(SlackCommandBot):
     def __init__(
         self,
-        command="/",
+        command="/dream",
         signing_secret=None,
         bot_token=None,
         slack_client_id=None,
@@ -22,15 +23,26 @@ class DreamSlackCommandBot(SlackCommandBot):
     ):
         super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
         self.inference_url = None
+        self.API_URL = os.environ.get("SHEET_API_URL")
 
     def handle_command(self):
-        client = slack.WebClient(token=self.bot_token)
         data: dict = request.form
         prompt = data.get("text")
-        th = threading.Thread(target=post_dream, args=[self.inference_url, client, data])
+        team_id = data.get("team_id")
+        response = requests.get(f"{self.API_URL}?search=" + json.dumps({"team_id": team_id}))
+        bot_token = response.json()[0]["bot_token"]
+        client = slack.WebClient(token=bot_token)
+
+        th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
         th.start()
         msg = f":zap: Generating image for prompt: _{prompt}_ :zap: . (This is a public version of this app and might run slow, run this app on your own lightning.ai account for faster speeds.)"  # noqa: E501
         return msg, 200
+
+    def save_new_workspace(self, team_id, bot_token):
+        data = [{"team_id": team_id, "bot_token": bot_token}]
+        data = json.dumps(data)
+        response = requests.post(self.API_URL, data=data)
+        response.raise_for_status()
 
     def run(self, inference_url, *args, **kwargs) -> None:
         self.inference_url = inference_url
