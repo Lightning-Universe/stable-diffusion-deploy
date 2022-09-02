@@ -96,7 +96,7 @@ function DreamSearch() {
           <Box component={'div'} height={16} />
           <Typography variant={'body2'}>
             {' '}
-            Create art instantly | | Build a{' '}
+            Create art instantly | Build a{' '}
             <Link href={Links.slack} target={'_blank'}>
               {' '}
               Slack{' '}
