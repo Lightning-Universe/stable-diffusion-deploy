@@ -32,7 +32,7 @@ type DreamProps = {
 enum Links {
   stableDiffusion = 'https://stability.ai/blog/stable-diffusion-public-release',
   runYouOwnVersion = 'https://lightning.ai/app/g1VJ8GZ7XF-AI-powered%20HackerNews', // todo: replace this with actual id from spreadsheet.
-  slack = 'https://join.slack.com/t/pytorch-lightning/shared_invite/zt-1dm4phlc0-84Jv9_8Mp_tWraICOJ467Q',
+  slack = 'https://wsvbs-01gbz6hpp0nx2ahp49ect17q2n.litng-ai-03.litng.ai/slack/install',
   twitter = 'https://twitter.com/LightningAI',
 }
 
