@@ -94,20 +94,11 @@ function DreamSearch() {
           </Typography>
 
           <Box component={'div'} height={16} />
-          <Typography variant={'body2'}>
-            {' '}
-            Create art instantly | Build a{' '}
-            <Link href={Links.slack} target={'_blank'}>
-              {' '}
-              Slack{' '}
-            </Link>{' '}
-            or{' '}
-            <Link href={Links.twitter} target={'_blank'}>
-              {' '}
-              Twitter{' '}
-            </Link>{' '}
-            Integration{' '}
-          </Typography>
+          <iframe
+            src={Links.slack}
+            title={'slack link'}
+            style={{ margin: 0, border: 'none', height: 50, width: 155 }}
+          />
         </Stack>
 
         <Grid container spacing={1} justifyContent="center" alignItems="center">
