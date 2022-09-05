@@ -1,9 +1,8 @@
 import json
 import os
 
-import requests
-
 import lightning as L
+import requests
 from slack_command_bot import SlackCommandBot
 
 
@@ -30,5 +29,5 @@ class SlackRootFlow(L.LightningFlow):
             self.printed = True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = L.LightningApp(SlackRootFlow())
