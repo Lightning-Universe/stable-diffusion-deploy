@@ -1,10 +1,7 @@
 import base64
-import queue
-import time
-import uuid
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from io import BytesIO
-from threading import Lock, Thread
 
 import lightning as L
 import numpy as np
@@ -17,9 +14,6 @@ from torch import autocast
 # 512,2 => 10779MiB
 # 512, 4 => 17039MiB
 # 512, 9 => 23786MiB
-
-
-REQUEST_TIMEOUT = 5 * 60
 
 
 @dataclass
@@ -81,13 +75,11 @@ class StableDiffusionServe(L.LightningWork):
 
     def run(self):
         import uvicorn
-        from fastapi import FastAPI, HTTPException
+        from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
 
-        _queue = queue.Queue(maxsize=0)
-        _results = {}
-        results_lock = Lock()
+        pool = ThreadPoolExecutor(max_workers=1)
 
         if self._model is None:
             self._model = self.build_model()
@@ -110,26 +102,6 @@ class StableDiffusionServe(L.LightningWork):
         @app.post("/api/predict/")
         def predict(data: Data):
             """Dream a dream."""
-            job_uuid = uuid.uuid4()
-            _queue.put((job_uuid, data.dream, data.num_images, data.image_size))
-            start = time.time()
-            while True:
-                if job_uuid in _results:
-                    with results_lock:
-                        res = _results.pop(job_uuid)
-                    return res
-                if time.time() - start > REQUEST_TIMEOUT:
-                    break
-
-            raise HTTPException(status_code=500, detail="Request timed out.")
-
-        def worker():
-            job_uuid, *args = _queue.get()
-            res = self.predict(*args)
-            with results_lock:
-                _results[job_uuid] = res
-
-        worker_thread = Thread(target=worker)
-        worker_thread.start()
+            return pool.submit(self.predict, data.dream, data.num_images, data.image_size).result()
 
         uvicorn.run(app, host=self.host, port=self.port)
