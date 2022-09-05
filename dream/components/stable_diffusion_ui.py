@@ -1,10 +1,12 @@
 import base64
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
 
 import lightning as L
 import numpy as np
 import torch
+from fastapi import HTTPException
 from PIL import Image
 from torch import autocast
 
@@ -14,10 +16,11 @@ from torch import autocast
 # 512, 4 => 17039MiB
 # 512, 9 => 23786MiB
 
+REQUEST_TIMEOUT = 5 * 60
+
 
 @dataclass
 class FastAPIBuildConfig(L.BuildConfig):
-
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
 
@@ -79,6 +82,8 @@ class StableDiffusionServe(L.LightningWork):
         from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
 
+        pool = ThreadPoolExecutor(max_workers=1)
+
         if self._model is None:
             self._model = self.build_model()
 
@@ -100,6 +105,12 @@ class StableDiffusionServe(L.LightningWork):
         @app.post("/api/predict/")
         def predict(data: Data):
             """Dream a dream."""
-            return self.predict(data.dream, data.num_images, data.image_size)
+            try:
+                result = pool.submit(self.predict, data.dream, data.num_images, data.image_size).result(
+                    timeout=REQUEST_TIMEOUT
+                )
+                return result
+            except TimeoutError:
+                raise HTTPException(status_code=500, detail="Request timed out.")
 
         uvicorn.run(app, host=self.host, port=self.port)
