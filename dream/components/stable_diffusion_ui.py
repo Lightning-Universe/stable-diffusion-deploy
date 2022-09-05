@@ -1,4 +1,5 @@
 import base64
+import platform
 import queue
 import time
 import uuid
@@ -11,6 +12,11 @@ import numpy as np
 import torch
 from PIL import Image
 from torch import autocast
+
+if platform.system() == "Darwin":
+    from multiprocessing import set_start_method
+
+    set_start_method("fork")
 
 # GPU Usage with different settings (image size , num images):
 # 512, 1 => 7639MiB
