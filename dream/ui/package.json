@@ -13,6 +13,7 @@
     "@stripe/stripe-js": "^1.29.0",
     "axios": "^0.27.2",
     "boring-avatars": "^1.6.3",
+    "craco": "^0.0.3",
     "filter-material-ui": "2.7.0",
     "fontfaceobserver": "^2.1.0",
     "lightning-ui": "git+ssh://git@github.com/Lightning-AI/lightning-ui.git",
