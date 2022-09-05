@@ -1,10 +1,10 @@
 import base64
-from dataclasses import dataclass
-from io import BytesIO
 import queue
-from threading import Thread, Lock
 import time
 import uuid
+from dataclasses import dataclass
+from io import BytesIO
+from threading import Lock, Thread
 
 import lightning as L
 import numpy as np
@@ -35,7 +35,6 @@ class StableDiffusionServe(L.LightningWork):
         self._model = None
         self._queue = queue.Queue(maxsize=0)
         self._results = {}
-        self._results_lock = Lock()
 
     def build_model(self):
         import os
@@ -89,6 +88,8 @@ class StableDiffusionServe(L.LightningWork):
         from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
 
+        results_lock = Lock()
+
         if self._model is None:
             self._model = self.build_model()
 
@@ -115,7 +116,7 @@ class StableDiffusionServe(L.LightningWork):
             start = time.time()
             while True:
                 if job_uuid in self._results:
-                    with self._results_lock:
+                    with results_lock:
                         res = self._results.pop(job_uuid)
                     return res
                 if time.time() - start > REQUEST_TIMEOUT:
@@ -126,7 +127,7 @@ class StableDiffusionServe(L.LightningWork):
         def worker():
             job_uuid, *args = self._queue.get()
             res = self.predict(*args)
-            with self._results_lock:
+            with results_lock:
                 self._results[job_uuid] = res
 
         worker_thread = Thread(target=worker)
