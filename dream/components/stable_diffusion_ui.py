@@ -1,6 +1,10 @@
 import base64
 from dataclasses import dataclass
 from io import BytesIO
+import queue
+from threading import Thread, Lock
+import time
+import uuid
 
 import lightning as L
 import numpy as np
@@ -15,6 +19,9 @@ from torch import autocast
 # 512, 9 => 23786MiB
 
 
+REQUEST_TIMEOUT = 5 * 60
+
+
 @dataclass
 class FastAPIBuildConfig(L.BuildConfig):
 
@@ -26,6 +33,9 @@ class StableDiffusionServe(L.LightningWork):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
 
         self._model = None
+        self._queue = queue.Queue(maxsize=0)
+        self._results = {}
+        self._results_lock = Lock()
 
     def build_model(self):
         import os
@@ -75,7 +85,7 @@ class StableDiffusionServe(L.LightningWork):
 
     def run(self):
         import uvicorn
-        from fastapi import FastAPI
+        from fastapi import FastAPI, HTTPException
         from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
 
@@ -100,6 +110,26 @@ class StableDiffusionServe(L.LightningWork):
         @app.post("/api/predict/")
         def predict(data: Data):
             """Dream a dream."""
-            return self.predict(data.dream, data.num_images, data.image_size)
+            job_uuid = uuid.uuid4()
+            self._queue.put((job_uuid, data.dream, data.num_images, data.image_size))
+            start = time.time()
+            while True:
+                if job_uuid in self._results:
+                    with self._results_lock:
+                        res = self._results.pop(job_uuid)
+                    return res
+                if time.time() - start > REQUEST_TIMEOUT:
+                    break
+
+            raise HTTPException(status_code=500, detail="Request timed out.")
+
+        def worker():
+            job_uuid, *args = self._queue.get()
+            res = self.predict(*args)
+            with self._results_lock:
+                self._results[job_uuid] = res
+
+        worker_thread = Thread(target=worker)
+        worker_thread.start()
 
         uvicorn.run(app, host=self.host, port=self.port)
