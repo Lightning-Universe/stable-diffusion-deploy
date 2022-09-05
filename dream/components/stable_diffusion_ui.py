@@ -1,5 +1,4 @@
 import base64
-import platform
 import queue
 import time
 import uuid
@@ -13,11 +12,6 @@ import torch
 from PIL import Image
 from torch import autocast
 
-if platform.system() == "Darwin":
-    from multiprocessing import set_start_method
-
-    set_start_method("fork")
-
 # GPU Usage with different settings (image size , num images):
 # 512, 1 => 7639MiB
 # 512,2 => 10779MiB
@@ -30,7 +24,6 @@ REQUEST_TIMEOUT = 5 * 60
 
 @dataclass
 class FastAPIBuildConfig(L.BuildConfig):
-
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
 
@@ -39,8 +32,6 @@ class StableDiffusionServe(L.LightningWork):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
 
         self._model = None
-        self._queue = queue.Queue(maxsize=0)
-        self._results = {}
 
     def build_model(self):
         import os
@@ -94,6 +85,8 @@ class StableDiffusionServe(L.LightningWork):
         from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
 
+        _queue = queue.Queue(maxsize=0)
+        _results = {}
         results_lock = Lock()
 
         if self._model is None:
@@ -118,12 +111,12 @@ class StableDiffusionServe(L.LightningWork):
         def predict(data: Data):
             """Dream a dream."""
             job_uuid = uuid.uuid4()
-            self._queue.put((job_uuid, data.dream, data.num_images, data.image_size))
+            _queue.put((job_uuid, data.dream, data.num_images, data.image_size))
             start = time.time()
             while True:
-                if job_uuid in self._results:
+                if job_uuid in _results:
                     with results_lock:
-                        res = self._results.pop(job_uuid)
+                        res = _results.pop(job_uuid)
                     return res
                 if time.time() - start > REQUEST_TIMEOUT:
                     break
@@ -131,10 +124,10 @@ class StableDiffusionServe(L.LightningWork):
             raise HTTPException(status_code=500, detail="Request timed out.")
 
         def worker():
-            job_uuid, *args = self._queue.get()
+            job_uuid, *args = _queue.get()
             res = self.predict(*args)
             with results_lock:
-                self._results[job_uuid] = res
+                _results[job_uuid] = res
 
         worker_thread = Thread(target=worker)
         worker_thread.start()
