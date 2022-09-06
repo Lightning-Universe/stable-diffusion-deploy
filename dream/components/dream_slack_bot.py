@@ -6,7 +6,7 @@ import threading
 
 import requests
 import slack
-from flask import request
+from flask import Response, request
 from slack_command_bot import SlackCommandBot
 
 
@@ -30,7 +30,10 @@ class DreamSlackCommandBot(SlackCommandBot):
         prompt = data.get("text")
         team_id = data.get("team_id")
         response = requests.get(f"{self.API_URL}?search=" + json.dumps({"team_id": team_id}))
-        bot_token = response.json()[0]["bot_token"]
+        try:
+            bot_token = response.json()[0]["bot_token"]
+        except IndexError:
+            return Response(f"Bot Token not found for for team={team_id}", status=401)
         client = slack.WebClient(token=bot_token)
 
         th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
