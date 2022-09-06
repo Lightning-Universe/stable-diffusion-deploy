@@ -6,7 +6,7 @@ __copyright__ = f"Copyright (c) 2021-2022, {__author__}."
 __homepage__ = "https://github.com/Lightning-AI/LAI-Stable-Diffusion-App"
 __docs__ = "Visualize your words with Stable Diffusion Lightning App"
 __long_doc__ = """
-Visualize your words with Stable Diffusion Lightning App
+Create beautiful works of art in seconds with the Lightning Dream Generator App.
 """
 
 __all__ = [
