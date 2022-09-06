@@ -25,6 +25,8 @@ class FastAPIBuildConfig(L.BuildConfig):
 
 
 class StableDiffusionServe(L.LightningWork):
+    """Deploys the Stable Diffusion model with FastAPI."""
+
     def __init__(self, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
 
