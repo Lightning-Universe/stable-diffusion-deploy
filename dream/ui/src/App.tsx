@@ -32,7 +32,7 @@ type DreamProps = {
 enum Links {
   stableDiffusion = 'https://stability.ai/blog/stable-diffusion-public-release',
   runYouOwnVersion = 'https://lightning.ai/app/g1VJ8GZ7XF-AI-powered%20HackerNews', // todo: replace this with actual id from spreadsheet.
-  slack = 'https://wsvbs-01gbz6hpp0nx2ahp49ect17q2n.litng-ai-03.litng.ai/slack/install',
+  slack = 'https://wsvbs-01gbz6hpp0nx2ahp49ect17q2n.litng-ai-03.litng.ai/slack/start',
   twitter = 'https://twitter.com/LightningAI',
 }
 
@@ -94,11 +94,7 @@ function DreamSearch() {
           </Typography>
 
           <Box component={'div'} height={16} />
-          <iframe
-            src={Links.slack}
-            title={'slack link'}
-            style={{ margin: 0, border: 'none', height: 50, width: 155 }}
-          />
+          <SlackOAuthLink />
         </Stack>
 
         <Grid container spacing={1} justifyContent="center" alignItems="center">
@@ -179,5 +175,19 @@ const License = () => {
         </Link>
       </Typography>
     </Box>
+  );
+};
+
+const SlackOAuthLink = () => {
+  return (
+    <a href={Links.slack} target={'_blank'} rel="noreferrer">
+      <img
+        alt="Add to Slack"
+        height="40"
+        width="139"
+        src="https://platform.slack-edge.com/img/add_to_slack.png"
+        srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
+      />
+    </a>
   );
 };
