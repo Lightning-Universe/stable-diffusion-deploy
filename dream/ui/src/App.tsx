@@ -1,21 +1,9 @@
-import { Share } from '@mui/icons-material';
-import {
-  Box,
-  Container,
-  CssBaseline,
-  Fab,
-  Grid,
-  Link,
-  Tooltip,
-  Typography as MuiTypography,
-  TypographyProps,
-} from '@mui/material';
+import { Box, Container, CssBaseline, Grid, Link, Typography as MuiTypography, TypographyProps } from '@mui/material';
 import { useTheme } from '@mui/system';
-import { useClipboard } from 'hooks/useClipboard';
 import { useLightningState } from 'hooks/useLightningState';
 import { Button, SnackbarProvider, Stack } from 'lightning-ui/src/design-system/components';
 import ThemeProvider from 'lightning-ui/src/design-system/theme';
-import React from 'react';
+import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { Input } from './Input';
@@ -34,10 +22,9 @@ enum Links {
   runYouOwnVersion = 'https://lightning.ai/app/g1VJ8GZ7XF-AI-powered%20HackerNews', // todo: replace this with actual id from spreadsheet.
   slack = 'https://wsvbs-01gbz6hpp0nx2ahp49ect17q2n.litng-ai-03.litng.ai/slack/start',
   twitter = 'https://twitter.com/LightningAI',
+  lightningAI = 'https://lightning.ai/',
+  license = 'https://huggingface.co/spaces/CompVis/stable-diffusion-license',
 }
-
-const shareWithUs = (domain: string) =>
-  `https://twitter.com/intent/tweet?url=${domain}&text=Love+trying+out+the+new+Dream+App+on%20%40LightningAI&hashtags=BuildWithLightning`;
 
 function Dream({ dream, image }: DreamProps) {
   if (dream && !image) {
@@ -63,13 +50,18 @@ function DreamSearch() {
   const [dream, setDream] = React.useState<string | null>('Cats in hats');
   const [result, setResult] = React.useState<string | null>(null);
   const [requestedDream, setRequestedDream] = React.useState('');
-
+  const [loading, setLoading] = useState(false);
   const dreamIt = async () => {
     if (dream && lightningState) {
       setResult(null);
       setRequestedDream(dream);
-      const result = await postDream(dream, 1, 512, lightningState.vars.dream_url);
-      setResult(result[0]);
+      setLoading(true);
+      try {
+        const result = await postDream(dream, 1, 512, lightningState.vars.dream_url);
+        setResult(result[0]);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -104,21 +96,20 @@ function DreamSearch() {
 
           <Grid item sx={{ '.MuiButton-root': { borderRadius: 40, padding: '0 30px' } }}>
             <Box component={'div'} height={{ xs: 18, md: 0 }} />
-            <Button disabled={!dream} text="Dream it" onClick={dreamIt} />
+            <Button disabled={!dream || loading} text="Dream it" onClick={dreamIt} />
           </Grid>
 
           <Grid item xs={12} textAlign={'center'}>
             <Box component={'div'} height={23} />
             <Typography variant={'h6'}>
-              <Link href={shareWithUs(window.location.origin)} target={'_blank'}>
-                Share with us
+              <Link href={Links.lightningAI} target={'_blank'}>
+                Built with Lightning AI
               </Link>
             </Typography>
           </Grid>
         </Grid>
         {requestedDream && <Dream dream={requestedDream} image={result} />}
       </Stack>
-      <ShareWithFriends />
       <License />
     </Container>
   );
@@ -145,20 +136,6 @@ const Typography = (props: TypographyProps) => {
   return <MuiTypography color={(theme: any) => theme.palette.grey['70']} {...props} />;
 };
 
-const ShareWithFriends = () => {
-  const copyToClipboard = useClipboard();
-  const onPress = () => {
-    copyToClipboard(window.location.origin);
-  };
-  return (
-    <Fab onClick={onPress} title={'Share with friends'} sx={{ position: 'fixed', right: '20px', bottom: '20px' }}>
-      <Tooltip title={'Share with friends'} placement={'top'}>
-        <Share />
-      </Tooltip>
-    </Fab>
-  );
-};
-
 const License = () => {
   const theme = useTheme();
   return (
@@ -170,8 +147,8 @@ const License = () => {
         [theme.breakpoints.up('sm')]: { position: 'fixed', left: 0, right: 0, bottom: '30px' },
       }}>
       <Typography variant="caption">
-        <Link href={'https://huggingface.co/spaces/CompVis/stable-diffusion-license'} target={'_blank'}>
-          License of usage
+        <Link href={Links.license} target={'_blank'}>
+          License
         </Link>
       </Typography>
     </Box>
