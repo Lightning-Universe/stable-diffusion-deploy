@@ -38,7 +38,7 @@ This will launch your app on the Lightning.ai cloud. You can enter the text prom
 
 You can integrate this app in your Slack Workspace and send art in channels.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/KfQcXzWFR9I" title="Lightning Dream App (Stable Diffusion) Slackbot Tutorial" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+https://www.youtube.com/embed/KfQcXzWFR9I
 
 ### Steps
 
