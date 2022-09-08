@@ -20,7 +20,7 @@ export const ProgressBar = ({ maxTime = 60 }: { maxTime?: number }) => {
 
   return (
     <div>
-      {maxTime > time && <p>Waiting for results, can take upto {maxTime - time} seconds</p>}
+      {maxTime > time && <p>Waiting for results...</p>}
 
       <Box component={'div'} sx={{ width: '400px' }} py={2}>
         <BorderLinearProgress
