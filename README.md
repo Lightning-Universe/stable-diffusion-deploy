@@ -38,7 +38,7 @@ This will launch your app on the Lightning.ai cloud. You can enter the text prom
 
 You can integrate this app in your Slack Workspace and send art in channels.
 
-https://www.youtube.com/embed/KfQcXzWFR9I
+https://youtu.be/KfQcXzWFR9I
 
 ### Steps
 
