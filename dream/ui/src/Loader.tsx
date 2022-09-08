@@ -22,7 +22,8 @@ export const ProgressBar = ({ maxTime = 60 }: { maxTime?: number }) => {
     <div>
       {maxTime > time && <p>Waiting for results...</p>}
 
-      <Box component={'div'} sx={{ width: '400px' }} py={2}>
+      {/* 375 is iphone se, nothing is less than 300 fr */}
+      <Box component={'div'} sx={{ width: '100%', minWidth: '300px' }} py={2}>
         <BorderLinearProgress
           variant={hasReachedMaximum() ? 'indeterminate' : 'determinate'}
           value={progressValue()}
