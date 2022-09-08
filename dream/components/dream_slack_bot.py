@@ -23,19 +23,26 @@ class DreamSlackCommandBot(SlackCommandBot):
     ):
         super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
         self.inference_url = None
-        self.API_URL = os.environ.get("SHEET_API_URL")
+        self.SHEET_API_URL = os.environ.get("SHEET_API_URL")
+
+    def _get_bot_token(self, team_id):
+        if self.SHEET_API_URL:
+            response = requests.get(f"{self.SHEET_API_URL}?search=" + json.dumps({"team_id": team_id}))
+            bot_token = response.json()[0]["bot_token"]
+        else:
+            bot_token = self.bot_token
+        return bot_token
 
     def handle_command(self):
         data: dict = request.form
         prompt = data.get("text")
         team_id = data.get("team_id")
-        response = requests.get(f"{self.API_URL}?search=" + json.dumps({"team_id": team_id}))
         try:
-            bot_token = response.json()[0]["bot_token"]
+            bot_token = self._get_bot_token(team_id)
         except IndexError:
             return Response(f"Bot Token not found for for team={team_id}", status=401)
-        client = slack.WebClient(token=bot_token)
 
+        client = slack.WebClient(token=bot_token)
         th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
         th.start()
         msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. (This public version of the app may run slow. Follow this tutorial to run your own faster version of the app in your workspace https://youtu.be/KfQcXzWFR9I"  # noqa: E501
@@ -44,7 +51,7 @@ class DreamSlackCommandBot(SlackCommandBot):
     def save_new_workspace(self, team_id, bot_token):
         data = [{"team_id": team_id, "bot_token": bot_token}]
         data = json.dumps(data)
-        response = requests.post(self.API_URL, data=data)
+        response = requests.post(self.SHEET_API_URL, data=data)
         response.raise_for_status()
 
     def run(self, inference_url, *args, **kwargs) -> None:
