@@ -36,19 +36,21 @@ This will launch your app on the Lightning.ai cloud. You can enter the text prom
 
 ## Integrate with Slack Bot
 
-You can integrate this app in your Slack Workspace and send art in channels.
+You can integrate this app in your Slack Workspace and send art in slack channels.
+
+This app uses the [Slack Command Bot Component](https://github.com/Lightning-AI/LAI-slack-command-bot-Component) for to
+interact with Slack command.
 
 [![Watch the video](https://img.youtube.com/vi/KfQcXzWFR9I/default.jpg)](https://youtu.be/KfQcXzWFR9I)
 
-### Steps
+### Steps to create the Slack Command Bot
 
 **Step 1:**
-Install the Dream Bot App to your workspace
-from <a href="https://eqmgj-01gbx5pe619qhqmk6gy2fcj4r0.litng-ai-03.litng.ai/slack/install">this link</a>
+Goto https://api.slack.com and create an app.
 
 **Step 2:**
 Copy the following tokens and secrets from the Slack API settings by going to https://api.slack.com/apps. These tokens
-have to be passed either as argument or environment variable.
+have to be passed either as argument or environment variable to [SlackCommandBot](https://github.com/Lightning-AI/LAI-slack-command-bot-Component/blob/main/slack_command_bot/component.py#L18) class.
 
 The following list is in format of _Token name on Slack settings (Environment variable name)_:
 
@@ -60,12 +62,15 @@ The following list is in format of _Token name on Slack settings (Environment va
 
 **Step 3:**
 
-Implement the `SlackCommandBot.handle_command(...)` method, the way you want to react with your slack command.
+Implement the `SlackCommandBot.handle_command(...)` method the way you want to interact with the commands.
+The return value will be shown only to you.
+
+> ![](./assets/slack-ss.png)
 
 **Step 4:** (optional)
 
 If you want your slack app to be distributable to public then you need to
-implement `SlackCommandBot.save_new_workspace(...)` which should save team_id and its corresponding `bot_token` into a
+implement `SlackCommandBot.save_new_workspace(...)` which should save `team_id` and its corresponding `bot_token` into a
 database.
 
 During the `handle_command(...)` method you will need to fetch `bot_token` based on the received `team_id`.
