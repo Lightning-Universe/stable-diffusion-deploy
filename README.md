@@ -17,9 +17,9 @@ in your slack workspace.
 
 # Getting started
 
-## Running on your hardware
+## Launch React UI
 
-### Launch React UI
+![Demo image](./assets/demo.png)
 
 ```bash
 lightning install app https://github.com/Lightning-AI/LAI-Stable-Diffusion-App
