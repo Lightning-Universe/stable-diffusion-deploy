@@ -52,13 +52,16 @@ Goto https://api.slack.com and create an app.
 Copy the following tokens and secrets from the Slack API settings by going to https://api.slack.com/apps. These tokens
 have to be passed either as argument or environment variable to [SlackCommandBot](https://github.com/Lightning-AI/LAI-slack-command-bot-Component/blob/main/slack_command_bot/component.py#L18) class.
 
-The following list is in format of _Token name on Slack settings (Environment variable name)_:
+<details>
+  <summary>Required Token name and environment variables: </summary>
 
 - Client ID (SLACK_CLIENT_ID)
 - Client Secret (CLIENT_SECRET)
 - Signing Secret (SIGNING_SECRET)
 - Bot User OAuth Token (BOT_TOKEN)
 - App-Level Token (SLACK_TOKEN)
+
+</details>
 
 **Step 3:**
 
