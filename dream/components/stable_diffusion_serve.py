@@ -85,7 +85,7 @@ class ModelInference(L.LightningWork):
         self._model = self.build_model()
 
 
-class ScaleModel:
+class ScaleModel(L.LightningFlow):
     def __init__(self, num_workers):
         super().__init__()
         self.num_workers = num_workers
@@ -110,7 +110,7 @@ class StableDiffusionServe(L.LightningWork):
     def __init__(self, num_workers=2, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
 
-        self._model: ScaleModel = None
+        self._model: ScaleModel = ScaleModel(num_workers)
         self.num_workers = num_workers
 
     def run(self):
@@ -141,7 +141,7 @@ class StableDiffusionServe(L.LightningWork):
             image_size: int
 
         @app.post("/api/predict/")
-        def predict_api(data: Data):
+        async def predict_api(data: Data):
             """Dream a dream. Defines the REST API which takes the text prompt, number of images and image size in the
             request body.
 
