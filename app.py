@@ -14,7 +14,7 @@ class ReactUI(L.LightningFlow):
 class RootWorkFlow(L.LightningFlow):
     def __init__(self):
         super().__init__()
-        self.model_serve = StableDiffusionServe(cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True)
+        self.model_serve = StableDiffusionServe(cache_calls=True, parallel=True)
 
         if "SIGNING_SECRET" in os.environ:
             self.slack_bot = DreamSlackCommandBot(command="/dream")
