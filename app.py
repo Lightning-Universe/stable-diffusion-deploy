@@ -23,17 +23,14 @@ class RootWorkFlow(L.LightningFlow):
                 for _ in range(num_workers)
             ]
         )
-        self.load_balancer = LoadBalancer()
+        self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
 
         if "SIGNING_SECRET" in os.environ:
             self.slack_bot = DreamSlackCommandBot(command="/dream")
         else:
             self.slack_bot = None
-
         self.printed_url = False
-
         self.dream_url = ""
-
         self.ui = ReactUI()
 
     def run(self):
