@@ -49,6 +49,7 @@ class LoadBalancer(L.LightningWork):
             print(server)
             result = requests.post(f"{server}/api/predict", data=data.json(), timeout=REQUEST_TIMEOUT)
             print(result)
+            result.raise_for_status()
             return result.json()
 
         uvicorn.run(app, host=self.host, port=self.port)
