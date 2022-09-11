@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from itertools import cycle
 from typing import List
 
+import aiohttp
 import lightning as L
-import requests
 
 REQUEST_TIMEOUT = 5 * 60
 
@@ -43,13 +43,13 @@ class LoadBalancer(L.LightningWork):
             image_size: int
 
         @app.post("/api/predict/")
-        def balance_api(data: Data):
+        async def balance_api(data: Data):
             """"""
             server = next(ITER)
-            print(server)
-            result = requests.post(f"{server}/api/predict", data=data.json(), timeout=REQUEST_TIMEOUT)
-            print(result)
-            result.raise_for_status()
-            return result.json()
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f"{server}/api/predict", json=data.dict(), timeout=REQUEST_TIMEOUT) as result:
+                    print(result.status)
+                    result.raise_for_status()
+                    return await result.json()
 
         uvicorn.run(app, host=self.host, port=self.port)
