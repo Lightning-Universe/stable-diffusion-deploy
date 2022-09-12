@@ -1,3 +1,8 @@
+import { Input } from './components/Input';
+import { ProgressBar } from './components/Loader';
+import { AddYourSlackCredentials } from './components/SlackTokensModel';
+import { Typography } from './components/Typography';
+import { postDream } from './services/api';
 import { Box, Container, CssBaseline, Grid, Link, useTheme } from '@mui/material';
 import { useLightningState } from 'hooks/useLightningState';
 import { Button, Stack } from 'lightning-ui/src/design-system/components';
@@ -6,11 +11,6 @@ import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { LightingState } from 'types/lightning';
-import { Input } from './components/Input';
-import { ProgressBar } from './components/Loader';
-import { AddYourSlackCredentials } from './components/SlackTokensModel';
-import { Typography } from './components/Typography';
-import { postDream } from './services/api';
 
 const queryClient = new QueryClient();
 
@@ -112,7 +112,7 @@ function DreamSearch() {
         </Grid>
         {requestedDream && <Dream dream={requestedDream} image={result} />}
       </Stack>
-      <SlackFormAndLicense {...lightningState} />
+      {lightningState && <SlackFormAndLicense {...lightningState} />}
     </Container>
   );
 }
