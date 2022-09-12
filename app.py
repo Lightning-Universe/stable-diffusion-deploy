@@ -17,7 +17,7 @@ class RootWorkFlow(L.LightningFlow):
     def __init__(self, num_workers=2):
         super().__init__()
         self.num_workers = num_workers
-        self.model_servers = LightningList(
+        self._model_servers = LightningList(
             *[
                 StableDiffusionServe(cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True)
                 for _ in range(num_workers)
@@ -37,11 +37,11 @@ class RootWorkFlow(L.LightningFlow):
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 
-        for model_serve in self.model_servers:
+        for model_serve in self._model_servers:
             model_serve.run()
-        if all(model_serve.url for model_serve in self.model_servers):
+        if all(model_serve.url for model_serve in self._model_servers):
             # run the load balancer when all the model server is ready
-            self.load_balancer.run([serve.url for serve in self.model_servers])
+            self.load_balancer.run([serve.url for serve in self._model_servers])
 
         if self.load_balancer.url:  # hack for getting the work url
             self.dream_url = self.load_balancer.url
