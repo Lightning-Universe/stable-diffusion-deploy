@@ -22,9 +22,7 @@ class RootWorkFlow(L.LightningFlow):
             self.slack_bot = None
 
         self.printed_url = False
-
         self.dream_url = ""
-
         self.ui = ReactUI()
 
     def run(self):
