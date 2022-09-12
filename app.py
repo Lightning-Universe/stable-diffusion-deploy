@@ -14,7 +14,7 @@ class ReactUI(L.LightningFlow):
 class RootWorkFlow(L.LightningFlow):
     def __init__(self):
         super().__init__()
-        self.model_serve = StableDiffusionServe(cache_calls=True, parallel=True)
+        self.model_serve = StableDiffusionServe(initial_num_workers=2, worker_compute_type="gpu")
 
         if "SIGNING_SECRET" in os.environ:
             self.slack_bot = DreamSlackCommandBot(command="/dream")
@@ -28,15 +28,19 @@ class RootWorkFlow(L.LightningFlow):
     def run(self):
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
-        self.model_serve.run()
-        if self.model_serve.url:  # hack for getting the work url
-            self.dream_url = self.model_serve.url
+        # if self.model_serve.url:  # hack for getting the work url
+        #     self.dream_url = self.model_serve.url
 
-            if self.slack_bot is not None:
-                self.slack_bot.run(self.model_serve.url)
-                if self.slack_bot.url and not self.printed_url:
-                    print("Slack Bot Work ready with URL=", self.slack_bot.url)
-                    self.printed_url = True
+        #     if self.slack_bot is not None:
+        #         self.slack_bot.run(self.model_serve.url)
+        #         if self.slack_bot.url and not self.printed_url:
+        #             print("Slack Bot Work ready with URL=", self.slack_bot.url)
+        #             self.printed_url = True
+
+        self.model_serve.run()
+
+    def configure_api(self):
+        return self.model_serve.configure_api()
 
     def configure_layout(self):
         return [
