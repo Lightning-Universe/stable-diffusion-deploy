@@ -1,13 +1,25 @@
+import asyncio
 import base64
 import json
+import logging
 import os
+import sys
 import tempfile
 import threading
+import typing
 
 import requests
 import slack
-from flask import Response, request
+import uvicorn
+from asgiref.typing import ASGIApplication
+from asgiref.wsgi import WsgiToAsgi
+from flask import Flask, Response, request
+from flask_cors import CORS
+from lightning_app.storage.drive import Drive
 from slack_command_bot import SlackCommandBot
+from uvicorn.supervisors import ChangeReload, Multiprocess
+
+from .utils import get_item, save_item
 
 
 class DreamSlackCommandBot(SlackCommandBot):
@@ -24,6 +36,14 @@ class DreamSlackCommandBot(SlackCommandBot):
         super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
         self.inference_url = None
         self._SHEET_API_URL = os.environ.get("SHEET_API_URL")
+
+        self.has_credentials = False
+
+        self._slack_token: str = None
+
+        self._secrets_drive: Drive = None
+
+        self._server: uvicorn.Server = None
 
     def _get_bot_token(self, team_id):
         if self._SHEET_API_URL:
@@ -54,9 +74,98 @@ class DreamSlackCommandBot(SlackCommandBot):
         response = requests.post(self._SHEET_API_URL, data=data)
         response.raise_for_status()
 
-    def run(self, inference_url, *args, **kwargs) -> None:
+    def run(self, inference_url) -> None:
+        self._get_credentials()
         self.inference_url = inference_url
-        return super().run(*args, **kwargs)
+        self.run_app()
+
+    def run_app(self):
+        app = Flask(__name__)
+        CORS(app, resources={r"/add_credentials": {"origins": "*"}})
+
+        if self.has_credentials:
+            self.init_flask_app(app=app)
+        else:
+            self.register_credentials_endpoint(app=app)
+
+        asgi_app = WsgiToAsgi(app)
+        config = uvicorn.Config(app=asgi_app, host=self.host, port=self.port)
+
+        print("starting Slack Command Bot")
+        self.run_server(app=asgi_app, config=config)
+
+    def register_credentials_endpoint(self, app: Flask):
+        @app.route("/add_credentials", methods=["POST"])
+        def add_secrets():
+            if self.has_credentials:
+                return "already have credentials"
+            data: dict = request.get_json()
+            self.assign_credentials(credentials=data)
+            save_item(name="secrets", value=data, drive=self._secrets_drive)
+            self.restart_server()
+            return "success"
+
+    def _get_credentials(self) -> bool:
+        try:
+            # try to get from env
+            self.assign_credentials(credentials=os.environ)
+            return True
+        except BaseException:
+            pass
+
+        if not self._secrets_drive:
+            self._secrets_drive = Drive(id="lit://secrets", component_name=self.__class__.__name__)
+        credentials = get_item(name="secrets", drive=self._secrets_drive)
+        if not credentials:
+            return False
+
+        try:
+            self.assign_credentials(credentials=credentials)
+            return True
+        except BaseException as e:
+            print(e)
+            return False
+
+    def assign_credentials(self, credentials: typing.Dict):
+        self._signing_secret = credentials["SIGNING_SECRET"]
+        self._bot_token = credentials["BOT_TOKEN"]
+        self._slack_client_id = credentials["SLACK_CLIENT_ID"]
+        self._client_secret = credentials["CLIENT_SECRET"]
+        self._slack_token = credentials["SLACK_TOKEN"]
+
+        self.has_credentials = True
+
+    def restart_server(self):
+        self._server.force_exit = True
+        self._server.lifespan = "on"
+        asyncio.run(self._server.shutdown())
+        threading.Thread(target=self.run_app, daemon=False).start()
+
+    def run_server(self, app: typing.Union[ASGIApplication, str], config: uvicorn.Config = None) -> None:
+        """copy of uvicorn.run."""
+
+        server = uvicorn.Server(config=config)
+
+        self._server = server
+
+        if (config.reload or config.workers > 1) and not isinstance(app, str):
+            logger = logging.getLogger("uvicorn.error")
+            logger.warning("You must pass the application as an import string to enable 'reload' or " "'workers'.")
+            sys.exit(1)
+
+        if config.should_reload:
+            sock = config.bind_socket()
+            ChangeReload(config, target=server.run, sockets=[sock]).run()
+        elif config.workers > 1:
+            sock = config.bind_socket()
+            Multiprocess(config, target=server.run, sockets=[sock]).run()
+        else:
+            server.run()
+        if config.uds:
+            os.remove(config.uds)  # pragma: py-win32
+
+        if not server.started and not config.should_reload and config.workers == 1:
+            sys.exit(uvicorn.main.STARTUP_FAILURE)
 
 
 def save_base64(b64_image, filename="generate.png"):
