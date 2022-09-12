@@ -16,12 +16,10 @@ class RootWorkFlow(L.LightningFlow):
         super().__init__()
         self.model_serve = StableDiffusionServe(cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True)
 
-        if "SIGNING_SECRET" in os.environ:
-            self.slack_bot = DreamSlackCommandBot(command="/dream")
-        else:
-            self.slack_bot = None
+        self.slack_bot = DreamSlackCommandBot(command="/dream")
 
         self.printed_url = False
+        self.slack_bot_url = ""
 
         self.dream_url = ""
 
@@ -36,6 +34,7 @@ class RootWorkFlow(L.LightningFlow):
 
             if self.slack_bot is not None:
                 self.slack_bot.run(self.model_serve.url)
+                self.slack_bot_url = self.slack_bot.url
                 if self.slack_bot.url and not self.printed_url:
                     print("Slack Bot Work ready with URL=", self.slack_bot.url)
                     print("model serve url=", self.model_serve.url)

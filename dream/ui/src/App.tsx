@@ -1,13 +1,15 @@
-import { Box, Container, CssBaseline, Grid, Link, Typography as MuiTypography, TypographyProps } from '@mui/material';
-import { useTheme } from '@mui/system';
+import { Box, Container, CssBaseline, Grid, Link, useTheme } from '@mui/material';
 import { useLightningState } from 'hooks/useLightningState';
-import { Button, SnackbarProvider, Stack } from 'lightning-ui/src/design-system/components';
+import { Button, Stack } from 'lightning-ui/src/design-system/components';
 import ThemeProvider from 'lightning-ui/src/design-system/theme';
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
-import { Input } from './Input';
-import { ProgressBar } from './Loader';
+import { LightingState } from 'types/lightning';
+import { Input } from './components/Input';
+import { ProgressBar } from './components/Loader';
+import { AddYourSlackCredentials } from './components/SlackTokensModel';
+import { Typography } from './components/Typography';
 import { postDream } from './services/api';
 
 const queryClient = new QueryClient();
@@ -110,7 +112,7 @@ function DreamSearch() {
         </Grid>
         {requestedDream && <Dream dream={requestedDream} image={result} />}
       </Stack>
-      <License />
+      {lightningState && <SlackFormAndLicense {...lightningState} />}
     </Container>
   );
 }
@@ -121,9 +123,7 @@ function App() {
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <SnackbarProvider>
-            <DreamSearch />
-          </SnackbarProvider>
+          <DreamSearch />
         </BrowserRouter>
       </QueryClientProvider>
     </ThemeProvider>
@@ -132,11 +132,7 @@ function App() {
 
 export default App;
 
-const Typography = (props: TypographyProps) => {
-  return <MuiTypography color={(theme: any) => theme.palette.grey['70']} {...props} />;
-};
-
-const License = () => {
+const SlackFormAndLicense = (lightningState: LightingState) => {
   const theme = useTheme();
   return (
     <Box
@@ -146,6 +142,8 @@ const License = () => {
         [theme.breakpoints.down('sm')]: { marginBottom: '50px', marginTop: '20px' },
         [theme.breakpoints.up('sm')]: { position: 'fixed', left: 0, right: 0, bottom: '30px' },
       }}>
+      <AddYourSlackCredentials {...lightningState} />
+      <br />
       <Typography variant="caption">
         <Link href={Links.license} target={'_blank'}>
           License
