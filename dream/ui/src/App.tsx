@@ -1,4 +1,5 @@
 import { Box, Container, CssBaseline, Grid, Link, useTheme } from '@mui/material';
+import { EULA } from 'EULA';
 import { useLightningState } from 'hooks/useLightningState';
 import { Button, Stack } from 'lightning-ui/src/design-system/components';
 import ThemeProvider from 'lightning-ui/src/design-system/theme';
@@ -123,7 +124,9 @@ function App() {
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
+        <EULA>
           <DreamSearch />
+          </EULA>
         </BrowserRouter>
       </QueryClientProvider>
     </ThemeProvider>
