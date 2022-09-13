@@ -109,7 +109,6 @@ class StableDiffusionServe(L.LightningFlow):
         self.worker_compute_type = worker_compute_type
         self.requests = []
         self.results = {}
-        self.foo = 1
         self._last_autoscaled = time.time()
 
     def handle_predict(self, data: Data):
@@ -152,7 +151,6 @@ class StableDiffusionServe(L.LightningFlow):
         #if not all(worker.is_running for worker in self.workers[:self.initial_num_workers]):
         #    self._last_autoscaled = time.time()
         #    return
-        self.foo += 1
 
         if not self.bootstrapped:
             for worker in self.workers:
@@ -167,7 +165,6 @@ class StableDiffusionServe(L.LightningFlow):
                 self.results[job_uuid] = images
 
         if self.requests:
-            print("C1")
             job_uuid, *inputs = self.requests[0]
 
             for worker in self.workers:
