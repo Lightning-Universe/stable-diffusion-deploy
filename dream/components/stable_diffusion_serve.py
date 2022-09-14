@@ -46,15 +46,17 @@ class StableDiffusionServe(L.LightningWork):
         import torch
         from diffusers import StableDiffusionPipeline
 
-        weights_folder = "resources/stable-diffusion-v1-4"
-        os.makedirs(weights_folder)
-
-        self.download_weights("https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder)
-
-        repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
-
         print("loading model...")
         if torch.cuda.is_available():
+            weights_folder = "resources/stable-diffusion-v1-4"
+            os.makedirs(weights_folder)
+
+            print("Downloading weights...")
+            self.download_weights(
+                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
+            )
+
+            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
             pipe = StableDiffusionPipeline.from_pretrained(
                 repo_folder,
                 revision="fp16",
@@ -112,8 +114,8 @@ class StableDiffusionServe(L.LightningWork):
 
         class Data(BaseModel):
             dream: str
-            num_images: int
-            image_size: int
+            num_images: int = 1
+            image_size: int = 512
 
         @app.post("/api/predict/")
         def predict_api(data: Data):
