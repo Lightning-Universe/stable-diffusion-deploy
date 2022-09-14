@@ -185,6 +185,7 @@ def post_dream(inference_url: str, client: "slack.WebClient", data: dict):
         "dream": prompt,  # represents text of 'Enter the text prompt' Textbox component
         "num_images": 1,  # represents selected choice of 'Number of images' Radio component
         "image_size": 512,  # represents selected choice of 'Image Size' Radio component
+        "num_inference_steps": 50,
     }
     payload = json.dumps(payload)
     response = requests.post(inference_url + "/api/predict", data=payload)
