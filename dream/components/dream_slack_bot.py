@@ -35,15 +35,12 @@ class DreamSlackCommandBot(SlackCommandBot):
     ):
         super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
         self.inference_url = None
-        self._SHEET_API_URL = os.environ.get("SHEET_API_URL")
-
         self.has_credentials = False
-
         self._slack_token: str = None
-
         self._secrets_drive: Drive = None
-
         self._server: uvicorn.Server = None
+
+        self._SHEET_API_URL = os.environ.get("SHEET_API_URL")
 
     def _get_bot_token(self, team_id):
         if self._SHEET_API_URL:
