@@ -35,19 +35,16 @@ class DreamSlackCommandBot(SlackCommandBot):
     ):
         super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
         self.inference_url = None
-        self.SHEET_API_URL = os.environ.get("SHEET_API_URL")
-
         self.has_credentials = False
-
         self._slack_token: str = None
-
         self._secrets_drive: Drive = None
-
         self._server: uvicorn.Server = None
 
+        self._SHEET_API_URL = os.environ.get("SHEET_API_URL")
+
     def _get_bot_token(self, team_id):
-        if self.SHEET_API_URL:
-            response = requests.get(f"{self.SHEET_API_URL}?search=" + json.dumps({"team_id": team_id}))
+        if self._SHEET_API_URL:
+            response = requests.get(f"{self._SHEET_API_URL}?search=" + json.dumps({"team_id": team_id}))
             bot_token = response.json()[0]["bot_token"]
         else:
             bot_token = self.bot_token
@@ -71,7 +68,7 @@ class DreamSlackCommandBot(SlackCommandBot):
     def save_new_workspace(self, team_id, bot_token):
         data = [{"team_id": team_id, "bot_token": bot_token}]
         data = json.dumps(data)
-        response = requests.post(self.SHEET_API_URL, data=data)
+        response = requests.post(self._SHEET_API_URL, data=data)
         response.raise_for_status()
 
     def run(self, inference_url) -> None:
