@@ -1,22 +1,21 @@
 import base64
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
-from dataclasses import dataclass
-from io import BytesIO
+import os.path
+import tarfile
 import time
-from typing import List
+import urllib.request
 import uuid
+from io import BytesIO
+from typing import List
 
 import lightning as L
 import numpy as np
 import torch
 from fastapi import HTTPException
-from lightning.app.structures import List as LightningList
 from lightning.app.api import Post
-from lightning_app.storage import Drive
+from lightning.app.structures import List as LightningList
 from PIL import Image
-from torch import autocast
 from pydantic import BaseModel
-
+from torch import autocast
 
 REQUEST_TIMEOUT = 5 * 60
 AUTOSCALE_UP_THRESHOLD = 10
@@ -31,23 +30,38 @@ class ModelInference(L.LightningWork):
         self.busy = False
         self.results = None
 
+    @staticmethod
+    def download_weights(url: str, target_folder: str):
+        dest = target_folder + f"/{os.path.basename(url)}"
+        urllib.request.urlretrieve(url, dest)
+        file = tarfile.open(dest)
+
+        # extracting file
+        file.extractall(target_folder)
+
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
+
         import os
 
         import torch
         from diffusers import StableDiffusionPipeline
 
-        access_token = os.environ.get("access_token")
-
-        # make sure you're logged in with `huggingface-cli login`
         print("loading model...")
         if torch.cuda.is_available():
+            weights_folder = "resources/stable-diffusion-v1-4"
+            os.makedirs(weights_folder, exist_ok=True)
+
+            print("Downloading weights...")
+            self.download_weights(
+                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
+            )
+
+            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
             pipe = StableDiffusionPipeline.from_pretrained(
-                "CompVis/stable-diffusion-v1-4",
+                repo_folder,
                 revision="fp16",
                 torch_dtype=torch.float16,
-                use_auth_token=access_token,
             )
             pipe = pipe.to("cuda")
             print("model loaded")
@@ -93,8 +107,8 @@ class ModelInference(L.LightningWork):
 
 class Data(BaseModel):
     dream: str
-    num_images: int
-    image_size: int
+    num_images: int = 1
+    image_size: int = 512
 
 
 class StableDiffusionServe(L.LightningFlow):
@@ -148,7 +162,7 @@ class StableDiffusionServe(L.LightningFlow):
                     worker.stop()
 
     def run(self, *args, **kwargs) -> None:
-        #if not all(worker.is_running for worker in self.workers[:self.initial_num_workers]):
+        # if not all(worker.is_running for worker in self.workers[:self.initial_num_workers]):
         #    self._last_autoscaled = time.time()
         #    return
 

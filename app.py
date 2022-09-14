@@ -16,12 +16,11 @@ class RootWorkFlow(L.LightningFlow):
         super().__init__()
         self.model_serve = StableDiffusionServe(initial_num_workers=2, worker_compute_type="gpu")
 
-        if "SIGNING_SECRET" in os.environ:
-            self.slack_bot = DreamSlackCommandBot(command="/dream")
-        else:
-            self.slack_bot = None
+        self.slack_bot = DreamSlackCommandBot(command="/dream")
 
         self.printed_url = False
+        self.slack_bot_url = ""
+
         self.dream_url = ""
         self.ui = ReactUI()
 
