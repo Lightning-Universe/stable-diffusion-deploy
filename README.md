@@ -26,10 +26,8 @@ lightning install app https://github.com/Lightning-AI/LAI-Stable-Diffusion-App
 
 cd LAI-Stable-Diffusion-App
 
-lightning run app app.py --cloud --env access_token=HUGGINGFACE_TOKEN
+lightning run app app.py --cloud
 ```
-
-<sup>Learn more about access token <a href="https://huggingface.co/docs/hub/security-tokens">here</a>.</sup>
 
 This will launch your app on the Lightning.ai cloud. You can enter the text prompt in the input bar and click on the
 `Dream it` button to generate art.
