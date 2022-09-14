@@ -1,4 +1,7 @@
 import base64
+import os.path
+import tarfile
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
@@ -26,23 +29,36 @@ class StableDiffusionServe(L.LightningWork):
 
         self._model = None
 
+    @staticmethod
+    def download_weights(url: str, target_folder: str):
+        dest = target_folder + f"/{os.path.basename(url)}"
+        urllib.request.urlretrieve(url, dest)
+        file = tarfile.open(dest)
+
+        # extracting file
+        file.extractall(target_folder)
+
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
+
         import os
 
         import torch
         from diffusers import StableDiffusionPipeline
 
-        access_token = os.environ.get("access_token")
+        weights_folder = "resources/stable-diffusion-v1-4"
+        os.makedirs(weights_folder)
 
-        # make sure you're logged in with `huggingface-cli login`
+        self.download_weights("https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder)
+
+        repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
+
         print("loading model...")
         if torch.cuda.is_available():
             pipe = StableDiffusionPipeline.from_pretrained(
-                "CompVis/stable-diffusion-v1-4",
+                repo_folder,
                 revision="fp16",
                 torch_dtype=torch.float16,
-                use_auth_token=access_token,
             )
             pipe = pipe.to("cuda")
             print("model loaded")
