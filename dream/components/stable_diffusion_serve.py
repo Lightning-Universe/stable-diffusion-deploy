@@ -100,7 +100,7 @@ class ModelInference(L.LightningWork):
         self.busy = True
         if self._model is None:
             self._model = self.build_model()
-        images = self.predict(uuid, dream, num_images, image_size)
+        images = self.predict(dream, num_images, image_size)
         self.results = (uuid, images)
         self.busy = False
 
@@ -114,8 +114,8 @@ class Data(BaseModel):
 class StableDiffusionServe(L.LightningFlow):
     """Serves the Stable Diffusion model."""
 
-    def __init__(self, initial_num_workers=1, worker_compute_type="gpu", **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, initial_num_workers=1, worker_compute_type="gpu"):
+        super().__init__()
 
         self.bootstrapped = False
         self.workers: List[ModelInference] = LightningList(*[ModelInference() for _ in range(initial_num_workers)])
