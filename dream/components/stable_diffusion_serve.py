@@ -49,7 +49,7 @@ class StableDiffusionServe(L.LightningWork):
         print("loading model...")
         if torch.cuda.is_available():
             weights_folder = "resources/stable-diffusion-v1-4"
-            os.makedirs(weights_folder)
+            os.makedirs(weights_folder, exist_ok=True)
 
             print("Downloading weights...")
             self.download_weights(
