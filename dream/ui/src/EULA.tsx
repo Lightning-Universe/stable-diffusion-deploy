@@ -1,4 +1,3 @@
-import { useDialogState } from './hooks/useModal';
 import { Button, DialogContent } from '@mui/material';
 import {
   Box,
@@ -9,6 +8,7 @@ import {
   Typography,
 } from 'lightning-ui/src/design-system/components';
 import React, { useEffect, useState } from 'react';
+import { useDialogState } from './hooks/useModal';
 
 const EULAContent = (
   props: React.ComponentProps<typeof Dialog> & {

@@ -1,8 +1,3 @@
-import { Input } from './components/Input';
-import { ProgressBar } from './components/Loader';
-import { AddYourSlackCredentials } from './components/SlackTokensModel';
-import { Typography } from './components/Typography';
-import { postDream } from './services/api';
 import { Box, Container, CssBaseline, Grid, Link, useTheme } from '@mui/material';
 import { EULA } from 'EULA';
 import { useLightningState } from 'hooks/useLightningState';
@@ -12,6 +7,11 @@ import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { LightingState } from 'types/lightning';
+import { Input } from './components/Input';
+import { ProgressBar } from './components/Loader';
+import { AddYourSlackCredentials } from './components/SlackTokensModel';
+import { Typography } from './components/Typography';
+import { postDream } from './services/api';
 
 const queryClient = new QueryClient();
 
