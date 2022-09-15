@@ -99,10 +99,14 @@ class StableDiffusionServe(L.LightningWork):
         return results
 
     def run(self):
+        import subprocess
+
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
+
+        subprocess.run("nvidia-smi", shell=True)
 
         pool = ThreadPoolExecutor(max_workers=1)
 
