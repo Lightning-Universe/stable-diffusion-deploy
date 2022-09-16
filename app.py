@@ -86,8 +86,8 @@ class RootWorkFlow(L.LightningFlow):
                 if worker.health_status is False:
                     worker.stop()
                     worker.run()
-            else:
-                healthy_endpoints.append(worker.url)
+                else:
+                    healthy_endpoints.append(worker.url)
         self.load_balancer.update_servers(healthy_endpoints)
 
 
