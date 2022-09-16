@@ -85,14 +85,17 @@ class StableDiffusionServe(L.LightningWork):
 
         prompts = [dream.dream for dream in dreams]
         with autocast("cuda"):
-            # predicting in chunks to save cuda out of memory error
             if torch.cuda.is_available():
-                pil_results = self._model(
+                preds = self._model(
                     prompts,
                     height=height,
                     width=width,
                     num_inference_steps=num_inference_steps,
-                ).images
+                )
+                pil_results = preds.images
+                for i, has_nsfw in enumerate(preds.nsfw_content_detected):
+                    if has_nsfw:
+                        pil_results[i] = Image.open("./assets/nsfw-warning.png")
             else:
                 pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
                     prompts
