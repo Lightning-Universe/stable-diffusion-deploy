@@ -150,8 +150,6 @@ class StableDiffusionServe(L.LightningWork):
                 result = app.POOL.submit(
                     self.predict,
                     data.dream,
-                    data.num_images,
-                    data.image_size,
                     num_inference_steps,
                     entry_time=entry_time,
                 ).result(timeout=REQUEST_TIMEOUT)
