@@ -42,7 +42,7 @@ class LoadBalancer(L.LightningWork):
             num_images: int
             image_size: int
 
-        @app.post("/api/predict/")
+        @app.post("/api/predict")
         async def balance_api(data: Data):
             """"""
             server = next(ITER)

@@ -120,7 +120,7 @@ class StableDiffusionServe(L.LightningWork):
             num_images: int = 1
             image_size: int = 512
 
-        @app.post("/api/predict/")
+        @app.post("/api/predict")
         def predict_api(data: Data):
             """Dream a dream. Defines the REST API which takes the text prompt, number of images and image size in the
             request body.
