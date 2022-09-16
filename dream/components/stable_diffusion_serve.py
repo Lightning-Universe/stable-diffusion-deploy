@@ -23,14 +23,18 @@ class FastAPIBuildConfig(L.BuildConfig):
 
 
 class StableDiffusionServe(L.LightningWork):
-    """Deploys the Stable Diffusion model with FastAPI."""
+    """Deploys the Stable Diffusion model with FastAPI.
 
-    def __init__(self, **kwargs):
+    tolerable_failures: total number of failures after which the worker status becomes unhealthy.
+    """
+
+    num_failures = 0
+
+    def __init__(self, tolerable_failures=2, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
 
         self._model = None
-        self.num_failures = 0
-        self.tolerable_failures = 2
+        self.tolerable_failures = tolerable_failures
 
     @staticmethod
     def download_weights(url: str, target_folder: str):
@@ -162,6 +166,10 @@ class StableDiffusionServe(L.LightningWork):
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
+                # hack: once there is a timeout then all requests after that is getting timedout
+                old_pool = app.POOL
+                app.POOL = ThreadPoolExecutor(max_workers=1)
+                old_pool.shutdown(wait=False)
                 self.num_failures += 1
                 raise TimeoutException()
 

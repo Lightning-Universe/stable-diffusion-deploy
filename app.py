@@ -23,7 +23,9 @@ class RootWorkFlow(L.LightningFlow):
         self.num_workers = num_workers
         self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
         for i in range(num_workers):
-            work = StableDiffusionServe(cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True)
+            work = StableDiffusionServe(
+                tolerable_failures=5, cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True
+            )
             setattr(self, f"serve_work_{i}", work)
 
         self.slack_bot = DreamSlackCommandBot(command="/dream")
