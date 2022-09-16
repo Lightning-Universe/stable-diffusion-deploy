@@ -10,11 +10,11 @@ from io import BytesIO
 import lightning as L
 import numpy as np
 import torch
-from fastapi import HTTPException
 from PIL import Image
+from fastapi import HTTPException
 from torch import autocast
 
-REQUEST_TIMEOUT = 5 * 60
+from dream.CONST import REQUEST_TIMEOUT
 
 
 @dataclass
@@ -81,7 +81,7 @@ class StableDiffusionServe(L.LightningWork):
             chunk_size = 3
             for i in range(0, num_images, chunk_size):
                 if torch.cuda.is_available():
-                    pil_results.extend(self._model(prompts[i : i + chunk_size], height=height, width=width)["sample"])
+                    pil_results.extend(self._model(prompts[i: i + chunk_size], height=height, width=width)["sample"])
                 else:
                     pil_results.extend([Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))])
 

@@ -5,7 +5,7 @@ from typing import List
 import aiohttp
 import lightning as L
 
-REQUEST_TIMEOUT = 5 * 60
+from dream.CONST import REQUEST_TIMEOUT
 
 
 @dataclass
