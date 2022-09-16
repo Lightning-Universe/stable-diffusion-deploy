@@ -31,7 +31,7 @@ class LoadBalancer(L.LightningWork):
 
     async def send_batches(self):
         while True:
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
 
             has_sent = False
 
@@ -110,7 +110,7 @@ class LoadBalancer(L.LightningWork):
             self._batch["high" if data.high_quality else "low"].append(request)
 
             while True:
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.1)
 
                 if request_id in self._responses:
                     result = self._responses[request_id]
