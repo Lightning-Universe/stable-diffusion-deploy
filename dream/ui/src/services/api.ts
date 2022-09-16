@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const postDream = async (dream: string, numImages: number, imageSize: 256 | 512, url: string) => {
+export const postDream = async (dream: string, highQuality: boolean, url: string) => {
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -10,7 +10,7 @@ export const postDream = async (dream: string, numImages: number, imageSize: 256
   };
 
   return axios
-    .post(url + '/api/predict', { dream: dream, num_images: numImages, image_size: imageSize }, config)
+    .post(url + '/api/predict', { dream: dream, high_quality: highQuality }, config)
     .then(({ data }) => data)
     .catch(e => {
       throw new Error(e && e.message);

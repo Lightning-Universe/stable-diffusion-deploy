@@ -74,35 +74,27 @@ class StableDiffusionServe(L.LightningWork):
             print("model set to None")
         return pipe
 
-    def predict(self, dream: str, num_images: int, image_size: int, num_inference_steps: int, entry_time: int):
+    def predict(self, dream: str, num_inference_steps: int, entry_time: int):
         if time.time() - entry_time > REQUEST_TIMEOUT:
             raise TimeoutException()
-        height, width = image_size, image_size
-        prompts = [dream] * int(num_images)
-        pil_results = []
+
+        height, width = 512, 512
         with autocast("cuda"):
-            # predicting in chunks to save cuda out of memory error
-            chunk_size = 3
-            for i in range(0, num_images, chunk_size):
-                if torch.cuda.is_available():
-                    pil_results.extend(
-                        self._model(
-                            prompts[i : i + chunk_size],
-                            height=height,
-                            width=width,
-                            num_inference_steps=num_inference_steps,
-                        ).images
-                    )
-                else:
-                    pil_results.extend([Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))])
+            if torch.cuda.is_available():
+                generated_image = self._model(
+                    dream,
+                    height=height,
+                    width=width,
+                    num_inference_steps=num_inference_steps,
+                ).images[0]
+            else:
+                generated_image = Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))
 
         results = []
-        for image in pil_results:
-            buffered = BytesIO()
-            image.save(buffered, format="PNG")
-            img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-            results.append(f"data:image/png;base64,{img_str}")
-
+        buffered = BytesIO()
+        generated_image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        results.append(f"data:image/png;base64,{img_str}")
         return results
 
     @property
@@ -154,12 +146,13 @@ class StableDiffusionServe(L.LightningWork):
             try:
                 entry_time = time.time()
                 print(f"request: {data}")
+                num_inference_steps = 50 if data.high_quality else 25
                 result = app.POOL.submit(
                     self.predict,
                     data.dream,
                     data.num_images,
                     data.image_size,
-                    data.num_inference_steps,
+                    num_inference_steps,
                     entry_time=entry_time,
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
