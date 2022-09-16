@@ -87,7 +87,7 @@ class StableDiffusionServe(L.LightningWork):
                             height=height,
                             width=width,
                             num_inference_steps=num_inference_steps,
-                        )["sample"]
+                        ).images
                     )
                 else:
                     pil_results.extend([Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))])
