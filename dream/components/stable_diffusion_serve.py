@@ -29,6 +29,8 @@ class StableDiffusionServe(L.LightningWork):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
 
         self._model = None
+        self.num_failures = 0
+        self.tolerable_failures = 2
 
     @staticmethod
     def download_weights(url: str, target_folder: str):
@@ -101,6 +103,10 @@ class StableDiffusionServe(L.LightningWork):
 
         return results
 
+    @property
+    def health_status(self):
+        return self.num_failures < self.tolerable_failures
+
     def run(self):
         import subprocess
 
@@ -113,12 +119,12 @@ class StableDiffusionServe(L.LightningWork):
         if self._model is None:
             self._model = self.build_model()
 
-        app = FastAPI()
+        self._fastapi_app = app = FastAPI()
         app.POOL: ThreadPoolExecutor = None
 
         @app.on_event("startup")
         def startup_event():
-            app.POOL = ThreadPoolExecutor(max_workers=2)
+            app.POOL = ThreadPoolExecutor(max_workers=1)
 
         @app.on_event("shutdown")
         def shutdown_event():
@@ -131,6 +137,10 @@ class StableDiffusionServe(L.LightningWork):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+
+        @app.get("/api/health")
+        def health():
+            return self.health_status
 
         @app.post("/api/predict")
         def predict_api(data: Data):
@@ -152,6 +162,7 @@ class StableDiffusionServe(L.LightningWork):
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
+                self.num_failures += 1
                 raise TimeoutException()
 
         uvicorn.run(app, host=self.host, port=self.port)

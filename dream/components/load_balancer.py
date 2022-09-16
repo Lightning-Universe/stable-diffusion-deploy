@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass
+from http.client import HTTPException
 from itertools import cycle
 from typing import List
 
@@ -18,15 +19,18 @@ class FastAPIBuildConfig(L.BuildConfig):
 class LoadBalancer(L.LightningWork):
     def __init__(self, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
+        self.servers = []
+        self._ITER = None
 
     def run(self, servers: List[str]):
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
 
-        print(servers)
+        self.servers = servers
+        print(self.servers)
 
-        ITER = cycle(servers)
+        self._ITER = cycle(self.servers)
 
         app = FastAPI()
 
@@ -41,7 +45,9 @@ class LoadBalancer(L.LightningWork):
         @app.post("/api/predict")
         async def balance_api(data: Data):
             """"""
-            server = next(ITER)
+            if not self.servers:
+                raise HTTPException(500, "None of the workers are healthy!")
+            server = next(self._ITER)
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.post(
@@ -55,3 +61,7 @@ class LoadBalancer(L.LightningWork):
                 raise TimeoutException()
 
         uvicorn.run(app, host=self.host, port=self.port)
+
+    def update_servers(self, servers: List[str]):
+        self.servers = servers
+        self._ITER = cycle(self.servers)

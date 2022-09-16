@@ -1,4 +1,5 @@
 import os
+import time
 from typing import List
 
 import lightning as L
@@ -14,7 +15,10 @@ class ReactUI(L.LightningFlow):
 
 
 class RootWorkFlow(L.LightningFlow):
-    def __init__(self, num_workers=2):
+    last_health_check = time.time()
+    health_check_frequency = 10  # in seconds
+
+    def __init__(self, num_workers=3):
         super().__init__()
         self.num_workers = num_workers
         self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
@@ -29,10 +33,10 @@ class RootWorkFlow(L.LightningFlow):
         self.ui = ReactUI()
 
     @property
-    def model_servers(self) -> List[L.LightningWork]:
+    def model_servers(self) -> List[StableDiffusionServe]:
         works = []
         for i in range(self.num_workers):
-            work: L.LightningWork = getattr(self, f"serve_work_{i}")
+            work: StableDiffusionServe = getattr(self, f"serve_work_{i}")
             works.append(work)
         return works
 
@@ -56,6 +60,9 @@ class RootWorkFlow(L.LightningFlow):
                     print("model serve url=", self.load_balancer.url)
                     self.printed_url = True
 
+        if self.load_balancer.url:
+            self.health_check(self.model_servers, frequency=self.health_check_frequency)
+
     def configure_layout(self):
         return [
             {
@@ -63,6 +70,23 @@ class RootWorkFlow(L.LightningFlow):
                 "content": self.ui,
             },
         ]
+
+    def health_check(self, workers: List[StableDiffusionServe], frequency: int):
+        """Restart the unhealthy workers.
+
+        frequency: time in seconds in which health_check will run
+        """
+        if time.time() - self.last_health_check < frequency:
+            return
+        healthy_endpoints = []
+        for worker in workers:
+            if worker.has_succeeded:
+                if worker.health_status is False:
+                    worker.stop()
+                    worker.run()
+            else:
+                healthy_endpoints.append(worker.url)
+        self.load_balancer.update_servers(healthy_endpoints)
 
 
 if __name__ == "__main__":
