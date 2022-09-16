@@ -50,7 +50,7 @@ class StableDiffusionServe(L.LightningWork):
         print("loading model...")
         if torch.cuda.is_available():
             weights_folder = "resources/stable-diffusion-v1-4"
-            os.makedirs(weights_folder)
+            os.makedirs(weights_folder, exist_ok=True)
 
             print("Downloading weights...")
             self.download_weights(
@@ -81,7 +81,14 @@ class StableDiffusionServe(L.LightningWork):
             chunk_size = 3
             for i in range(0, num_images, chunk_size):
                 if torch.cuda.is_available():
-                    pil_results.extend(self._model(prompts[i : i + chunk_size], height=height, width=width)["sample"])
+                    pil_results.extend(
+                        self._model(
+                            prompts[i : i + chunk_size],
+                            height=height,
+                            width=width,
+                            num_inference_steps=num_inference_steps,
+                        )["sample"]
+                    )
                 else:
                     pil_results.extend([Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))])
 
@@ -95,10 +102,14 @@ class StableDiffusionServe(L.LightningWork):
         return results
 
     def run(self):
+        import subprocess
+
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
+
+        subprocess.run("nvidia-smi", shell=True)
 
         pool = ThreadPoolExecutor(max_workers=1)
 
@@ -119,6 +130,7 @@ class StableDiffusionServe(L.LightningWork):
             dream: str
             num_images: int = 1
             image_size: int = 512
+            num_inference_steps: int = 25
 
         @app.post("/api/predict")
         def predict_api(data: Data):
@@ -129,9 +141,10 @@ class StableDiffusionServe(L.LightningWork):
             """
             try:
                 entry_time = time.time()
-                result = pool.submit(self.predict, data.dream, data.num_images, data.image_size, entry_time).result(
-                    timeout=REQUEST_TIMEOUT
-                )
+                print(f"request: {data}")
+                result = pool.submit(
+                    self.predict, data.dream, data.num_images, data.image_size, data.num_inference_steps, entry_time
+                ).result(timeout=REQUEST_TIMEOUT)
                 return result
             except TimeoutError:
                 raise HTTPException(status_code=500, detail="Request timed out.")
