@@ -76,7 +76,7 @@ function DreamSearch() {
       setLoading(true);
       try {
         const result = await postDream(dream, view === 'hd', lightningState.vars.dream_url);
-        setResult(result[0]);
+        setResult(result);
       } finally {
         setLoading(false);
       }
