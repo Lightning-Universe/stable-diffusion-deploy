@@ -81,12 +81,15 @@ class StableDiffusionServe(L.LightningWork):
         height, width = 512, 512
         with autocast("cuda"):
             if torch.cuda.is_available():
-                generated_image = self._model(
+                preds = self._model(
                     dream,
                     height=height,
                     width=width,
                     num_inference_steps=num_inference_steps,
-                ).images[0]
+                )
+                generated_image = preds.images[0]
+                if preds.has_nsfw_concept:
+                    generated_image = Image.open("./assets/nsfw-warning.png")
             else:
                 generated_image = Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))
 
