@@ -9,3 +9,4 @@ slackeventsapi==3.0.1
 slackclient==2.9.4
 lightning
 flask-cors
+asgiref==3.5.2
