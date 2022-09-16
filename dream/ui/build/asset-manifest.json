@@ -1,18 +1,18 @@
 {
   "files": {
     "main.css": "/static/css/main.2c16595e.css",
-    "main.js": "/static/js/main.31b384a6.js",
+    "main.js": "/static/js/main.cd4d4fe6.js",
     "static/js/787.8c33e357.chunk.js": "/static/js/787.8c33e357.chunk.js",
     "static/media/UCity-Regular.otf": "/static/media/UCity-Regular.e28f5006c1976d08baaa.otf",
     "static/media/UCity-Light.otf": "/static/media/UCity-Light.8352e423a843d9a0c52a.otf",
     "static/media/UCity-Semibold.otf": "/static/media/UCity-Semibold.b37489cc447430fe4ba7.otf",
     "index.html": "/index.html",
     "main.2c16595e.css.map": "/static/css/main.2c16595e.css.map",
-    "main.31b384a6.js.map": "/static/js/main.31b384a6.js.map",
+    "main.cd4d4fe6.js.map": "/static/js/main.cd4d4fe6.js.map",
     "787.8c33e357.chunk.js.map": "/static/js/787.8c33e357.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.2c16595e.css",
-    "static/js/main.31b384a6.js"
+    "static/js/main.cd4d4fe6.js"
   ]
 }

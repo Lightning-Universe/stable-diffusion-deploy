@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from fastapi import HTTPException
 from lightning_app.storage.drive import Drive
@@ -50,3 +50,7 @@ class TimeoutException(HTTPException):
 class Data(BaseModel):
     dream: str
     high_quality: bool = False
+
+
+class DataBatch(BaseModel):
+    batch: List[Data]

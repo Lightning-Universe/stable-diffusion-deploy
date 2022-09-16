@@ -60,9 +60,8 @@ function DreamSearch() {
       setRequestedDream(dream);
       setLoading(true);
       try {
-        //       TODO: update true with toggle button value
         const result = await postDream(dream, true, lightningState.vars.dream_url);
-        setResult(result[0]);
+        setResult(result);
       } finally {
         setLoading(false);
       }
