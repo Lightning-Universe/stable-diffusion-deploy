@@ -88,7 +88,7 @@ class StableDiffusionServe(L.LightningWork):
                     num_inference_steps=num_inference_steps,
                 )
                 generated_image = preds.images[0]
-                if preds.nsfw_content_detected:
+                if preds.nsfw_content_detected[0]:
                     generated_image = Image.open("./assets/nsfw-warning.png")
             else:
                 generated_image = Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))
