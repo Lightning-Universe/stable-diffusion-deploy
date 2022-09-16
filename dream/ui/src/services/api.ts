@@ -10,7 +10,7 @@ export const postDream = async (dream: string, numImages: number, imageSize: 256
   };
 
   return axios
-    .post(url + '/api/predict/', { dream: dream, num_images: numImages, image_size: imageSize }, config)
+    .post(url + '/api/predict', { dream: dream, num_images: numImages, image_size: imageSize }, config)
     .then(({ data }) => data)
     .catch(e => {
       throw new Error(e && e.message);
