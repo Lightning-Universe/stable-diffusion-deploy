@@ -15,11 +15,14 @@ class ReactUI(L.LightningFlow):
 
 
 class RootWorkFlow(L.LightningFlow):
-    health_check_frequency = 10  # in seconds
+    """
+    health_check_interval: time in seconds in which health_check will run
+    """
 
-    def __init__(self, num_workers=3):
+    def __init__(self, num_workers=3, health_check_interval=10):
         super().__init__()
         self.last_health_check = time.time()
+        self.health_check_interval = health_check_interval  # in seconds
         self.num_workers = num_workers
         self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
         for i in range(num_workers):
@@ -63,7 +66,7 @@ class RootWorkFlow(L.LightningFlow):
                     self.printed_url = True
 
         if self.load_balancer.url:
-            self.health_check(self.model_servers, frequency=self.health_check_frequency)
+            self.health_check(self.model_servers, frequency=self.health_check_interval)
 
     def configure_layout(self):
         return [
