@@ -167,7 +167,7 @@ class StableDiffusionServe(L.LightningWork):
                 # hack: once there is a timeout then all requests after that is getting timedout
                 old_pool = app.POOL
                 app.POOL = ThreadPoolExecutor(max_workers=1)
-                old_pool.shutdown(wait=False)
+                old_pool.shutdown(wait=False, cancel_futures=True)
                 self.num_failures += 1
                 raise TimeoutException()
 
