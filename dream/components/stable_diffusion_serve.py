@@ -70,7 +70,7 @@ class StableDiffusionServe(L.LightningWork):
             print("model set to None")
         return pipe
 
-    def predict(self, dream: str, num_images: int, image_size: int, num_inference_steps:int, entry_time: int):
+    def predict(self, dream: str, num_images: int, image_size: int, num_inference_steps: int, entry_time: int):
         if time.time() - entry_time > REQUEST_TIMEOUT:
             raise HTTPException(500, "request timed out.")
         height, width = image_size, image_size
@@ -143,7 +143,12 @@ class StableDiffusionServe(L.LightningWork):
                 entry_time = time.time()
                 print(f"request: {data}")
                 result = pool.submit(
-                    self.predict, data.dream, data.num_images, data.image_size, data.num_inference_steps, entry_time=entry_time
+                    self.predict,
+                    data.dream,
+                    data.num_images,
+                    data.image_size,
+                    data.num_inference_steps,
+                    entry_time=entry_time,
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
             except TimeoutError:
