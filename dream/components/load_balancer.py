@@ -1,17 +1,16 @@
 import asyncio
-import json
 import time
 import uuid
 from dataclasses import dataclass
 from http.client import HTTPException
 from itertools import cycle
-from threading import Lock, Thread
 from typing import List
 
+import aiohttp
 import lightning as L
-import requests
 
-from dream.components.utils import Data
+from dream.components.utils import Data, TimeoutException
+from dream.CONST import REQUEST_TIMEOUT
 
 
 @dataclass
@@ -27,42 +26,38 @@ class LoadBalancer(L.LightningWork):
         self.max_wait_time = max_wait_time
         self._ITER = None
         self._batch = {"high": [], "low": []}
-        self._batch_lock = None
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
 
-    def send_batches(self):
+    async def send_batches(self):
         while True:
-            time.sleep(1)
+            await asyncio.sleep(1)
 
             has_sent = False
-
-            # Naive shutdown signal
-            if self._batch is None:
-                return
 
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
                     len(batch) >= self.max_batch_size or time.time() - self._last_batch_sent > self.max_wait_time
                 ):
-                    print("Sending batch")
                     has_sent = True
 
-                    with self._batch_lock:
-                        self._batch[quality] = self._batch[quality][self.max_batch_size :]
+                    self._batch[quality] = self._batch[quality][self.max_batch_size :]
 
                     server = next(self._ITER)
 
-                    # TODO: This probably doesn't need to use async
-                    # TODO: This timeout is irrelevant as running in a thread
                     data = {"batch": [b[1] for b in batch]}
-                    result = requests.post(f"{server}/api/predict", data=json.dumps(data))
-                    result.raise_for_status()
-                    result = result.json()
-                    result = {request[0]: r for request, r in zip(batch, result)}
-                    print(result)
-                    self._responses.update(result)
+
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post(f"{server}/api/predict", json=data, timeout=REQUEST_TIMEOUT) as result:
+                            # TODO: Raise this somewhere else
+                            if result.status == 408:
+                                raise TimeoutException()
+                            result.raise_for_status()
+                            result = await result.json()
+                            result = {request[0]: r for request, r in zip(batch, result)}
+                            print(result)
+                            self._responses.update(result)
 
                     batch = self._batch[quality][: self.max_batch_size]
 
@@ -78,10 +73,11 @@ class LoadBalancer(L.LightningWork):
         print(self.servers)
 
         self._ITER = cycle(self.servers)
-        self._batch_lock = Lock()
         self._last_batch_sent = time.time()
 
         app = FastAPI()
+
+        app.SEND_TASK = None
 
         app.add_middleware(
             CORSMiddleware,
@@ -91,17 +87,13 @@ class LoadBalancer(L.LightningWork):
             allow_headers=["*"],
         )
 
-        app.REQUEST_THREAD: Thread = None
-
         @app.on_event("startup")
-        def startup_event():
-            app.REQUEST_THREAD = Thread(target=self.send_batches)
-            app.REQUEST_THREAD.start()
+        async def startup_event():
+            app.SEND_TASK = asyncio.create_task(self.send_batches())
 
         @app.on_event("shutdown")
         def shutdown_event():
-            self._batch = None
-            app.REQUEST_THREAD.join()
+            app.SEND_TASK.cancel()
 
         @app.post("/api/predict")
         async def balance_api(data: Data):
@@ -111,8 +103,7 @@ class LoadBalancer(L.LightningWork):
 
             request_id = uuid.uuid4().hex
             request = (request_id, data.dict())
-            with self._batch_lock:
-                self._batch["high" if data.high_quality else "low"].append(request)
+            self._batch["high" if data.high_quality else "low"].append(request)
 
             while True:
                 await asyncio.sleep(1)
