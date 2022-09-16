@@ -66,7 +66,7 @@ class RootWorkFlow(L.LightningFlow):
                     self.printed_url = True
 
         if self.load_balancer.url:
-            self.health_check(self.model_servers, frequency=self.health_check_interval)
+            self.health_check(self.model_servers, interval=self.health_check_interval)
 
     def configure_layout(self):
         return [
@@ -76,12 +76,12 @@ class RootWorkFlow(L.LightningFlow):
             },
         ]
 
-    def health_check(self, workers: List[StableDiffusionServe], frequency: int):
+    def health_check(self, workers: List[StableDiffusionServe], interval: int):
         """Restart the unhealthy workers.
 
-        frequency: time in seconds in which health_check will run
+        interval: time in seconds in which health_check will run
         """
-        if time.time() - self.last_health_check < frequency:
+        if time.time() - self.last_health_check < interval:
             return
         self.last_health_check = time.time()
         healthy_endpoints = []
