@@ -13,7 +13,7 @@ import torch
 from PIL import Image
 from torch import autocast
 
-from dream.components.utils import TimeoutException
+from dream.components.utils import Data, TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
 
 
@@ -107,7 +107,6 @@ class StableDiffusionServe(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
-        from pydantic import BaseModel
 
         subprocess.run("nvidia-smi", shell=True)
 
@@ -125,12 +124,6 @@ class StableDiffusionServe(L.LightningWork):
             allow_methods=["*"],
             allow_headers=["*"],
         )
-
-        class Data(BaseModel):
-            dream: str
-            num_images: int = 1
-            image_size: int = 512
-            num_inference_steps: int = 25
 
         @app.post("/api/predict")
         def predict_api(data: Data):
@@ -152,7 +145,6 @@ class StableDiffusionServe(L.LightningWork):
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
-                print("raising timeout exp")
                 raise TimeoutException()
 
         uvicorn.run(app, host=self.host, port=self.port)

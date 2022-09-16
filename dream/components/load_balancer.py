@@ -6,7 +6,7 @@ from typing import List
 import aiohttp
 import lightning as L
 
-from dream.components.utils import TimeoutException
+from dream.components.utils import Data, TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
 
 
@@ -23,7 +23,6 @@ class LoadBalancer(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
-        from pydantic import BaseModel
 
         print(servers)
 
@@ -39,11 +38,6 @@ class LoadBalancer(L.LightningWork):
             allow_headers=["*"],
         )
 
-        class Data(BaseModel):
-            dream: str
-            num_images: int
-            image_size: int
-
         @app.post("/api/predict")
         async def balance_api(data: Data):
             """"""
@@ -53,7 +47,6 @@ class LoadBalancer(L.LightningWork):
                     async with session.post(
                         f"{server}/api/predict", json=data.dict(), timeout=REQUEST_TIMEOUT
                     ) as result:
-                        print(type(result.status), result.status)
                         if result.status == 408:
                             raise TimeoutException()
                         result.raise_for_status()
