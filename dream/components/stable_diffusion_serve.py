@@ -28,11 +28,9 @@ class StableDiffusionServe(L.LightningWork):
     tolerable_failures: total number of failures after which the worker status becomes unhealthy.
     """
 
-    num_failures = 0
-
     def __init__(self, tolerable_failures=2, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
-
+        self.num_failures = 0
         self._model = None
         self.tolerable_failures = tolerable_failures
 

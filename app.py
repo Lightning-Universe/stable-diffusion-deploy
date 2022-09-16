@@ -15,11 +15,11 @@ class ReactUI(L.LightningFlow):
 
 
 class RootWorkFlow(L.LightningFlow):
-    last_health_check = time.time()
     health_check_frequency = 10  # in seconds
 
     def __init__(self, num_workers=3):
         super().__init__()
+        self.last_health_check = time.time()
         self.num_workers = num_workers
         self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
         for i in range(num_workers):
@@ -80,10 +80,12 @@ class RootWorkFlow(L.LightningFlow):
         """
         if time.time() - self.last_health_check < frequency:
             return
+        self.last_health_check = time.time()
         healthy_endpoints = []
         for worker in workers:
             if worker.has_succeeded:
                 if worker.health_status is False:
+                    print(f"restarting worker {worker.name}")
                     worker.stop()
                     worker.run()
                 else:
