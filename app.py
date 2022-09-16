@@ -1,8 +1,8 @@
 import os
+from typing import List
 
 import lightning as L
 from lightning.app.frontend import StaticWebFrontend
-from lightning.app.structures import List as LightningList
 
 from dream import DreamSlackCommandBot, StableDiffusionServe
 from dream.components.load_balancer import LoadBalancer
@@ -18,19 +18,23 @@ class RootWorkFlow(L.LightningFlow):
         super().__init__()
         self.num_workers = num_workers
         self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
-        self.model_servers = LightningList(
-            *[
-                StableDiffusionServe(cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True)
-                for _ in range(num_workers)
-            ]
-        )
+        for i in range(num_workers):
+            work = StableDiffusionServe(cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True)
+            setattr(self, f"serve_work_{i}", work)
 
         self.slack_bot = DreamSlackCommandBot(command="/dream")
         self.printed_url = False
         self.slack_bot_url = ""
-
         self.dream_url = ""
         self.ui = ReactUI()
+
+    @property
+    def model_servers(self) -> List[L.LightningWork]:
+        works = []
+        for i in range(self.num_workers):
+            work: L.LightningWork = getattr(self, f"serve_work_{i}")
+            works.append(work)
+        return works
 
     def run(self):
         if os.environ.get("TESTING_LAI"):
@@ -44,7 +48,6 @@ class RootWorkFlow(L.LightningFlow):
 
         if self.load_balancer.url:  # hack for getting the work url
             self.dream_url = self.load_balancer.url
-
             if self.slack_bot is not None:
                 self.slack_bot.run(self.load_balancer.url)
                 self.slack_bot_url = self.slack_bot.url
