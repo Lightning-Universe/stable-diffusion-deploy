@@ -1,16 +1,3 @@
-import { EULA } from './EULA';
-import DreamIcon from './assets/Dream.svg';
-import FlashesIcon from './assets/Flashes.svg';
-import LightningAIIcon from './assets/LightningAI.svg';
-import LogoIcon from './assets/Logo.svg';
-import SlackIcon from './assets/Slack.svg';
-import SpeedIcon from './assets/Speed.svg';
-import { ProgressBar } from './components/Loader';
-import { AddYourSlackCredentials } from './components/SlackTokensModel';
-import { Typography } from './components/Typography';
-import { useLightningState } from './hooks/useLightningState';
-import { postDream } from './services/api';
-import { LightingState } from './types/lightning';
 import {
   Box,
   Container,
@@ -28,6 +15,19 @@ import { theme } from 'lightning-ui/src/design-system/theme';
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
+import DreamIcon from './assets/Dream.svg';
+import FlashesIcon from './assets/Flashes.svg';
+import LightningAIIcon from './assets/LightningAI.svg';
+import LogoIcon from './assets/Logo.svg';
+import SlackIcon from './assets/Slack.svg';
+import SpeedIcon from './assets/Speed.svg';
+import { ProgressBar } from './components/Loader';
+import { AddYourSlackCredentials } from './components/SlackTokensModel';
+import { Typography } from './components/Typography';
+import { EULA } from './EULA';
+import { useLightningState } from './hooks/useLightningState';
+import { postDream } from './services/api';
+import { LightingState } from './types/lightning';
 
 const queryClient = new QueryClient();
 
