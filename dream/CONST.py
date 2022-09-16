@@ -1,1 +1,3 @@
-REQUEST_TIMEOUT = 1 * 60
+import os
+
+REQUEST_TIMEOUT = os.environ.get("INFERENCE_REQUEST_TIMEOUT", 45)

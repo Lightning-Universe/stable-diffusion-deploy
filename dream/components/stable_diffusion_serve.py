@@ -10,10 +10,10 @@ from io import BytesIO
 import lightning as L
 import numpy as np
 import torch
-from fastapi import HTTPException
 from PIL import Image
 from torch import autocast
 
+from dream.components.utils import TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
 
 
@@ -72,7 +72,7 @@ class StableDiffusionServe(L.LightningWork):
 
     def predict(self, dream: str, num_images: int, image_size: int, num_inference_steps: int, entry_time: int):
         if time.time() - entry_time > REQUEST_TIMEOUT:
-            raise HTTPException(500, "request timed out.")
+            raise TimeoutException()
         height, width = image_size, image_size
         prompts = [dream] * int(num_images)
         pil_results = []
@@ -151,7 +151,8 @@ class StableDiffusionServe(L.LightningWork):
                     entry_time=entry_time,
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
-            except TimeoutError:
-                raise HTTPException(status_code=500, detail="Request timed out.")
+            except (TimeoutError, TimeoutException):
+                print("raising timeout exp")
+                raise TimeoutException()
 
         uvicorn.run(app, host=self.host, port=self.port)

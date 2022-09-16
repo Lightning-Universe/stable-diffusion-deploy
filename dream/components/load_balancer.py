@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from itertools import cycle
 from typing import List
@@ -5,6 +6,7 @@ from typing import List
 import aiohttp
 import lightning as L
 
+from dream.components.utils import TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
 
 
@@ -46,10 +48,17 @@ class LoadBalancer(L.LightningWork):
         async def balance_api(data: Data):
             """"""
             server = next(ITER)
-            async with aiohttp.ClientSession() as session:
-                async with session.post(f"{server}/api/predict", json=data.dict(), timeout=REQUEST_TIMEOUT) as result:
-                    print(result.status)
-                    result.raise_for_status()
-                    return await result.json()
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(
+                        f"{server}/api/predict", json=data.dict(), timeout=REQUEST_TIMEOUT
+                    ) as result:
+                        print(type(result.status), result.status)
+                        if result.status == 408:
+                            raise TimeoutException()
+                        result.raise_for_status()
+                        return await result.json()
+            except asyncio.TimeoutError:
+                raise TimeoutException()
 
         uvicorn.run(app, host=self.host, port=self.port)
