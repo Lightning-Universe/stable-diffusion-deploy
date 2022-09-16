@@ -48,16 +48,20 @@ class LoadBalancer(L.LightningWork):
 
                     data = {"batch": [b[1] for b in batch]}
 
-                    async with aiohttp.ClientSession() as session:
-                        async with session.post(f"{server}/api/predict", json=data, timeout=REQUEST_TIMEOUT) as result:
-                            # TODO: Raise this somewhere else
-                            if result.status == 408:
-                                raise TimeoutException()
-                            result.raise_for_status()
-                            result = await result.json()
-                            result = {request[0]: r for request, r in zip(batch, result)}
-                            print(result)
-                            self._responses.update(result)
+                    try:
+                        async with aiohttp.ClientSession() as session:
+                            async with session.post(
+                                f"{server}/api/predict", json=data, timeout=REQUEST_TIMEOUT
+                            ) as result:
+                                if result.status == 408:
+                                    raise TimeoutException()
+                                result.raise_for_status()
+                                result = await result.json()
+                                result = {request[0]: r for request, r in zip(batch, result)}
+                                self._responses.update(result)
+                    except Exception as e:
+                        result = {request[0]: e for request in batch}
+                        self._responses.update(result)
 
                     batch = self._batch[quality][: self.max_batch_size]
 
@@ -111,6 +115,8 @@ class LoadBalancer(L.LightningWork):
                 if request_id in self._responses:
                     result = self._responses[request_id]
                     del self._responses[request_id]
+                    if isinstance(result, (Exception, HTTPException)):
+                        raise result
                     return result
 
         uvicorn.run(app, host=self.host, port=self.port)
