@@ -1,18 +1,24 @@
 {
   "files": {
     "main.css": "/static/css/main.2c16595e.css",
-    "main.js": "/static/js/main.cd4d4fe6.js",
+    "main.js": "/static/js/main.240f53e4.js",
     "static/js/787.8c33e357.chunk.js": "/static/js/787.8c33e357.chunk.js",
     "static/media/UCity-Regular.otf": "/static/media/UCity-Regular.e28f5006c1976d08baaa.otf",
     "static/media/UCity-Light.otf": "/static/media/UCity-Light.8352e423a843d9a0c52a.otf",
     "static/media/UCity-Semibold.otf": "/static/media/UCity-Semibold.b37489cc447430fe4ba7.otf",
+    "static/media/Logo.svg": "/static/media/Logo.5a4a0e53430aa27b0ac1c21ac7853525.svg",
+    "static/media/LightningAI.svg": "/static/media/LightningAI.5fadbc4b2b303df894a76c5a6a74179a.svg",
+    "static/media/Slack.svg": "/static/media/Slack.53435980573fa6fea1c93f596c9808c7.svg",
     "index.html": "/index.html",
+    "static/media/Speed.svg": "/static/media/Speed.6fc913e62c169b1e0151a15f1e2c7a4b.svg",
+    "static/media/Dream.svg": "/static/media/Dream.dfffb9a8e3c319ca1d7839f963238958.svg",
+    "static/media/Flashes.svg": "/static/media/Flashes.629a23bca50dc5c15091ae09e429181a.svg",
     "main.2c16595e.css.map": "/static/css/main.2c16595e.css.map",
-    "main.cd4d4fe6.js.map": "/static/js/main.cd4d4fe6.js.map",
+    "main.240f53e4.js.map": "/static/js/main.240f53e4.js.map",
     "787.8c33e357.chunk.js.map": "/static/js/787.8c33e357.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.2c16595e.css",
-    "static/js/main.cd4d4fe6.js"
+    "static/js/main.240f53e4.js"
   ]
 }
