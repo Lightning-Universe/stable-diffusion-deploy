@@ -49,6 +49,4 @@ class TimeoutException(HTTPException):
 
 class Data(BaseModel):
     dream: str
-    num_images: int = 1
-    image_size: int = 512
-    num_inference_steps: int = 25
+    high_quality: bool = False
