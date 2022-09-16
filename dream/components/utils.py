@@ -43,8 +43,8 @@ def save_item(name: str, value: Any, drive: Drive) -> None:
 
 
 class TimeoutException(HTTPException):
-    def __init__(self, *args, **kwargs):
-        super().__init__(status_code=408, detail="Request timed out.", *args, **kwargs)
+    def __init__(self, status_code=408, detail="Request timed out.", *args, **kwargs):
+        super().__init__(status_code=status_code, detail=detail, *args, **kwargs)
 
 
 class Data(BaseModel):

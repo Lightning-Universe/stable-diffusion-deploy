@@ -110,12 +110,19 @@ class StableDiffusionServe(L.LightningWork):
 
         subprocess.run("nvidia-smi", shell=True)
 
-        pool = ThreadPoolExecutor(max_workers=1)
-
         if self._model is None:
             self._model = self.build_model()
 
         app = FastAPI()
+        app.POOL: ThreadPoolExecutor = None
+
+        @app.on_event("startup")
+        def startup_event():
+            app.POOL = ThreadPoolExecutor(max_workers=2)
+
+        @app.on_event("shutdown")
+        def shutdown_event():
+            app.POOL.shutdown(wait=False)
 
         app.add_middleware(
             CORSMiddleware,
@@ -135,7 +142,7 @@ class StableDiffusionServe(L.LightningWork):
             try:
                 entry_time = time.time()
                 print(f"request: {data}")
-                result = pool.submit(
+                result = app.POOL.submit(
                     self.predict,
                     data.dream,
                     data.num_images,
