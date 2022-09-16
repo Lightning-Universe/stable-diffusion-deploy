@@ -2,7 +2,9 @@ import json
 import os
 from typing import Any, Optional
 
+from fastapi import HTTPException
 from lightning_app.storage.drive import Drive
+from pydantic import BaseModel
 
 
 def load_secret_from_env_or_drive(name: str, drive: Drive) -> Optional[str]:
@@ -38,3 +40,15 @@ def save_item(name: str, value: Any, drive: Drive) -> None:
     with open(name, "w") as f:
         f.write(json.dumps(value))
     return drive.put(name)
+
+
+class TimeoutException(HTTPException):
+    def __init__(self, status_code=408, detail="Request timed out.", *args, **kwargs):
+        super().__init__(status_code=status_code, detail=detail, *args, **kwargs)
+
+
+class Data(BaseModel):
+    dream: str
+    num_images: int = 1
+    image_size: int = 512
+    num_inference_steps: int = 25
