@@ -1,5 +1,6 @@
 import base64
 import os.path
+import signal
 import tarfile
 import time
 import urllib.request
@@ -14,7 +15,7 @@ import torch
 from PIL import Image
 from torch import autocast
 
-from dream.components.utils import Data, DataBatch, TimeoutException
+from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
 from dream.CONST import REQUEST_TIMEOUT
 
 
@@ -169,7 +170,8 @@ class StableDiffusionServe(L.LightningWork):
                 # hack: once there is a timeout then all requests after that is getting timedout
                 old_pool = app.POOL
                 app.POOL = ThreadPoolExecutor(max_workers=1)
-                old_pool.shutdown(wait=False, cancel_futures=True)
+                old_pool.shutdown(wait=False)
+                signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
                 self.num_failures += 1
                 raise TimeoutException()
 
