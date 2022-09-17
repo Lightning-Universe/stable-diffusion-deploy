@@ -175,4 +175,4 @@ class StableDiffusionServe(L.LightningWork):
                 self.num_failures += 1
                 raise TimeoutException()
 
-        uvicorn.run(app, host=self.host, port=self.port)
+        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=15)
