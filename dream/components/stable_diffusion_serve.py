@@ -30,11 +30,9 @@ class StableDiffusionServe(L.LightningWork):
     tolerable_failures: total number of failures after which the worker status becomes unhealthy.
     """
 
-    def __init__(self, tolerable_failures=2, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
-        self.num_failures = 0
         self._model = None
-        self.tolerable_failures = tolerable_failures
 
     @staticmethod
     def download_weights(url: str, target_folder: str):
@@ -110,10 +108,6 @@ class StableDiffusionServe(L.LightningWork):
 
         return results
 
-    @property
-    def health_status(self):
-        return self.num_failures < self.tolerable_failures
-
     def run(self):
         import subprocess
 
@@ -147,7 +141,7 @@ class StableDiffusionServe(L.LightningWork):
 
         @app.get("/api/health")
         def health():
-            return self.health_status
+            return True
 
         @app.post("/api/predict")
         def predict_api(data: DataBatch):
@@ -166,12 +160,11 @@ class StableDiffusionServe(L.LightningWork):
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
-                # hack: once there is a timeout then all requests after that is getting timedout
+                # hack: once there is a timeout then all requests after that is getting timeout
                 old_pool = app.POOL
                 app.POOL = ThreadPoolExecutor(max_workers=1)
                 old_pool.shutdown(wait=False)
                 signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
-                self.num_failures += 1
                 raise TimeoutException()
 
         uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=30)
