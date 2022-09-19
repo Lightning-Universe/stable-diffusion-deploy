@@ -10,6 +10,7 @@ from dream.components.load_balancer import LoadBalancer
 
 AUTOSCALE_UP_THRESHOLD = 10
 AUTOSCALE_DOWN_THRESHOLD = 1
+MAX_WORKERS = 5
 
 
 class ReactUI(L.LightningFlow):
@@ -94,9 +95,10 @@ class RootWorkFlow(L.LightningFlow):
         if time.time() - self._last_autoscale > self.autoscale_interval:
             return
         num_requests = self.load_balancer.num_requests
+        num_workers = len(self.model_servers)
 
         # upscale
-        if num_requests > AUTOSCALE_UP_THRESHOLD:
+        if num_requests > AUTOSCALE_UP_THRESHOLD and num_workers < MAX_WORKERS:
             work_index = len(self.model_servers)
             work = StableDiffusionServe(
                 tolerable_failures=self.tolerable_failures,
