@@ -1,9 +1,9 @@
-import { Box, Button as MuiButton, Link } from '@mui/material';
-import { Button, Dialog, DialogContent, DialogTitle, TextField } from 'lightning-ui/src/design-system/components';
-import { useEffect, useState } from 'react';
 import { setSlackCredentials, SlackForm } from '../services/api';
 import { LightingState } from '../types/lightning';
 import { Typography } from './Typography';
+import { Box, Button as MuiButton, Link } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, TextField } from 'lightning-ui/src/design-system/components';
+import { useCallback, useEffect, useState } from 'react';
 
 const SlackTokensModel = (props: { isModalOpen: boolean; url: string; setModalOpen: (e: boolean) => void }) => {
   const [formData, setFormData] = useState<{
@@ -80,18 +80,27 @@ const SlackTokensModel = (props: { isModalOpen: boolean; url: string; setModalOp
   );
 };
 
+const ShowSlackTokenModel = 'presentedSlackTokenModal';
+
 export const AddYourSlackCredentials = (props: LightingState) => {
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const has_credentials: string | undefined = props?.works?.slack_bot?.vars?.has_credentials;
   useEffect(() => {
+    const presentedSlackTokenModal = localStorage.getItem(ShowSlackTokenModel);
+    if (presentedSlackTokenModal === 'true') return;
     if (typeof has_credentials !== 'undefined') {
       setModalOpen(!has_credentials);
     }
   }, [has_credentials]);
 
+  const _setModalOpen = useCallback((isOpen: boolean) => {
+    if (isOpen === false) localStorage.setItem(ShowSlackTokenModel, 'true');
+    setModalOpen(isOpen);
+  }, []);
+
   return (
     <>
-      <SlackTokensModel isModalOpen={isModalOpen} url={props?.vars?.slack_bot_url} setModalOpen={setModalOpen} />
+      <SlackTokensModel isModalOpen={isModalOpen} url={props?.vars?.slack_bot_url} setModalOpen={_setModalOpen} />
       {typeof has_credentials === 'boolean' && !has_credentials && (
         <MuiButton variant={'text'} onClick={() => setModalOpen(true)}>
           Add your own slack credentials
