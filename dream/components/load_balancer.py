@@ -4,7 +4,7 @@ import uuid
 from dataclasses import dataclass
 from http.client import HTTPException
 from itertools import cycle
-from typing import List
+from typing import Dict, List
 
 import aiohttp
 import lightning as L
@@ -27,9 +27,13 @@ class LoadBalancer(L.LightningWork):
         self.max_batch_size = max_batch_size
         self.max_wait_time = max_wait_time
         self._ITER = None
-        self._batch = {"high": [], "low": []}
+        self._batch: Dict[str, list] = {"high": [], "low": []}
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
+
+    @property
+    def num_requests(self):
+        return sum(len(e) for e in self._batch.values())
 
     async def send_batches(self):
         while True:
