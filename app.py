@@ -97,6 +97,7 @@ class RootWorkFlow(L.LightningFlow):
         num_requests = self.load_balancer.num_requests
         num_workers = len(self.model_servers)
 
+        # based on @lantiga's impl: https://github.com/Lightning-AI/LAI-Stable-Diffusion-App/tree/scale_model_trial1
         # upscale
         if num_requests > AUTOSCALE_UP_THRESHOLD and num_workers < MAX_WORKERS:
             work_index = len(self.model_servers)
