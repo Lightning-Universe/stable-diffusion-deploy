@@ -16,7 +16,7 @@ from PIL import Image
 from torch import autocast
 
 from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
-from dream.CONST import IMAGE_SIZE, REQUEST_TIMEOUT
+from dream.CONST import IMAGE_SIZE, KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 
 @dataclass
@@ -167,4 +167,4 @@ class StableDiffusionServe(L.LightningWork):
                 signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
                 raise TimeoutException()
 
-        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=30)
+        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT)

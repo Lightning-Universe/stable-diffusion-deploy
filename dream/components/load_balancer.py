@@ -10,7 +10,7 @@ import aiohttp
 import lightning as L
 
 from dream.components.utils import Data, TimeoutException
-from dream.CONST import REQUEST_TIMEOUT
+from dream.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 
 @dataclass
@@ -125,7 +125,7 @@ class LoadBalancer(L.LightningWork):
                         raise result
                     return result
 
-        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=30)
+        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT)
 
     def update_servers(self, servers: List[str]):
         self.servers = servers
