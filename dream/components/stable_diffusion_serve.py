@@ -16,7 +16,7 @@ from PIL import Image
 from torch import autocast
 
 from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
-from dream.CONST import REQUEST_TIMEOUT, IMAGE_SIZE
+from dream.CONST import IMAGE_SIZE, REQUEST_TIMEOUT
 
 
 @dataclass
