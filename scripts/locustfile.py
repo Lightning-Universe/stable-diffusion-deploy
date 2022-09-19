@@ -10,5 +10,5 @@ class DreamUser(HttpUser):
         URL = f"{self.host}/api/predict"
         print(self.host, URL)
         data = json.dumps(data)
-        response = self.client.post(URL, data=data)
+        response = self.client.post(URL, data=data, timeout=60)
         response.raise_for_status()
