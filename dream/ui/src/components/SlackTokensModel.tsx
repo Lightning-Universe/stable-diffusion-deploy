@@ -1,9 +1,9 @@
-import { setSlackCredentials, SlackForm } from '../services/api';
-import { LightingState } from '../types/lightning';
-import { Typography } from './Typography';
 import { Box, Button as MuiButton, Link } from '@mui/material';
 import { Button, Dialog, DialogContent, DialogTitle, TextField } from 'lightning-ui/src/design-system/components';
 import { useCallback, useEffect, useState } from 'react';
+import { setSlackCredentials, SlackForm } from '../services/api';
+import { LightingState } from '../types/lightning';
+import { Typography } from './Typography';
 
 const SlackTokensModel = (props: { isModalOpen: boolean; url: string; setModalOpen: (e: boolean) => void }) => {
   const [formData, setFormData] = useState<{
