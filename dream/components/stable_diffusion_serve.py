@@ -16,7 +16,7 @@ from PIL import Image
 from torch import autocast
 
 from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
-from dream.CONST import REQUEST_TIMEOUT
+from dream.CONST import REQUEST_TIMEOUT, IMAGE_SIZE
 
 
 @dataclass
@@ -80,8 +80,7 @@ class StableDiffusionServe(L.LightningWork):
         if time.time() - entry_time > REQUEST_TIMEOUT:
             raise TimeoutException()
 
-        # TODO: Move to constants
-        height = width = 512
+        height = width = IMAGE_SIZE
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
         prompts = [dream.dream for dream in dreams]
