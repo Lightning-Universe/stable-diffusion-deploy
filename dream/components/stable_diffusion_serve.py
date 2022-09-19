@@ -1,11 +1,13 @@
 import base64
 import os.path
+import signal
 import tarfile
 import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
+from typing import List
 
 import lightning as L
 import numpy as np
@@ -13,8 +15,8 @@ import torch
 from PIL import Image
 from torch import autocast
 
-from dream.components.utils import Data, TimeoutException
-from dream.CONST import REQUEST_TIMEOUT
+from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
+from dream.CONST import IMAGE_SIZE, REQUEST_TIMEOUT
 
 
 @dataclass
@@ -74,30 +76,38 @@ class StableDiffusionServe(L.LightningWork):
             print("model set to None")
         return pipe
 
-    def predict(self, dream: str, num_inference_steps: int, entry_time: int):
+    def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > REQUEST_TIMEOUT:
             raise TimeoutException()
 
-        height, width = 512, 512
+        height = width = IMAGE_SIZE
+        num_inference_steps = 50 if dreams[0].high_quality else 25
+
+        prompts = [dream.dream for dream in dreams]
         with autocast("cuda"):
             if torch.cuda.is_available():
                 preds = self._model(
-                    dream,
+                    prompts,
                     height=height,
                     width=width,
                     num_inference_steps=num_inference_steps,
                 )
-                generated_image = preds.images[0]
-                if preds.nsfw_content_detected[0]:
-                    generated_image = Image.open("./assets/nsfw-warning.png")
+                pil_results = preds.images
+                for i, has_nsfw in enumerate(preds.nsfw_content_detected):
+                    if has_nsfw:
+                        pil_results[i] = Image.open("./assets/nsfw-warning.png")
             else:
-                generated_image = Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))
+                pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
+                    prompts
+                )
 
         results = []
-        buffered = BytesIO()
-        generated_image.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-        results.append(f"data:image/png;base64,{img_str}")
+        for image in pil_results:
+            buffered = BytesIO()
+            image.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+            results.append(f"data:image/png;base64,{img_str}")
+
         return results
 
     @property
@@ -140,7 +150,7 @@ class StableDiffusionServe(L.LightningWork):
             return self.health_status
 
         @app.post("/api/predict")
-        def predict_api(data: Data):
+        def predict_api(data: DataBatch):
             """Dream a dream. Defines the REST API which takes the text prompt, number of images and image size in the
             request body.
 
@@ -149,11 +159,9 @@ class StableDiffusionServe(L.LightningWork):
             try:
                 entry_time = time.time()
                 print(f"request: {data}")
-                num_inference_steps = 50 if data.high_quality else 25
                 result = app.POOL.submit(
                     self.predict,
-                    data.dream,
-                    num_inference_steps,
+                    data.batch,
                     entry_time=entry_time,
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
@@ -161,8 +169,9 @@ class StableDiffusionServe(L.LightningWork):
                 # hack: once there is a timeout then all requests after that is getting timedout
                 old_pool = app.POOL
                 app.POOL = ThreadPoolExecutor(max_workers=1)
-                old_pool.shutdown(wait=False, cancel_futures=True)
+                old_pool.shutdown(wait=False)
+                signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
                 self.num_failures += 1
                 raise TimeoutException()
 
-        uvicorn.run(app, host=self.host, port=self.port)
+        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=30)
