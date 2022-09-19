@@ -20,14 +20,14 @@ class ReactUI(L.LightningFlow):
 
 class RootWorkFlow(L.LightningFlow):
     """
-    health_check_interval: time in seconds in which health_check will run
+    autoscale_interval: time in seconds in which autoscale will run
     """
 
     def __init__(
         self,
         initial_num_workers=3,
         autoscale_interval=1 * 60,
-        batch_size_wait_s=1,
+        batch_size_wait_s=0.5,
         max_batch_size=4,
     ):
         super().__init__()
