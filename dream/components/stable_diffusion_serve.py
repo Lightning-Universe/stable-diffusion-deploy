@@ -7,6 +7,8 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
+from os import get_terminal_size
+from pathlib import Path
 from typing import List
 
 import lightning as L
@@ -38,12 +40,9 @@ class StableDiffusionServe(L.LightningWork):
 
     @staticmethod
     def download_weights(url: str, target_folder: str):
-        dest = target_folder + f"/{os.path.basename(url)}"
-        urllib.request.urlretrieve(url, dest)
-        file = tarfile.open(dest)
-
-        # extracting file
-        file.extractall(target_folder)
+        dest = target_folder / f"{os.path.basename(url)}"
+        if not os.path.exists(dest):
+            urllib.request.urlretrieve(url, dest)
 
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
@@ -51,32 +50,41 @@ class StableDiffusionServe(L.LightningWork):
         import os
 
         import torch
-        from diffusers import StableDiffusionPipeline
+        from omegaconf import OmegaConf
+
+        from stable_diffusion.ldm.util import instantiate_from_config
 
         print("loading model...")
-        if torch.cuda.is_available():
-            weights_folder = "resources/stable-diffusion-v1-4"
+        if torch.cuda.is_available() or True:
+            # device = torch.device('cuda')
+            weights_folder = Path("resources/stable-diffusion-v1-4")
             os.makedirs(weights_folder, exist_ok=True)
 
             print("Downloading weights...")
             self.download_weights(
-                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
+                "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_amp_traced.pt",
+                weights_folder,
             )
+            sd_fused = torch.jit.load(weights_folder / "sd_amp_traced.pt")
+            sd_fused = sd_fused.to("cuda")
+            config = OmegaConf.load("config.yaml")
+            model = instantiate_from_config(config.model)
 
-            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
-            pipe = StableDiffusionPipeline.from_pretrained(
-                repo_folder,
-                revision="fp16",
-                torch_dtype=torch.float16,
-            )
-            pipe = pipe.to("cuda")
-            pipe.enable_attention_slicing()
+            model.apply_model = lambda x, t, c: sd_fused(_x=x, _t=t, _cnd=c)
+            # warmup
+            # tmp_x, tmp_c, tmp_t = torch.randn(3, 4, 64, 64).to(device), c.to(device), torch.randint(0, 5, (3,)).to(device)
+            # for _ in range(3):
+            #     model.apply_model(tmp_x, tmp_t, tmp_c)
+
+            # delete the original model
+            del model.model  # lol
             print("model loaded")
         else:
-            pipe = None
+            model = None
             print("model set to None")
-        return pipe
+        return model
 
+    @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > REQUEST_TIMEOUT:
             raise TimeoutException()
@@ -86,18 +94,30 @@ class StableDiffusionServe(L.LightningWork):
 
         prompts = [dream.dream for dream in dreams]
         with autocast("cuda"):
-            if torch.cuda.is_available():
+            if torch.cuda.is_available() or True:
                 torch.cuda.empty_cache()
-                preds = self._model(
-                    prompts,
-                    height=height,
-                    width=width,
-                    num_inference_steps=num_inference_steps,
+                c, uc = get_texttensors(self._model, prompts)
+                sample_scaled, _ = self._model.sample_log(
+                    cond=c,
+                    batch_size=3,
+                    ddim=True,
+                    ddim_steps=50,
+                    unconditional_guidance_scale=5.0,
+                    unconditional_conditioning=uc,
                 )
-                pil_results = preds.images
-                for i, has_nsfw in enumerate(preds.nsfw_content_detected):
-                    if has_nsfw:
-                        pil_results[i] = Image.open("./assets/nsfw-warning.png")
+
+                images = self._model.decode_first_stage(sample_scaled)
+                # preds = self._model(
+                #     prompts,
+                #     height=height,
+                #     width=width,
+                #     num_inference_steps=num_inference_steps,
+                # )
+                # pil_results = preds.images
+                pil_results = images
+                # for i, has_nsfw in enumerate(preds.nsfw_content_detected):
+                #     if has_nsfw:
+                #         pil_results[i] = Image.open("./assets/nsfw-warning.png")
             else:
                 pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
                     prompts
@@ -177,3 +197,9 @@ class StableDiffusionServe(L.LightningWork):
                 raise TimeoutException()
 
         uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=30)
+
+
+def get_texttensors(model, prompts):
+    c = model.get_learned_conditioning(prompts)
+    uc = model.get_learned_conditioning(len(c) * [""])
+    return c, uc
