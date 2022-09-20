@@ -1,148 +1,143 @@
-Package                 Version
------------------------ ---------
-absl-py                 1.2.0
-aiobotocore             2.4.0
-aiohttp                 3.8.1
-aioitertools            0.11.0
-aiosignal               1.2.0
-antlr4-python3-runtime  4.9.3
-anyio                   3.6.1
-arrow                   1.2.3
-asgiref                 3.5.2
-async-timeout           4.0.2
-attrs                   22.1.0
-botocore                1.27.59
-Brotli                  1.0.9
-cachetools              5.2.0
-certifi                 2022.9.14
-cfgv                    3.3.1
-charset-normalizer      2.1.1
-click                   8.1.3
-coloredlogs             15.0.1
-commonmark              0.9.1
-ConfigArgParse          1.5.3
-croniter                1.3.7
-deepdiff                5.8.1
-diffusers               0.3.0
-distlib                 0.3.6
-dnspython               2.2.1
-einops                  0.4.1
-email-validator         1.3.0
-fastapi                 0.85.0
-filelock                3.8.0
-fire                    0.4.0
-Flask                   2.2.2
-Flask-BasicAuth         0.2.0
-Flask-Cors              3.0.10
-flatbuffers             2.0.7
-frozenlist              1.3.1
-fsspec                  2022.8.2
-ftfy                    6.1.1
-gevent                  21.12.0
-geventhttpclient        2.0.2
-google-auth             2.11.1
-google-auth-oauthlib    0.4.6
-greenlet                1.1.3
-grpcio                  1.48.1
-h11                     0.13.0
-httptools               0.5.0
-huggingface-hub         0.9.1
-humanfriendly           10.0
-identify                2.5.5
-idna                    3.4
-importlib-metadata      4.12.0
-invisible-watermark     0.1.5
-itsdangerous            2.1.2
-Jinja2                  3.1.2
-jmespath                1.0.1
-latent-diffusion        0.0.1
-lightning               2022.9.8
-lightning-app           0.6.1
-lightning-cloud         0.5.7
-lightning-utilities     0.3.0
-locust                  2.12.0
-Markdown                3.4.1
-MarkupSafe              2.1.1
-mpmath                  1.2.1
-msgpack                 1.0.4
-multidict               6.0.2
-nodeenv                 1.7.0
-numpy                   1.23.3
-oauthlib                3.2.1
-omegaconf               2.2.3
-onnx                    1.12.0
-onnxruntime             1.12.1
-opencv-python           4.6.0.66
-ordered-set             4.1.0
-orjson                  3.8.0
-packaging               21.3
-Pillow                  9.2.0
-pip                     22.1.2
-platformdirs            2.5.2
-pre-commit              2.20.0
-protobuf                3.19.5
-psutil                  5.9.2
-pyasn1                  0.4.8
-pyasn1-modules          0.2.8
-pydantic                1.10.2
-pyDeprecate             0.3.2
-pyee                    9.0.4
-Pygments                2.13.0
-PyJWT                   2.5.0
-pyparsing               3.0.9
-python-dateutil         2.8.2
-python-dotenv           0.21.0
-python-multipart        0.0.5
-pytorch-lightning       1.7.6
-PyWavelets              1.4.1
-PyYAML                  6.0
-pyzmq                   24.0.0
-regex                   2022.9.13
-requests                2.28.1
-requests-oauthlib       1.3.1
-rich                    12.5.1
-roundrobin              0.0.4
-rsa                     4.9
-s3fs                    2022.8.2
-scipy                   1.9.1
-setuptools              63.4.1
-six                     1.16.0
-slack-bolt              1.14.3
-slack-command-bot       0.0.1
-slack-sdk               3.18.1
-slackclient             2.9.4
-slackeventsapi          3.0.1
-sniffio                 1.3.0
-starlette               0.20.4
-starsessions            1.3.0
-sympy                   1.11.1
-tensorboard             2.10.0
-tensorboard-data-server 0.6.1
-tensorboard-plugin-wit  1.8.1
-termcolor               2.0.1
-tokenizers              0.12.1
-toml                    0.10.2
-torch                   1.12.1
-torchmetrics            0.9.3
-torchvision             0.13.1
-tqdm                    4.64.1
-traitlets               5.4.0
-transformers            4.19.2
-typing_extensions       4.3.0
-ujson                   5.5.0
-urllib3                 1.26.12
-uvicorn                 0.18.3
-uvloop                  0.17.0
-virtualenv              20.16.5
-watchfiles              0.17.0
-wcwidth                 0.2.5
-websocket-client        1.4.1
-websockets              10.3
-Werkzeug                2.2.2
-wheel                   0.37.1
-wrapt                   1.14.1
-yarl                    1.8.1
-ydiff                   1.2
-zipp                    3.8.1
-zope.event              4.5.0
-zope.interface          5.4.0
+absl-py==1.2.0
+aiobotocore==2.4.0
+aiohttp==3.8.1
+aioitertools==0.11.0
+aiosignal==1.2.0
+antlr4-python3-runtime==4.9.3
+anyio==3.6.1
+arrow==1.2.3
+asgiref==3.5.2
+async-timeout==4.0.2
+attrs==22.1.0
+botocore==1.27.59
+Brotli==1.0.9
+cachetools==5.2.0
+certifi @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_05nm_gqf36/croots/recipe/certifi_1663615689491/work/certifi
+cfgv==3.3.1
+charset-normalizer==2.1.1
+click==8.1.3
+coloredlogs==15.0.1
+commonmark==0.9.1
+ConfigArgParse==1.5.3
+croniter==1.3.7
+deepdiff==5.8.1
+diffusers==0.3.0
+distlib==0.3.6
+dnspython==2.2.1
+einops==0.4.1
+email-validator==1.3.0
+fastapi==0.85.0
+filelock==3.8.0
+fire==0.4.0
+Flask==2.2.2
+Flask-BasicAuth==0.2.0
+Flask-Cors==3.0.10
+flatbuffers==2.0.7
+frozenlist==1.3.1
+fsspec==2022.8.2
+ftfy==6.1.1
+gevent==21.12.0
+geventhttpclient==2.0.2
+google-auth==2.11.1
+google-auth-oauthlib==0.4.6
+greenlet==1.1.3
+grpcio==1.48.1
+h11==0.13.0
+httptools==0.5.0
+huggingface-hub==0.9.1
+humanfriendly==10.0
+identify==2.5.5
+idna==3.4
+importlib-metadata==4.12.0
+invisible-watermark==0.1.5
+itsdangerous==2.1.2
+Jinja2==3.1.2
+jmespath==1.0.1
+latent-diffusion @ git+https://github.com/CompVis/stable-diffusion@69ae4b35e0a0f6ee1af8bb9a5d0016ccb27e36dc
+lightning==2022.9.8
+lightning-app==0.6.1
+lightning-cloud==0.5.7
+lightning-utilities==0.3.0
+locust==2.12.0
+Markdown==3.4.1
+MarkupSafe==2.1.1
+mpmath==1.2.1
+msgpack==1.0.4
+multidict==6.0.2
+nodeenv==1.7.0
+numpy==1.23.3
+oauthlib==3.2.1
+omegaconf==2.2.3
+onnx==1.12.0
+onnxruntime==1.12.1
+opencv-python==4.6.0.66
+ordered-set==4.1.0
+orjson==3.8.0
+packaging==21.3
+Pillow==9.2.0
+platformdirs==2.5.2
+pre-commit==2.20.0
+protobuf==3.19.5
+psutil==5.9.2
+pyasn1==0.4.8
+pyasn1-modules==0.2.8
+pydantic==1.10.2
+pyDeprecate==0.3.2
+pyee==9.0.4
+Pygments==2.13.0
+PyJWT==2.5.0
+pyparsing==3.0.9
+python-dateutil==2.8.2
+python-dotenv==0.21.0
+python-multipart==0.0.5
+pytorch-lightning==1.7.6
+PyWavelets==1.4.1
+PyYAML==6.0
+pyzmq==24.0.0
+regex==2022.9.13
+requests==2.28.1
+requests-oauthlib==1.3.1
+rich==12.5.1
+roundrobin==0.0.4
+rsa==4.9
+s3fs==2022.8.2
+scipy==1.9.1
+six==1.16.0
+slack-bolt==1.14.3
+slack-command-bot @ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Component@b59d114f6cdc8f55b42eb7f91cf1941a7f3e03a9
+slack-sdk==3.18.1
+slackclient==2.9.4
+slackeventsapi==3.0.1
+sniffio==1.3.0
+starlette==0.20.4
+starsessions==1.3.0
+sympy==1.11.1
+tensorboard==2.10.0
+tensorboard-data-server==0.6.1
+tensorboard-plugin-wit==1.8.1
+termcolor==2.0.1
+tokenizers==0.12.1
+toml==0.10.2
+torch==1.12.1
+torchmetrics==0.9.3
+torchvision==0.13.1
+tqdm==4.64.1
+traitlets==5.4.0
+transformers==4.19.2
+typing_extensions==4.3.0
+ujson==5.5.0
+urllib3==1.26.12
+uvicorn==0.18.3
+uvloop==0.17.0
+virtualenv==20.16.5
+watchfiles==0.17.0
+wcwidth==0.2.5
+websocket-client==1.4.1
+websockets==10.3
+Werkzeug==2.2.2
+wrapt==1.14.1
+yarl==1.8.1
+ydiff==1.2
+zipp==3.8.1
+zope.event==4.5.0
+zope.interface==5.4.0
