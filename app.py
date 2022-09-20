@@ -27,7 +27,7 @@ class RootWorkFlow(L.LightningFlow):
         self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
         for i in range(num_workers):
             work = StableDiffusionServe(
-                tolerable_failures=5, cloud_compute=L.CloudCompute("gpu-rtx"), cache_calls=True, parallel=True
+                tolerable_failures=5, cloud_compute=L.CloudCompute("gpu-fast"), cache_calls=True, parallel=True
             )
             setattr(self, f"serve_work_{i}", work)
 
