@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.2c16595e.css",
-    "main.js": "/static/js/main.2d05e79b.js",
+    "main.js": "/static/js/main.afc065c5.js",
     "static/js/787.8c33e357.chunk.js": "/static/js/787.8c33e357.chunk.js",
     "static/media/UCity-Regular.otf": "/static/media/UCity-Regular.e28f5006c1976d08baaa.otf",
     "static/media/UCity-Light.otf": "/static/media/UCity-Light.8352e423a843d9a0c52a.otf",
@@ -14,11 +14,11 @@
     "static/media/Dream.svg": "/static/media/Dream.dfffb9a8e3c319ca1d7839f963238958.svg",
     "static/media/Flashes.svg": "/static/media/Flashes.629a23bca50dc5c15091ae09e429181a.svg",
     "main.2c16595e.css.map": "/static/css/main.2c16595e.css.map",
-    "main.2d05e79b.js.map": "/static/js/main.2d05e79b.js.map",
+    "main.afc065c5.js.map": "/static/js/main.afc065c5.js.map",
     "787.8c33e357.chunk.js.map": "/static/js/787.8c33e357.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.2c16595e.css",
-    "static/js/main.2d05e79b.js"
+    "static/js/main.afc065c5.js"
   ]
 }

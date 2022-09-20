@@ -19,15 +19,15 @@ class RootWorkFlow(L.LightningFlow):
     health_check_interval: time in seconds in which health_check will run
     """
 
-    def __init__(self, num_workers=3, health_check_interval=10):
+    def __init__(self, num_workers=5, health_check_interval=10):
         super().__init__()
         self.last_health_check = time.time()
         self.health_check_interval = health_check_interval  # in seconds
         self.num_workers = num_workers
-        self.load_balancer = LoadBalancer(max_wait_time=1, max_batch_size=4, cache_calls=True, parallel=True)
+        self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
         for i in range(num_workers):
             work = StableDiffusionServe(
-                tolerable_failures=5, cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True
+                tolerable_failures=5, cloud_compute=L.CloudCompute("gpu-fast"), cache_calls=True, parallel=True
             )
             setattr(self, f"serve_work_{i}", work)
 
