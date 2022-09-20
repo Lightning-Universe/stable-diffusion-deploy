@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
 from typing import List
+import importlib
 
 import lightning as L
 import numpy as np
@@ -17,6 +18,8 @@ from torch import autocast
 
 from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
 from dream.CONST import IMAGE_SIZE, REQUEST_TIMEOUT
+
+from omegaconf import OmegaConf
 
 
 @dataclass
@@ -51,6 +54,22 @@ class StableDiffusionServe(L.LightningWork):
         sample = model.decode_first_stage(sample)
         return sample.cpu()
 
+    def instantiate_from_config(self, config):
+        if not "target" in config:
+            if config == '__is_first_stage__':
+                return None
+            elif config == "__is_unconditional__":
+                return None
+            raise KeyError("Expected key `target` to instantiate.")
+        return self.get_obj_from_str(config["target"])(**config.get("params", dict()))
+
+    def get_obj_from_str(self, string, reload=False):
+        module, cls = string.rsplit(".", 1)
+        if reload:
+            module_imp = importlib.import_module(module)
+            importlib.reload(module_imp)
+        return getattr(importlib.import_module(module, package=None), cls)
+
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
 
@@ -68,11 +87,11 @@ class StableDiffusionServe(L.LightningWork):
 
             def load_model_from_config(config, ckpt, verbose=False):
                 print(f"Loading model from {ckpt}")
-                pl_sd = torch.load(ckpt, map_location="gpu")
+                pl_sd = torch.load(ckpt, map_location="cpu")
                 if "global_step" in pl_sd:
                     print(f"Global Step: {pl_sd['global_step']}")
                 sd = pl_sd["state_dict"]
-                model = instantiate_from_config(config.model)
+                model = self.instantiate_from_config(config.model)
                 m, u = model.load_state_dict(sd, strict=False)
                 if len(m) > 0 and verbose:
                     print("missing keys:")
@@ -95,9 +114,6 @@ class StableDiffusionServe(L.LightningWork):
             sd_fused = sd_fused.to("cuda:0")
 
             model.apply_model = lambda x, t, c : sd_fused(_x = x, _t = t, _cnd = c)
-            # warmup
-            for i in range(3):
-                model.apply_model(tmp_x, tmp_t, tmp_c)
             pipe = model
         else:
             pipe = None
@@ -126,6 +142,11 @@ class StableDiffusionServe(L.LightningWork):
                 #         pil_results[i] = Image.open("./assets/nsfw-warning.png")
                 c = self._model.get_learned_conditioning(prompts)
                 uc = self._model.get_learned_conditioning(len(c) * [""])
+                # warmup
+                device = 'cuda'
+                tmp_x, tmp_c, tmp_t = torch.randn(3, 4, 64, 64).to(device), c.to(device), torch.randint(0, 5, (3,)).to(device)
+                for i in range(3):
+                    model.apply_model(tmp_x, tmp_t, tmp_c)
                 sample_scaled, _ = self._model.sample_log(
                     cond=c,
                     batch_size=len(prompts),
