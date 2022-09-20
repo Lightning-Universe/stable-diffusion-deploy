@@ -44,6 +44,12 @@ class StableDiffusionServe(L.LightningWork):
 
         # extracting file
         file.extractall(target_folder)
+    
+    @staticmethod
+    @torch.no_grad()
+    def decode_and_show_image(self, sample):
+        sample = model.decode_first_stage(sample)
+        return sample.cpu()
 
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
@@ -55,22 +61,44 @@ class StableDiffusionServe(L.LightningWork):
 
         print("loading model...")
         if torch.cuda.is_available():
-            weights_folder = "resources/stable-diffusion-v1-4"
-            os.makedirs(weights_folder, exist_ok=True)
+            # TODO: Add config path after uploading to (and downloading from) the AWS server
+            config_path = "config.yaml"
+            config = OmegaConf.load(config_path)
+            torch.set_grad_enabled(False)
 
-            print("Downloading weights...")
-            self.download_weights(
-                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
+            def load_model_from_config(config, ckpt, verbose=False):
+                print(f"Loading model from {ckpt}")
+                pl_sd = torch.load(ckpt, map_location="gpu")
+                if "global_step" in pl_sd:
+                    print(f"Global Step: {pl_sd['global_step']}")
+                sd = pl_sd["state_dict"]
+                model = instantiate_from_config(config.model)
+                m, u = model.load_state_dict(sd, strict=False)
+                if len(m) > 0 and verbose:
+                    print("missing keys:")
+                    print(m)
+                if len(u) > 0 and verbose:
+                    print("unexpected keys:")
+                    print(u)
+
+                return model
+
+            # TODO: Add weights path here after uploading to (and downloading from) he AWS server
+            weights_path = "/home/kush/diffusion/original-diffusers/models--CompVis--stable-diffusion-v-1-4-original/snapshots/ddc1b75c86ad6cba1ee990929497ad249112d069/sd-v1-4.ckpt"
+            model = load_model_from_config(
+                config, weights_path, verbose=True
             )
 
-            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
-            pipe = StableDiffusionPipeline.from_pretrained(
-                repo_folder,
-                revision="fp16",
-                torch_dtype=torch.float16,
-            )
-            pipe = pipe.to("cuda")
-            print("model loaded")
+            # TODO: Add traced model path here after uploading to (and downloading from) the AWS server
+            traced_model_path = "sd_amp_traced.pt"
+            sd_fused = torch.jit.load(traced_model_path)
+            sd_fused = sd_fused.to("cuda:0")
+
+            model.apply_model = lambda x, t, c : sd_fused(_x = x, _t = t, _cnd = c)
+            # warmup
+            for i in range(3):
+                model.apply_model(tmp_x, tmp_t, tmp_c)
+            pipe = model
         else:
             pipe = None
             print("model set to None")
@@ -86,16 +114,25 @@ class StableDiffusionServe(L.LightningWork):
         prompts = [dream.dream for dream in dreams]
         with autocast("cuda"):
             if torch.cuda.is_available():
-                preds = self._model(
-                    prompts,
-                    height=height,
-                    width=width,
-                    num_inference_steps=num_inference_steps,
-                )
-                pil_results = preds.images
-                for i, has_nsfw in enumerate(preds.nsfw_content_detected):
-                    if has_nsfw:
-                        pil_results[i] = Image.open("./assets/nsfw-warning.png")
+                # preds = self._model(
+                #     prompts,
+                #     height=height,
+                #     width=width,
+                #     num_inference_steps=num_inference_steps,
+                # )
+                # pil_results = preds.images
+                # for i, has_nsfw in enumerate(preds.nsfw_content_detected):
+                #     if has_nsfw:
+                #         pil_results[i] = Image.open("./assets/nsfw-warning.png")
+                c = self._model.get_learned_conditioning(prompts)
+                uc = self._model.get_learned_conditioning(len(c) * [""])
+                sample_scaled, _ = self._model.sample_log(
+                    cond=c,
+                    batch_size=len(prompts),
+                    ddim=True,
+                    ddim_steps=num_inference_steps,
+                    unconditional_guidance_scale=5.0,
+                    unconditional_conditioning=uc)
             else:
                 pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
                     prompts
