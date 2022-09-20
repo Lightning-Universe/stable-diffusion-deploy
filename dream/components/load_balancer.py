@@ -31,6 +31,10 @@ class LoadBalancer(L.LightningWork):
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
 
+    @property
+    def num_requests(self):
+        return sum(len(e) for e in self._batch.values())
+
     async def send_batch(self, batch):
         server = next(self._ITER)
         data = {"batch": [b[1] for b in batch]}
