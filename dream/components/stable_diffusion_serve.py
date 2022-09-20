@@ -168,4 +168,6 @@ class StableDiffusionServe(L.LightningWork):
                 signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
                 raise TimeoutException()
 
-        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False)
+        uvicorn.run(
+            app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False, loop="uvloop"
+        )

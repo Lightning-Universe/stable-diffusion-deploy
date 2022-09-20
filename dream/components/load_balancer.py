@@ -125,8 +125,8 @@ class LoadBalancer(L.LightningWork):
                         raise result
                     return result
 
-        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT)
+        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, loop="uvloop")
 
-    def update_servers(self, servers: List[str]):
-        self.servers = servers
+    def update_servers(self, servers: List[L.LightningWork]):
+        self.servers = [server.url for server in servers if server.url]
         self._ITER = cycle(self.servers)
