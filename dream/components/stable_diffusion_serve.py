@@ -95,6 +95,7 @@ class StableDiffusionServe(L.LightningWork):
                     if has_nsfw:
                         pil_results[i] = Image.open("./assets/nsfw-warning.png")
             else:
+                time.sleep(2)
                 pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
                     prompts
                 )
@@ -167,4 +168,4 @@ class StableDiffusionServe(L.LightningWork):
                 signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
                 raise TimeoutException()
 
-        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT)
+        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False)
