@@ -51,7 +51,6 @@ class StableDiffusionServe(L.LightningWork):
 
         import torch
         from omegaconf import OmegaConf
-
         from stable_diffusion.ldm.util import instantiate_from_config
 
         print("loading model...")
