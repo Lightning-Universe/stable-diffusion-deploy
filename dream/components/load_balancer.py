@@ -21,7 +21,7 @@ class FastAPIBuildConfig(L.BuildConfig):
 class LoadBalancer(L.LightningWork):
     """Forward the requests to Model inference servers in Round Robin fashion and implements automatic batching."""
 
-    def __init__(self, max_batch_size=4, max_wait_time=5, **kwargs):
+    def __init__(self, max_batch_size=16, max_wait_time=10, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
         self.servers = []
         self.max_batch_size = max_batch_size
@@ -30,6 +30,23 @@ class LoadBalancer(L.LightningWork):
         self._batch = {"high": [], "low": []}
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
+
+    async def send_batch(self, batch):
+        server = next(self._ITER)
+        data = {"batch": [b[1] for b in batch]}
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f"{server}/api/predict", json=data, timeout=REQUEST_TIMEOUT) as result:
+                    if result.status == 408:
+                        raise TimeoutException()
+                    result.raise_for_status()
+                    result = await result.json()
+                    result = {request[0]: r for request, r in zip(batch, result)}
+                    self._responses.update(result)
+        except Exception as e:
+            result = {request[0]: e for request in batch}
+            self._responses.update(result)
 
     async def send_batches(self):
         while True:
@@ -40,31 +57,13 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                    len(batch) >= self.max_batch_size or time.time() - self._last_batch_sent > self.max_wait_time
+                    len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
                 ):
                     has_sent = True
 
+                    asyncio.create_task(self.send_batch(batch))
+
                     self._batch[quality] = self._batch[quality][self.max_batch_size :]
-
-                    server = next(self._ITER)
-
-                    data = {"batch": [b[1] for b in batch]}
-
-                    try:
-                        async with aiohttp.ClientSession() as session:
-                            async with session.post(
-                                f"{server}/api/predict", json=data, timeout=REQUEST_TIMEOUT
-                            ) as result:
-                                if result.status == 408:
-                                    raise TimeoutException()
-                                result.raise_for_status()
-                                result = await result.json()
-                                result = {request[0]: r for request, r in zip(batch, result)}
-                                self._responses.update(result)
-                    except Exception as e:
-                        result = {request[0]: e for request in batch}
-                        self._responses.update(result)
-
                     batch = self._batch[quality][: self.max_batch_size]
 
             if has_sent:
