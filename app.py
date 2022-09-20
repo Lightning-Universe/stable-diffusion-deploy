@@ -25,7 +25,7 @@ class RootWorkFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=3,
+        initial_num_workers=5,
         autoscale_interval=1 * 60,
         batch_size_wait_s=0.4,
         max_batch_size=4,

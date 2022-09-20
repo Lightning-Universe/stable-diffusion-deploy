@@ -68,6 +68,7 @@ class StableDiffusionServe(L.LightningWork):
                 torch_dtype=torch.float16,
             )
             pipe = pipe.to("cuda")
+            pipe.enable_attention_slicing()
             print("model loaded")
         else:
             pipe = None
@@ -84,6 +85,7 @@ class StableDiffusionServe(L.LightningWork):
         prompts = [dream.dream for dream in dreams]
         with autocast("cuda"):
             if torch.cuda.is_available():
+                torch.cuda.empty_cache()
                 preds = self._model(
                     prompts,
                     height=height,
@@ -95,7 +97,6 @@ class StableDiffusionServe(L.LightningWork):
                     if has_nsfw:
                         pil_results[i] = Image.open("./assets/nsfw-warning.png")
             else:
-                time.sleep(2)
                 pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
                     prompts
                 )
@@ -162,10 +163,10 @@ class StableDiffusionServe(L.LightningWork):
                 return result
             except (TimeoutError, TimeoutException):
                 # hack: once there is a timeout then all requests after that is getting timeout
-                old_pool = app.POOL
-                app.POOL = ThreadPoolExecutor(max_workers=1)
-                old_pool.shutdown(wait=False)
-                signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
+                # old_pool = app.POOL
+                # app.POOL = ThreadPoolExecutor(max_workers=1)
+                # old_pool.shutdown(wait=False)
+                # signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
                 raise TimeoutException()
 
         uvicorn.run(
