@@ -53,7 +53,6 @@ invisible-watermark==0.1.5
 itsdangerous==2.1.2
 Jinja2==3.1.2
 jmespath==1.0.1
-latent-diffusion @ git+https://github.com/CompVis/stable-diffusion@69ae4b35e0a0f6ee1af8bb9a5d0016ccb27e36dc
 lightning==2022.9.8
 lightning-app==0.6.1
 lightning-cloud==0.5.7
