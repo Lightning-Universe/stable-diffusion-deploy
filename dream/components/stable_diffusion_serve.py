@@ -1,4 +1,5 @@
 import base64
+import importlib
 import os.path
 import signal
 import tarfile
@@ -8,18 +9,16 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
 from typing import List
-import importlib
 
 import lightning as L
 import numpy as np
 import torch
+from omegaconf import OmegaConf
 from PIL import Image
 from torch import autocast
 
 from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
 from dream.CONST import IMAGE_SIZE, REQUEST_TIMEOUT
-
-from omegaconf import OmegaConf
 
 
 @dataclass
@@ -47,7 +46,7 @@ class StableDiffusionServe(L.LightningWork):
 
         # extracting file
         file.extractall(target_folder)
-    
+
     @staticmethod
     @torch.no_grad()
     def decode_and_show_image(self, sample):
@@ -56,7 +55,7 @@ class StableDiffusionServe(L.LightningWork):
 
     def instantiate_from_config(self, config):
         if not "target" in config:
-            if config == '__is_first_stage__':
+            if config == "__is_first_stage__":
                 return None
             elif config == "__is_unconditional__":
                 return None
@@ -104,16 +103,14 @@ class StableDiffusionServe(L.LightningWork):
 
             # TODO: Add weights path here after uploading to (and downloading from) he AWS server
             weights_path = "/home/kush/diffusion/original-diffusers/models--CompVis--stable-diffusion-v-1-4-original/snapshots/ddc1b75c86ad6cba1ee990929497ad249112d069/sd-v1-4.ckpt"
-            model = load_model_from_config(
-                config, weights_path, verbose=True
-            )
+            model = load_model_from_config(config, weights_path, verbose=True)
 
             # TODO: Add traced model path here after uploading to (and downloading from) the AWS server
             traced_model_path = "sd_amp_traced.pt"
             sd_fused = torch.jit.load(traced_model_path)
             sd_fused = sd_fused.to("cuda:0")
 
-            model.apply_model = lambda x, t, c : sd_fused(_x = x, _t = t, _cnd = c)
+            model.apply_model = lambda x, t, c: sd_fused(_x=x, _t=t, _cnd=c)
             pipe = model
         else:
             pipe = None
@@ -143,8 +140,12 @@ class StableDiffusionServe(L.LightningWork):
                 c = self._model.get_learned_conditioning(prompts)
                 uc = self._model.get_learned_conditioning(len(c) * [""])
                 # warmup
-                device = 'cuda'
-                tmp_x, tmp_c, tmp_t = torch.randn(3, 4, 64, 64).to(device), c.to(device), torch.randint(0, 5, (3,)).to(device)
+                device = "cuda"
+                tmp_x, tmp_c, tmp_t = (
+                    torch.randn(3, 4, 64, 64).to(device),
+                    c.to(device),
+                    torch.randint(0, 5, (3,)).to(device),
+                )
                 for i in range(3):
                     model.apply_model(tmp_x, tmp_t, tmp_c)
                 sample_scaled, _ = self._model.sample_log(
@@ -153,7 +154,8 @@ class StableDiffusionServe(L.LightningWork):
                     ddim=True,
                     ddim_steps=num_inference_steps,
                     unconditional_guidance_scale=5.0,
-                    unconditional_conditioning=uc)
+                    unconditional_conditioning=uc,
+                )
             else:
                 pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
                     prompts
