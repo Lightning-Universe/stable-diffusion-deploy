@@ -31,6 +31,7 @@ class RootWorkFlow(L.LightningFlow):
         max_batch_size=4,
     ):
         super().__init__()
+        self.fake_trigger = 0
         self._last_autoscale = time.time()
         self.autoscale_interval = autoscale_interval  # in seconds
         self._initial_num_workers = self.num_workers = initial_num_workers
@@ -76,6 +77,7 @@ class RootWorkFlow(L.LightningFlow):
                     self.printed_url = True
 
         if self.load_balancer.url:
+            self.fake_trigger += 1
             self.autoscale()
 
     def configure_layout(self):
@@ -93,9 +95,12 @@ class RootWorkFlow(L.LightningFlow):
         num_requests = self.load_balancer.num_requests
         num_workers = len(self.model_servers)
 
+        print(f"number of requests: {num_requests}")
+
         # based on @lantiga's impl: https://github.com/Lightning-AI/LAI-Stable-Diffusion-App/tree/scale_model_trial1
         # upscale
         if num_requests > AUTOSCALE_UP_THRESHOLD and num_workers < MAX_WORKERS:
+            print(f"upscaling to {self.num_workers+1}")
             work_index = len(self.model_servers)
             work = StableDiffusionServe(
                 cloud_compute=L.CloudCompute("gpu"),
@@ -108,6 +113,7 @@ class RootWorkFlow(L.LightningFlow):
 
         # downscale
         elif num_requests < AUTOSCALE_DOWN_THRESHOLD and not num_requests < self._initial_num_workers:
+            print(f"downscaling to {self._initial_num_workers}")
             for worker in self.model_servers[self._initial_num_workers :]:
                 worker.stop()
                 self.num_workers -= 1
