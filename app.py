@@ -19,7 +19,7 @@ class RootWorkFlow(L.LightningFlow):
     health_check_interval: time in seconds in which health_check will run
     """
 
-    def __init__(self, num_workers=5, health_check_interval=10):
+    def __init__(self, num_workers=1, health_check_interval=10):
         super().__init__()
         self.last_health_check = time.time()
         self.health_check_interval = health_check_interval  # in seconds

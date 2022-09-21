@@ -12,7 +12,6 @@ attrs==22.1.0
 botocore==1.27.59
 Brotli==1.0.9
 cachetools==5.2.0
-certifi @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_05nm_gqf36/croots/recipe/certifi_1663615689491/work/certifi
 cfgv==3.3.1
 charset-normalizer==2.1.1
 click==8.1.3
