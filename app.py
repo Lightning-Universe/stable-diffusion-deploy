@@ -62,7 +62,8 @@ class RootWorkFlow(L.LightningFlow):
             print("⚡ Lightning Dream App! ⚡")
 
         for model_serve in self.model_servers:
-            model_serve.run()
+            if not model_serve.not_started:
+                model_serve.run()
         if all(model_serve.url for model_serve in self.model_servers):
             # run the load balancer when all the model server is ready
             self.load_balancer.run([serve.url for serve in self.model_servers])
