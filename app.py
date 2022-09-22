@@ -28,8 +28,8 @@ class RootWorkFlow(L.LightningFlow):
         self,
         initial_num_workers=5,
         autoscale_interval=1 * 30,
-        batch_size_wait_s=4,
-        max_batch_size=4,
+        max_batch_size=12,
+        batch_size_wait_s=10,
         gpu_type="gpu-fast",
     ):
         super().__init__()
