@@ -43,6 +43,7 @@ class StableDiffusionServe(L.LightningWork):
 
             # extracting file
             file.extractall(target_folder)
+            file.close()
 
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
