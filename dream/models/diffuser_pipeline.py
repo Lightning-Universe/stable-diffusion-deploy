@@ -34,12 +34,7 @@ class StableDiffusionPipelineTraced:
         width: Optional[int] = 512,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,
-        eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
-        latents: Optional[torch.FloatTensor] = None,
-        output_type: Optional[str] = "pil",
-        return_dict: bool = True,
-        **kwargs,
     ):
 
         if isinstance(prompt, str):
@@ -109,7 +104,7 @@ class StableDiffusionPipelineTraced:
 
         return self.numpy_to_pil(image)
 
-    def numpy_to_pil(images):
+    def numpy_to_pil(self, images):
         images = (images * 255).round().astype("uint8")
         pil_images = [Image.fromarray(image) for image in images]
         return pil_images

@@ -9,6 +9,7 @@ from io import BytesIO
 from typing import List
 
 import lightning as L
+from pathlib import Path
 import numpy as np
 import torch
 from PIL import Image
@@ -35,7 +36,7 @@ class StableDiffusionServe(L.LightningWork):
 
     @staticmethod
     def download_weights(url: str, target_folder: str):
-        dest = target_folder + f"/{os.path.basename(url)}"
+        dest = target_folder / f"{os.path.basename(url)}"
         if not os.path.exists(dest):
             urllib.request.urlretrieve(url, dest)
             file = tarfile.open(dest)
@@ -53,12 +54,12 @@ class StableDiffusionServe(L.LightningWork):
 
         print("loading model...")
         if torch.cuda.is_available():
-            weights_folder = "resources/stable-diffusion-v1-4"
+            weights_folder = Path("resources/stable-diffusion-v1-4")
             os.makedirs(weights_folder, exist_ok=True)
 
             print("Downloading weights...")
             self.download_weights(
-                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers_traced.tar.gz", weights_folder
+                'https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/diffusers_traced.tar.gz', weights_folder
             )
 
             pipe = StableDiffusionPipelineTraced(weights_folder/'diffusers_traced')
@@ -80,16 +81,12 @@ class StableDiffusionServe(L.LightningWork):
         if torch.cuda.is_available():
             with autocast("cuda"):
                 torch.cuda.empty_cache()
-                preds = self._model(
+                pil_results = self._model(
                     prompts,
                     height=height,
                     width=width,
                     num_inference_steps=num_inference_steps,
                 )
-                pil_results = preds.images
-                for i, has_nsfw in enumerate(preds.nsfw_content_detected):
-                    if has_nsfw:
-                        pil_results[i] = Image.open("./assets/nsfw-warning.png")
         else:
             pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
 
