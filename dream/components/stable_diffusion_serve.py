@@ -37,11 +37,12 @@ class StableDiffusionServe(L.LightningWork):
     @staticmethod
     def download_weights(url: str, target_folder: str):
         dest = target_folder + f"/{os.path.basename(url)}"
-        urllib.request.urlretrieve(url, dest)
-        file = tarfile.open(dest)
+        if not os.path.exists(dest):
+            urllib.request.urlretrieve(url, dest)
+            file = tarfile.open(dest)
 
-        # extracting file
-        file.extractall(target_folder)
+            # extracting file
+            file.extractall(target_folder)
 
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
@@ -75,6 +76,7 @@ class StableDiffusionServe(L.LightningWork):
             print("model set to None")
         return pipe
 
+    @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > REQUEST_TIMEOUT:
             raise TimeoutException()
@@ -83,8 +85,8 @@ class StableDiffusionServe(L.LightningWork):
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
         prompts = [dream.dream for dream in dreams]
-        with autocast("cuda"):
-            if torch.cuda.is_available():
+        if torch.cuda.is_available():
+            with autocast("cuda"):
                 torch.cuda.empty_cache()
                 preds = self._model(
                     prompts,
@@ -96,11 +98,9 @@ class StableDiffusionServe(L.LightningWork):
                 for i, has_nsfw in enumerate(preds.nsfw_content_detected):
                     if has_nsfw:
                         pil_results[i] = Image.open("./assets/nsfw-warning.png")
-            else:
-                time.sleep(4)
-                pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
-                    prompts
-                )
+        else:
+            time.sleep(4)
+            pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
 
         results = []
         for image in pil_results:
