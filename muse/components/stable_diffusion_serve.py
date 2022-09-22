@@ -6,10 +6,10 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
 from typing import List
 
 import lightning as L
-from pathlib import Path
 import numpy as np
 import torch
 from PIL import Image
@@ -50,6 +50,7 @@ class StableDiffusionServe(L.LightningWork):
         import os
 
         import torch
+
         from dream.models import StableDiffusionPipelineTraced
 
         print("loading model...")
@@ -59,10 +60,10 @@ class StableDiffusionServe(L.LightningWork):
 
             print("Downloading weights...")
             self.download_weights(
-                'https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/diffusers_traced.tar.gz', weights_folder
+                "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/diffusers_traced.tar.gz", weights_folder
             )
 
-            pipe = StableDiffusionPipelineTraced(weights_folder/'diffusers_traced')
+            pipe = StableDiffusionPipelineTraced(weights_folder / "diffusers_traced")
             print("model loaded")
         else:
             pipe = None

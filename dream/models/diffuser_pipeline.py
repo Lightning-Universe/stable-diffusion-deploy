@@ -1,30 +1,27 @@
-from diffusers import PNDMScheduler
-from transformers import CLIPTokenizer
-
-import torch
-
 from typing import List, Optional, Union
-from tqdm import tqdm
 
 import torch
+from diffusers import PNDMScheduler
 from PIL import Image
+from tqdm import tqdm
+from transformers import CLIPTokenizer
 
 
 class StableDiffusionPipelineTraced:
     def __init__(self, pretrained_path):
         super().__init__()
         self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
-        self.scheduler = PNDMScheduler.from_config(pretrained_path/'scheduler_config.json')
+        self.scheduler = PNDMScheduler.from_config(pretrained_path / "scheduler_config.json")
         self.scheduler = self.scheduler.set_format("pt")
-        self.text_encoder = torch.jit.load(pretrained_path/'text_encoder_traced.pt')
-        self.unet = torch.jit.load(pretrained_path/'unet_traced.pt')
-        self.vae_post_quant_conv = torch.jit.load(pretrained_path/'vae_post_quant_conv_traced.pt')
-        self.vae_decoder = torch.jit.load(pretrained_path/'vae_decoder.pt')
-        self.device = 'cuda'
+        self.text_encoder = torch.jit.load(pretrained_path / "text_encoder_traced.pt")
+        self.unet = torch.jit.load(pretrained_path / "unet_traced.pt")
+        self.vae_post_quant_conv = torch.jit.load(pretrained_path / "vae_post_quant_conv_traced.pt")
+        self.vae_decoder = torch.jit.load(pretrained_path / "vae_decoder.pt")
+        self.device = "cuda"
 
-        with torch.autocast('cuda'):
+        with torch.autocast("cuda"):
             # warmup
-            self('warmup traced modules please', num_inference_steps=7)
+            self("warmup traced modules please", num_inference_steps=7)
 
     @torch.inference_mode()
     def __call__(
@@ -81,7 +78,7 @@ class StableDiffusionPipelineTraced:
         for i, t in enumerate(tqdm(self.scheduler.timesteps)):
             # expand the latents if we are doing classifier free guidance
             latent_model_input = torch.cat([latents] * 2)
-            timesteps = t.to(torch.float32)[None].to(self.device) 
+            timesteps = t.to(torch.float32)[None].to(self.device)
             # predict the noise residual
 
             noise_pred = self.unet(latent_model_input, timesteps, text_embeddings)
@@ -108,4 +105,3 @@ class StableDiffusionPipelineTraced:
         images = (images * 255).round().astype("uint8")
         pil_images = [Image.fromarray(image) for image in images]
         return pil_images
-
