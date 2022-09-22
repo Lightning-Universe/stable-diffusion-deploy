@@ -49,7 +49,7 @@ class StableDiffusionServe(L.LightningWork):
         import os
 
         import torch
-        from diffusers import StableDiffusionPipeline
+        from dream.models import StableDiffusionPipelineTraced
 
         print("loading model...")
         if torch.cuda.is_available():
@@ -58,17 +58,10 @@ class StableDiffusionServe(L.LightningWork):
 
             print("Downloading weights...")
             self.download_weights(
-                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
+                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers_traced.tar.gz", weights_folder
             )
 
-            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
-            pipe = StableDiffusionPipeline.from_pretrained(
-                repo_folder,
-                revision="fp16",
-                torch_dtype=torch.float16,
-            )
-            pipe = pipe.to("cuda")
-            pipe.enable_attention_slicing()
+            pipe = StableDiffusionPipelineTraced(weights_folder/'diffusers_traced')
             print("model loaded")
         else:
             pipe = None
@@ -98,7 +91,6 @@ class StableDiffusionServe(L.LightningWork):
                     if has_nsfw:
                         pil_results[i] = Image.open("./assets/nsfw-warning.png")
         else:
-            time.sleep(4)
             pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
 
         results = []
