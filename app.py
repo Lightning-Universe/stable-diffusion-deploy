@@ -3,6 +3,7 @@ import time
 from typing import List
 
 import lightning as L
+import requests
 from lightning.app.frontend import StaticWebFrontend
 
 from dream import DreamSlackCommandBot, StableDiffusionServe
@@ -26,7 +27,7 @@ class RootWorkFlow(L.LightningFlow):
     def __init__(
         self,
         initial_num_workers=5,
-        autoscale_interval=1 * 60,
+        autoscale_interval=1 * 30,
         batch_size_wait_s=0.4,
         max_batch_size=4,
     ):
@@ -92,7 +93,9 @@ class RootWorkFlow(L.LightningFlow):
         """Upscale and down scale model inference works based on the number of requests."""
         if time.time() - self._last_autoscale < self.autoscale_interval:
             return
-        num_requests = self.load_balancer.num_requests
+
+        num_requests = int(requests.get(f"{self.load_balancer.url}/num-requests").json())
+        # num_requests = self.load_balancer.num_requests
         num_workers = len(self.model_servers)
 
         print(f"number of requests: {num_requests}")
@@ -112,7 +115,7 @@ class RootWorkFlow(L.LightningFlow):
             self.load_balancer.update_servers(self.model_servers)
 
         # downscale
-        elif num_requests < AUTOSCALE_DOWN_THRESHOLD and not num_requests < self._initial_num_workers:
+        elif num_requests < AUTOSCALE_DOWN_THRESHOLD and num_workers > self._initial_num_workers:
             print(f"downscaling to {self._initial_num_workers}")
             for worker in self.model_servers[self._initial_num_workers :]:
                 worker.stop()

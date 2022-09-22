@@ -31,10 +31,6 @@ class LoadBalancer(L.LightningWork):
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
 
-    @property
-    def num_requests(self):
-        return sum(len(e) for e in self._batch.values())
-
     async def send_batch(self, batch):
         server = next(self._ITER)
         data = {"batch": [b[1] for b in batch]}
@@ -103,6 +99,10 @@ class LoadBalancer(L.LightningWork):
         @app.on_event("shutdown")
         def shutdown_event():
             app.SEND_TASK.cancel()
+
+        @app.get("/num-requests")
+        async def num_requests():
+            return len(asyncio.all_tasks(loop=None)) - 4
 
         @app.post("/api/predict")
         async def balance_api(data: Data):
