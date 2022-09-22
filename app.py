@@ -10,8 +10,8 @@ from dream import DreamSlackCommandBot, StableDiffusionServe
 from dream.components.load_balancer import LoadBalancer
 
 AUTOSCALE_UP_THRESHOLD = 10
-AUTOSCALE_DOWN_THRESHOLD = 1
-MAX_WORKERS = 5
+AUTOSCALE_DOWN_THRESHOLD = 5
+MAX_WORKERS = 15
 
 
 class ReactUI(L.LightningFlow):
@@ -28,7 +28,7 @@ class RootWorkFlow(L.LightningFlow):
         self,
         initial_num_workers=5,
         autoscale_interval=1 * 30,
-        batch_size_wait_s=0.4,
+        batch_size_wait_s=4,
         max_batch_size=4,
     ):
         super().__init__()
