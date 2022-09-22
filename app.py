@@ -30,9 +30,11 @@ class RootWorkFlow(L.LightningFlow):
         autoscale_interval=1 * 30,
         batch_size_wait_s=4,
         max_batch_size=4,
+        gpu_type="gpu-fast",
     ):
         super().__init__()
         self.fake_trigger = 0
+        self.gpu_type = gpu_type
         self._last_autoscale = time.time()
         self.autoscale_interval = autoscale_interval  # in seconds
         self._initial_num_workers = self.num_workers = initial_num_workers
@@ -40,7 +42,7 @@ class RootWorkFlow(L.LightningFlow):
             max_wait_time=batch_size_wait_s, max_batch_size=max_batch_size, cache_calls=True, parallel=True
         )
         for i in range(initial_num_workers):
-            work = StableDiffusionServe(cloud_compute=L.CloudCompute("gpu"), cache_calls=True, parallel=True)
+            work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
             setattr(self, f"serve_work_{i}", work)
 
         self.slack_bot = DreamSlackCommandBot(command="/dream")
@@ -103,10 +105,10 @@ class RootWorkFlow(L.LightningFlow):
         # based on @lantiga's impl: https://github.com/Lightning-AI/LAI-Stable-Diffusion-App/tree/scale_model_trial1
         # upscale
         if num_requests > AUTOSCALE_UP_THRESHOLD and num_workers < MAX_WORKERS:
-            print(f"upscaling to {self.num_workers+1}")
+            print(f"upscaling to {self.num_workers + 1}")
             work_index = len(self.model_servers)
             work = StableDiffusionServe(
-                cloud_compute=L.CloudCompute("gpu"),
+                cloud_compute=L.CloudCompute(self.gpu_type),
                 cache_calls=True,
                 parallel=True,
             )
@@ -116,10 +118,10 @@ class RootWorkFlow(L.LightningFlow):
 
         # downscale
         elif num_requests < AUTOSCALE_DOWN_THRESHOLD and num_workers > self._initial_num_workers:
-            print(f"downscaling to {self._initial_num_workers}")
-            for worker in self.model_servers[self._initial_num_workers :]:
-                worker.stop()
-                self.num_workers -= 1
+            print(f"downscaling to {self.num_workers - 1}")
+            worker = self.model_servers[self.num_workers - 1]
+            worker.stop()
+            self.num_workers -= 1
             self.load_balancer.update_servers(self.model_servers)
         self._last_autoscale = time.time()
 
