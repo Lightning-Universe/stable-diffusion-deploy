@@ -3,6 +3,7 @@ import time
 from typing import List
 
 import lightning as L
+import requests
 from lightning.app.frontend import StaticWebFrontend
 
 from dream import DreamSlackCommandBot, StableDiffusionServe
@@ -16,19 +17,34 @@ class ReactUI(L.LightningFlow):
 
 class RootWorkFlow(L.LightningFlow):
     """
-    health_check_interval: time in seconds in which health_check will run
+    autoscale_interval: time in seconds in which autoscale will run
     """
 
-    def __init__(self, num_workers=5, health_check_interval=10):
+    def __init__(
+        self,
+        initial_num_workers=5,
+        autoscale_interval=1 * 30,
+        max_batch_size=12,
+        batch_size_wait_s=10,
+        gpu_type="gpu-fast",
+        max_workers: int = 10,
+        autoscale_down_threshold: int = 5,
+        autoscale_up_threshold: int = 10,
+    ):
         super().__init__()
-        self.last_health_check = time.time()
-        self.health_check_interval = health_check_interval  # in seconds
-        self.num_workers = num_workers
-        self.load_balancer = LoadBalancer(cache_calls=True, parallel=True)
-        for i in range(num_workers):
-            work = StableDiffusionServe(
-                tolerable_failures=5, cloud_compute=L.CloudCompute("gpu-fast"), cache_calls=True, parallel=True
-            )
+        self._initial_num_workers = self.num_workers = initial_num_workers
+        self.autoscale_interval = autoscale_interval
+        self.max_workers = max_workers
+        self.autoscale_down_threshold = autoscale_down_threshold
+        self.autoscale_up_threshold = autoscale_up_threshold
+        self.fake_trigger = 0
+        self.gpu_type = gpu_type
+        self._last_autoscale = time.time()
+        self.load_balancer = LoadBalancer(
+            max_wait_time=batch_size_wait_s, max_batch_size=max_batch_size, cache_calls=True, parallel=True
+        )
+        for i in range(initial_num_workers):
+            work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
             setattr(self, f"serve_work_{i}", work)
 
         self.slack_bot = DreamSlackCommandBot(command="/dream")
@@ -66,7 +82,8 @@ class RootWorkFlow(L.LightningFlow):
                     self.printed_url = True
 
         if self.load_balancer.url:
-            self.health_check(self.model_servers, interval=self.health_check_interval)
+            self.fake_trigger += 1
+            self.autoscale()
 
     def configure_layout(self):
         return [
@@ -76,24 +93,39 @@ class RootWorkFlow(L.LightningFlow):
             },
         ]
 
-    def health_check(self, workers: List[StableDiffusionServe], interval: int):
-        """Restart the unhealthy workers.
-
-        interval: time in seconds in which health_check will run
-        """
-        if time.time() - self.last_health_check < interval:
+    def autoscale(self):
+        """Upscale and down scale model inference works based on the number of requests."""
+        if time.time() - self._last_autoscale < self.autoscale_interval:
             return
-        self.last_health_check = time.time()
-        healthy_endpoints = []
-        for worker in workers:
-            if worker.has_succeeded:
-                if worker.health_status is False:
-                    print(f"restarting worker {worker.name}")
-                    worker.stop()
-                    worker.run()
-                else:
-                    healthy_endpoints.append(worker.url)
-        self.load_balancer.update_servers(healthy_endpoints)
+
+        num_requests = int(requests.get(f"{self.load_balancer.url}/num-requests").json())
+        # num_requests = self.load_balancer.num_requests
+        num_workers = len(self.model_servers)
+
+        print(f"number of requests: {num_requests}")
+
+        # based on @lantiga's impl: https://github.com/Lightning-AI/LAI-Stable-Diffusion-App/tree/scale_model_trial1
+        # upscale
+        if num_requests > self.autoscale_up_threshold and num_workers < self.max_workers:
+            print(f"Upscale to {self.num_workers + 1}")
+            work_index = len(self.model_servers)
+            work = StableDiffusionServe(
+                cloud_compute=L.CloudCompute(self.gpu_type),
+                cache_calls=True,
+                parallel=True,
+            )
+            setattr(self, f"serve_work_{work_index}", work)
+            self.num_workers += 1
+            self.load_balancer.update_servers(self.model_servers)
+
+        # downscale
+        elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
+            print(f"Downscale to {self.num_workers - 1}")
+            worker = self.model_servers[self.num_workers - 1]
+            worker.stop()
+            self.num_workers -= 1
+            self.load_balancer.update_servers(self.model_servers)
+        self._last_autoscale = time.time()
 
 
 if __name__ == "__main__":

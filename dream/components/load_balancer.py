@@ -21,8 +21,9 @@ class FastAPIBuildConfig(L.BuildConfig):
 class LoadBalancer(L.LightningWork):
     """Forward the requests to Model inference servers in Round Robin fashion and implements automatic batching."""
 
-    def __init__(self, max_batch_size=12, max_wait_time=10, **kwargs):
+    def __init__(self, max_batch_size=8, max_wait_time=10, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
+        self._server_ready = False
         self.servers = []
         self.max_batch_size = max_batch_size
         self.max_wait_time = max_wait_time
@@ -70,11 +71,14 @@ class LoadBalancer(L.LightningWork):
                 self._last_batch_sent = time.time()
 
     def run(self, servers: List[str]):
+        self.servers = servers
+        if self._server_ready:
+            return
+
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
 
-        self.servers = servers
         print(self.servers)
 
         self._ITER = cycle(self.servers)
@@ -95,10 +99,16 @@ class LoadBalancer(L.LightningWork):
         @app.on_event("startup")
         async def startup_event():
             app.SEND_TASK = asyncio.create_task(self.send_batches())
+            self._server_ready = True
 
         @app.on_event("shutdown")
         def shutdown_event():
             app.SEND_TASK.cancel()
+            self._server_ready = False
+
+        @app.get("/num-requests")
+        async def num_requests():
+            return len(asyncio.all_tasks(loop=None)) - 4
 
         @app.post("/api/predict")
         async def balance_api(data: Data):
@@ -120,8 +130,11 @@ class LoadBalancer(L.LightningWork):
                         raise result
                     return result
 
-        uvicorn.run(app, host=self.host, port=self.port)
+        uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
 
-    def update_servers(self, servers: List[str]):
-        self.servers = servers
+    def update_servers(self, servers: List[L.LightningWork]):
+        old_servers = set(self.servers)
+        self.servers = [server.url for server in servers if server.url]
+        new_servers = set(self.servers)
+        print("servers added:", new_servers - old_servers)
         self._ITER = cycle(self.servers)

@@ -16,7 +16,7 @@ from PIL import Image
 from torch import autocast
 
 from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
-from dream.CONST import IMAGE_SIZE, REQUEST_TIMEOUT
+from dream.CONST import IMAGE_SIZE, KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 
 @dataclass
@@ -30,11 +30,9 @@ class StableDiffusionServe(L.LightningWork):
     tolerable_failures: total number of failures after which the worker status becomes unhealthy.
     """
 
-    def __init__(self, tolerable_failures=2, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
-        self.num_failures = 0
         self._model = None
-        self.tolerable_failures = tolerable_failures
 
     @staticmethod
     def download_weights(url: str, target_folder: str):
@@ -101,6 +99,7 @@ class StableDiffusionServe(L.LightningWork):
                     if has_nsfw:
                         pil_results[i] = Image.open("./assets/nsfw-warning.png")
         else:
+            time.sleep(4)
             pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
 
         results = []
@@ -111,10 +110,6 @@ class StableDiffusionServe(L.LightningWork):
             results.append(f"data:image/png;base64,{img_str}")
 
         return results
-
-    @property
-    def health_status(self):
-        return self.num_failures < self.tolerable_failures
 
     def run(self):
         import subprocess
@@ -149,7 +144,7 @@ class StableDiffusionServe(L.LightningWork):
 
         @app.get("/api/health")
         def health():
-            return self.health_status
+            return True
 
         @app.post("/api/predict")
         def predict_api(data: DataBatch):
@@ -168,12 +163,13 @@ class StableDiffusionServe(L.LightningWork):
                 ).result(timeout=REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
-                # hack: once there is a timeout then all requests after that is getting timedout
+                # hack: once there is a timeout then all requests after that is getting timeout
                 # old_pool = app.POOL
                 # app.POOL = ThreadPoolExecutor(max_workers=1)
                 # old_pool.shutdown(wait=False)
                 # signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
-                self.num_failures += 1
                 raise TimeoutException()
 
-        uvicorn.run(app, host=self.host, port=self.port, timeout_keep_alive=30)
+        uvicorn.run(
+            app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False, loop="uvloop"
+        )
