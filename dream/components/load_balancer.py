@@ -21,7 +21,7 @@ class FastAPIBuildConfig(L.BuildConfig):
 class LoadBalancer(L.LightningWork):
     """Forward the requests to Model inference servers in Round Robin fashion and implements automatic batching."""
 
-    def __init__(self, max_batch_size=8, max_wait_time=10, **kwargs):
+    def __init__(self, max_batch_size=12, max_wait_time=10, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
         self.servers = []
         self.max_batch_size = max_batch_size
