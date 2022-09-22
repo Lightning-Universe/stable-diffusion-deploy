@@ -101,9 +101,7 @@ class StableDiffusionServe(L.LightningWork):
                     if has_nsfw:
                         pil_results[i] = Image.open("./assets/nsfw-warning.png")
         else:
-            pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(
-                prompts
-            )
+            pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
 
         results = []
         for image in pil_results:
