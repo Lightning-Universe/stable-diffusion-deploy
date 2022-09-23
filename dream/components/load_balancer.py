@@ -12,8 +12,8 @@ import requests
 from fastapi import HTTPException
 
 from dream import StableDiffusionServe
-from dream.CONST import REQUEST_TIMEOUT
 from dream.components.utils import Data, TimeoutException
+from dream.CONST import REQUEST_TIMEOUT
 
 
 @dataclass
@@ -111,13 +111,13 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                        len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
+                    len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
                 ):
                     has_sent = True
 
                     asyncio.create_task(self.send_batch(batch))
 
-                    self._batch[quality] = self._batch[quality][self.max_batch_size:]
+                    self._batch[quality] = self._batch[quality][self.max_batch_size :]
                     batch = self._batch[quality][: self.max_batch_size]
 
             if has_sent:
