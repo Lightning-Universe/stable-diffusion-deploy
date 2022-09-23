@@ -12,6 +12,8 @@ from contextlib import redirect_stdout
 
 from lightning.app.testing.testing import LightningTestApp, application_testing
 
+from app import RootWorkFlow
+
 os.environ["TESTING_LAI"] = "true"
 
 
@@ -37,3 +39,8 @@ def test_research_app():
     ]
     result = application_testing(LightningAppTestInt, command_line)
     assert result.exit_code == 0
+
+
+def test_model_servers():
+    flow = RootWorkFlow()
+    assert flow.model_servers == []
