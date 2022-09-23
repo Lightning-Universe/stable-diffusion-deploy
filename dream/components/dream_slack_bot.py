@@ -188,7 +188,7 @@ def post_dream(inference_url: str, client: "slack.WebClient", data: dict):
     payload = json.dumps(payload)
     response = requests.post(inference_url + "/api/predict", data=payload)
     response.raise_for_status()
-    generated_images: list = response.json()
+    generated_image: str = response.json()
     with tempfile.NamedTemporaryFile() as file:
-        save_base64(generated_images[0], file.name)
+        save_base64(generated_image, file.name)
         client.files_upload(channels=channel_id, title=prompt, file=file.name)
