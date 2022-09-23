@@ -165,9 +165,6 @@ class LoadBalancer(L.LightningWork):
         @app.post("/api/predict")
         async def balance_api(data: Data):
             """"""
-            if not self._scheduler.servers:
-                raise HTTPException(500, "None of the workers are healthy!")
-
             request_id = uuid.uuid4().hex
             request = (request_id, data.dict())
             self._batch["high" if data.high_quality else "low"].append(request)
