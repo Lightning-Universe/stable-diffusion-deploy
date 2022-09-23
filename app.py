@@ -58,8 +58,7 @@ class RootWorkFlow(L.LightningFlow):
         works = []
         for i in range(self.num_workers):
             work: StableDiffusionServe = getattr(self, f"serve_work_{i}")
-            if work.has_succeeded:
-                works.append(work)
+            works.append(work)
         return works
 
     def run(self):

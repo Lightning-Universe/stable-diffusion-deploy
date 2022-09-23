@@ -43,4 +43,4 @@ def test_research_app():
 
 def test_model_servers():
     flow = RootWorkFlow()
-    assert flow.model_servers == []
+    assert len(flow.model_servers) == flow.num_workers
