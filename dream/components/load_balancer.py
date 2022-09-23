@@ -43,7 +43,7 @@ class Scheduler:
 
 
 class LeastConnectionScheduler(Scheduler):
-    def __init__(self, servers: List[str], update_interval: int = 30):
+    def __init__(self, servers: List[str], update_interval: int = 5):
         super().__init__(servers=servers)
         self.update_interval = update_interval  # seconds
         self.server_backlogs: Dict[str, int] = {server: 0 for server in servers}
