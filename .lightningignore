@@ -314,7 +314,6 @@ wandb/
 .idea/
 .git/
 *.npy
-*.csv
 github/
 _output/
 *.db
