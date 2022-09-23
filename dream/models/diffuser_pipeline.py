@@ -33,7 +33,6 @@ class StableDiffusionPipelineTraced:
         guidance_scale: Optional[float] = 7.5,
         generator: Optional[torch.Generator] = None,
     ):
-
         if isinstance(prompt, str):
             batch_size = 1
         elif isinstance(prompt, list):
@@ -52,8 +51,8 @@ class StableDiffusionPipelineTraced:
             [""] * batch_size, padding="max_length", max_length=max_length, return_tensors="pt"
         )
 
-        text_embeddings = self.text_encoder(text_input.input_ids.to(self.device))
-        uncond_embeddings = self.text_encoder(uncond_input.input_ids.to(self.device))
+        text_embeddings = self.text_encoder(text_input.input_ids.to(self.device))[0]
+        uncond_embeddings = self.text_encoder(uncond_input.input_ids.to(self.device))[0]
 
         # For classifier free guidance, we need to do two forward passes.
         # Here we concatenate the unconditional and text embeddings into a single batch
@@ -81,7 +80,7 @@ class StableDiffusionPipelineTraced:
             timesteps = t.to(torch.float32)[None].to(self.device)
             # predict the noise residual
 
-            noise_pred = self.unet(latent_model_input, timesteps, text_embeddings)
+            noise_pred = self.unet(latent_model_input, timesteps, text_embeddings)[0]
 
             # perform guidance
             noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)

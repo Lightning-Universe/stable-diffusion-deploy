@@ -38,6 +38,7 @@ class StableDiffusionServe(L.LightningWork):
     def download_weights(url: str, target_folder: str):
         dest = target_folder / f"{os.path.basename(url)}"
         if not os.path.exists(dest):
+            print("Downloading weights...")
             urllib.request.urlretrieve(url, dest)
             file = tarfile.open(dest)
 
@@ -59,7 +60,6 @@ class StableDiffusionServe(L.LightningWork):
             weights_folder = Path("resources/stable-diffusion-v1-4")
             os.makedirs(weights_folder, exist_ok=True)
 
-            print("Downloading weights...")
             self.download_weights(
                 "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/diffusers_traced.tar.gz", weights_folder
             )
@@ -109,6 +109,7 @@ class StableDiffusionServe(L.LightningWork):
         from fastapi.middleware.cors import CORSMiddleware
 
         subprocess.run("nvidia-smi", shell=True)
+        subprocess.run("pip freeze", shell=True)
 
         if self._model is None:
             self._model = self.build_model()
