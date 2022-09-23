@@ -318,6 +318,6 @@ wandb/
 github/
 _output/
 *.db
-.git/
+*.git/
 node_modules/
 *node_modules/*
