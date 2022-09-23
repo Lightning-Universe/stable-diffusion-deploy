@@ -16,6 +16,11 @@ class ReactUI(L.LightningFlow):
 
 
 class RootWorkFlow(L.LightningFlow):
+
+    AUTOSCALE_UP_THRESHOLD = 10
+    AUTOSCALE_DOWN_THRESHOLD = 1
+    MAX_WORKERS = 5
+
     """
     autoscale_interval: time in seconds in which autoscale will run
     """
@@ -27,16 +32,10 @@ class RootWorkFlow(L.LightningFlow):
         max_batch_size=12,
         batch_size_wait_s=10,
         gpu_type="gpu-fast",
-        max_workers: int = 10,
-        autoscale_down_threshold: int = 5,
-        autoscale_up_threshold: int = 10,
     ):
         super().__init__()
         self._initial_num_workers = self.num_workers = initial_num_workers
         self.autoscale_interval = autoscale_interval
-        self.max_workers = max_workers
-        self.autoscale_down_threshold = autoscale_down_threshold
-        self.autoscale_up_threshold = autoscale_up_threshold
         self.fake_trigger = 0
         self.gpu_type = gpu_type
         self._last_autoscale = time.time()
@@ -67,6 +66,7 @@ class RootWorkFlow(L.LightningFlow):
 
         for model_serve in self.model_servers:
             model_serve.run()
+
         if all(model_serve.url for model_serve in self.model_servers):
             # run the load balancer when all the model server is ready
             self.load_balancer.run([serve.url for serve in self.model_servers])
@@ -83,7 +83,8 @@ class RootWorkFlow(L.LightningFlow):
 
         if self.load_balancer.url:
             self.fake_trigger += 1
-            self.autoscale()
+            if time.time() - self._last_autoscale < self.autoscale_interval:
+                self.autoscale()
 
     def configure_layout(self):
         return [
@@ -95,19 +96,16 @@ class RootWorkFlow(L.LightningFlow):
 
     def autoscale(self):
         """Upscale and down scale model inference works based on the number of requests."""
-        if time.time() - self._last_autoscale < self.autoscale_interval:
-            return
-
         num_requests = int(requests.get(f"{self.load_balancer.url}/num-requests").json())
-        # num_requests = self.load_balancer.num_requests
         num_workers = len(self.model_servers)
 
-        print(f"number of requests: {num_requests}")
+        print("Number of requests: ", num_requests)
+        print("Number of workers: ", self.num_workers)
 
         # based on @lantiga's impl: https://github.com/Lightning-AI/LAI-Stable-Diffusion-App/tree/scale_model_trial1
         # upscale
-        if num_requests > self.autoscale_up_threshold and num_workers < self.max_workers:
-            print(f"Upscale to {self.num_workers + 1}")
+        if num_requests > self.AUTOSCALE_UP_THRESHOLD and num_workers < self.MAX_WORKERS:
+            print(f"Upscale workers to {self.num_workers + 1}")
             work_index = len(self.model_servers)
             work = StableDiffusionServe(
                 cloud_compute=L.CloudCompute(self.gpu_type),
@@ -119,8 +117,8 @@ class RootWorkFlow(L.LightningFlow):
             self.load_balancer.update_servers(self.model_servers)
 
         # downscale
-        elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
-            print(f"Downscale to {self.num_workers - 1}")
+        elif num_requests < self.AUTOSCALE_DOWN_THRESHOLD and num_workers > self._initial_num_workers:
+            print(f"Downscale workers to {self.num_workers - 1}")
             worker = self.model_servers[self.num_workers - 1]
             worker.stop()
             self.num_workers -= 1
@@ -128,5 +126,4 @@ class RootWorkFlow(L.LightningFlow):
         self._last_autoscale = time.time()
 
 
-if __name__ == "__main__":
-    app = L.LightningApp(RootWorkFlow())
+app = L.LightningApp(RootWorkFlow())
