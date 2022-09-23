@@ -32,8 +32,9 @@ class Scheduler:
         old_servers = set(self.servers)
         server_diff = set(new_servers) - old_servers
         if server_diff:
-            print("servers added:", server_diff)
             self.servers = new_servers
+            print(self.servers)
+            print("servers added:", server_diff)
             self._iter = cycle(self.servers)
 
     def get_server(self):
@@ -163,6 +164,8 @@ class LoadBalancer(L.LightningWork):
         @app.post("/api/predict")
         async def balance_api(data: Data):
             """"""
+            if not self._scheduler.servers:
+                raise HTTPException(500, "Model server not available!")
             request_id = uuid.uuid4().hex
             request = (request_id, data.dict())
             self._batch["high" if data.high_quality else "low"].append(request)
@@ -177,7 +180,11 @@ class LoadBalancer(L.LightningWork):
                         raise result
                     return result
 
-        uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
+        uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=True)
 
     def update_servers(self, servers: List[str]):
-        requests.put(f"{self.url}/system/update-servers", json=servers)
+        # self._scheduler.update_servers(servers)
+        headers = {
+            "accept": "application/json",
+        }
+        requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)

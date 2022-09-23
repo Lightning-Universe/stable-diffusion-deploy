@@ -64,7 +64,6 @@ class RootWorkFlow(L.LightningFlow):
         return works
 
     def run(self):
-        self.fake_trigger += 1
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 
@@ -87,7 +86,6 @@ class RootWorkFlow(L.LightningFlow):
                 print("starting autoscaling in background")
                 Thread(target=self.autoscale, daemon=True).start()
                 self.autoscale_running = True
-            self.load_balancer.update_servers([server.url for server in self.model_servers if server.url])
 
     def configure_layout(self):
         return [
@@ -99,35 +97,38 @@ class RootWorkFlow(L.LightningFlow):
 
     def autoscale(self):
         """Upscale and down scale model inference works based on the number of requests."""
-        if time.time() - self._last_autoscale < self.autoscale_interval:
-            return
+        while True:
+            self.load_balancer.update_servers([server.url for server in self.model_servers if server.url])
 
-        num_requests = int(requests.get(f"{self.load_balancer.url}/system/num-requests").json())
-        # num_requests = self.load_balancer.num_requests
-        num_workers = len(self.model_servers)
+            if time.time() - self._last_autoscale < self.autoscale_interval:
+                return
 
-        print(f"number of requests: {num_requests}")
+            num_requests = int(requests.get(f"{self.load_balancer.url}/system/num-requests").json())
+            # num_requests = self.load_balancer.num_requests
+            num_workers = len(self.model_servers)
 
-        # based on @lantiga's impl: https://github.com/Lightning-AI/LAI-Stable-Diffusion-App/tree/scale_model_trial1
-        # upscale
-        if num_requests > self.autoscale_up_threshold and num_workers < self.max_workers:
-            print(f"Upscale to {self.num_workers + 1}")
-            work_index = len(self.model_servers)
-            work = StableDiffusionServe(
-                cloud_compute=L.CloudCompute(self.gpu_type),
-                cache_calls=True,
-                parallel=True,
-            )
-            setattr(self, f"serve_work_{work_index}", work)
-            self.num_workers += 1
+            print(f"number of requests: {num_requests}")
 
-        # downscale
-        elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
-            print(f"Downscale to {self.num_workers - 1}")
-            worker = self.model_servers[self.num_workers - 1]
-            worker.stop()
-            self.num_workers -= 1
-        self._last_autoscale = time.time()
+            # based on @lantiga's impl: https://github.com/Lightning-AI/LAI-Stable-Diffusion-App/tree/scale_model_trial1
+            # upscale
+            if num_requests > self.autoscale_up_threshold and num_workers < self.max_workers:
+                print(f"Upscale to {self.num_workers + 1}")
+                work_index = len(self.model_servers)
+                work = StableDiffusionServe(
+                    cloud_compute=L.CloudCompute(self.gpu_type),
+                    cache_calls=True,
+                    parallel=True,
+                )
+                setattr(self, f"serve_work_{work_index}", work)
+                self.num_workers += 1
+
+            # downscale
+            elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
+                print(f"Downscale to {self.num_workers - 1}")
+                worker = self.model_servers[self.num_workers - 1]
+                worker.stop()
+                self.num_workers -= 1
+            self._last_autoscale = time.time()
 
 
 if __name__ == "__main__":
