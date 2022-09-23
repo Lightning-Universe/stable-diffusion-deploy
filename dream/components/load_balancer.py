@@ -11,7 +11,6 @@ import lightning as L
 import requests
 from fastapi import HTTPException
 
-from dream import StableDiffusionServe
 from dream.components.utils import Data, TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
 
@@ -28,9 +27,8 @@ class Scheduler:
         self.servers: List[str] = servers
         self._iter = cycle(self.servers)
 
-    def update_server(self, server_works: List["StableDiffusionServe"]):
+    def update_servers(self, new_servers: List[str]):
         """Update the server list if a new model serve work is detected."""
-        new_servers: List[str] = [server.url for server in server_works if server.url]
         old_servers = set(self.servers)
         server_diff = set(new_servers) - old_servers
         if server_diff:
@@ -49,8 +47,8 @@ class LeastConnectionScheduler(Scheduler):
         self.server_backlogs: Dict[str, int] = {server: 0 for server in servers}
         Thread(target=self.run_in_background, daemon=True).start()
 
-    def update_server(self, server_works: List["StableDiffusionServe"]):
-        super().update_server(server_works)
+    def update_server(self, servers: List[str]):
+        super().update_servers(servers)
         self.server_backlogs = {}
         self.update_backlog()
 
@@ -126,6 +124,7 @@ class LoadBalancer(L.LightningWork):
                 self._last_batch_sent = time.time()
 
     def run(self):
+        print("run called")
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
@@ -157,6 +156,10 @@ class LoadBalancer(L.LightningWork):
         async def num_requests():
             return len(asyncio.all_tasks(loop=None)) - 4
 
+        @app.put("/system/update-servers")
+        async def update_servers(servers: List[str]):
+            self._scheduler.update_servers(servers)
+
         @app.post("/api/predict")
         async def balance_api(data: Data):
             """"""
@@ -176,5 +179,5 @@ class LoadBalancer(L.LightningWork):
 
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
 
-    def update_servers(self, servers: List["StableDiffusionServe"]):
-        self._scheduler.update_server(servers)
+    def update_servers(self, servers: List[str]):
+        requests.put(f"{self.url}/system/update-servers", json=servers)

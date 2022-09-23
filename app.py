@@ -1,5 +1,6 @@
 import os
 import time
+from threading import Thread
 from typing import List
 
 import lightning as L
@@ -22,7 +23,7 @@ class RootWorkFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=5,
+        initial_num_workers=1,
         autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_size_wait_s=10,
@@ -52,6 +53,7 @@ class RootWorkFlow(L.LightningFlow):
         self.slack_bot_url = ""
         self.dream_url = ""
         self.ui = ReactUI()
+        self.autoscale_running = False
 
     @property
     def model_servers(self) -> List[StableDiffusionServe]:
@@ -80,9 +82,12 @@ class RootWorkFlow(L.LightningFlow):
                     print("load balancer url=", self.load_balancer.url)
                     self.printed_url = True
 
-        if self.load_balancer.has_succeeded:
-            self.autoscale()
-            self.load_balancer.update_servers(self.model_servers)
+        if self.load_balancer.url:
+            if self.autoscale_running is False:
+                print("starting autoscaling in background")
+                Thread(target=self.autoscale, daemon=True).start()
+                self.autoscale_running = True
+            self.load_balancer.update_servers([server.url for server in self.model_servers if server.url])
 
     def configure_layout(self):
         return [
