@@ -10,3 +10,4 @@ slackclient==2.9.4
 flask-cors
 asgiref==3.5.2
 lightning
+pandas==1.4.3

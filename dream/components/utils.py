@@ -94,6 +94,6 @@ class DataBatch(BaseModel):
 
 def random_prompt() -> str:
     global OPEN_PROMPTS
-    if not OPEN_PROMPTS:
+    if OPEN_PROMPTS is None:
         OPEN_PROMPTS = pd.read_csv("./assets/1k-prompts.csv")["prompt"].values
     return random.choice(OPEN_PROMPTS)
