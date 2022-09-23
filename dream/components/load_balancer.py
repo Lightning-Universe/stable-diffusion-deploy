@@ -2,21 +2,18 @@ import asyncio
 import time
 import uuid
 from dataclasses import dataclass
-from http.client import HTTPException
 from itertools import cycle
 from threading import Thread
-from typing import TYPE_CHECKING, Dict, List
+from typing import Dict, List
 
 import aiohttp
 import lightning as L
 import requests
+from fastapi import HTTPException
 
 from dream import StableDiffusionServe
-from dream.components.utils import Data, TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
-
-if TYPE_CHECKING:
-    from dream import StableDiffusionServe
+from dream.components.utils import Data, TimeoutException
 
 
 @dataclass
@@ -43,7 +40,7 @@ class Scheduler:
 
 
 class LeastConnectionScheduler(Scheduler):
-    def __init__(self, servers: List[str], update_interval: int = 5):
+    def __init__(self, servers: List[str], update_interval: float = 5):
         super().__init__(servers=servers)
         self.update_interval = update_interval  # seconds
         self.server_backlogs: Dict[str, int] = {server: 0 for server in servers}
@@ -68,9 +65,11 @@ class LeastConnectionScheduler(Scheduler):
                 last_updated = time.time()
 
     def get_server(self) -> str:
-        urls = sorted(self.server_backlogs.items(), key=lambda x: x[1])[0]
+        urls = sorted(self.server_backlogs.items(), key=lambda x: x[1])
         print(urls)
-        return urls[0]
+        if not urls:
+            raise HTTPException(500, "Model server not available!")
+        return urls[0][0]
 
 
 class LoadBalancer(L.LightningWork):
@@ -112,13 +111,13 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                    len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
+                        len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
                 ):
                     has_sent = True
 
                     asyncio.create_task(self.send_batch(batch))
 
-                    self._batch[quality] = self._batch[quality][self.max_batch_size :]
+                    self._batch[quality] = self._batch[quality][self.max_batch_size:]
                     batch = self._batch[quality][: self.max_batch_size]
 
             if has_sent:
