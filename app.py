@@ -77,7 +77,7 @@ class RootWorkFlow(L.LightningFlow):
                 self.slack_bot_url = self.slack_bot.url
                 if self.slack_bot.url and not self.printed_url:
                     print("Slack Bot Work ready with URL=", self.slack_bot.url)
-                    print("model serve url=", self.load_balancer.url)
+                    print("load balancer url=", self.load_balancer.url)
                     self.printed_url = True
 
         if self.load_balancer.has_succeeded:
@@ -97,7 +97,7 @@ class RootWorkFlow(L.LightningFlow):
         if time.time() - self._last_autoscale < self.autoscale_interval:
             return
 
-        num_requests = int(requests.get(f"{self.load_balancer.url}/num-requests").json())
+        num_requests = int(requests.get(f"{self.load_balancer.url}/system/num-requests").json())
         # num_requests = self.load_balancer.num_requests
         num_workers = len(self.model_servers)
 

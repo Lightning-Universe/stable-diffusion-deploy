@@ -152,9 +152,8 @@ class LoadBalancer(L.LightningWork):
         @app.on_event("shutdown")
         def shutdown_event():
             app.SEND_TASK.cancel()
-            self._run_called = False
 
-        @app.get("/num-requests")
+        @app.get("/system/num-requests")
         async def num_requests():
             return len(asyncio.all_tasks(loop=None)) - 4
 
