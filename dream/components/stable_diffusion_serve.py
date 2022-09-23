@@ -142,7 +142,7 @@ class StableDiffusionServe(L.LightningWork):
         )
 
         @app.get("/system/backlog")
-        def pool_backlog():
+        async def pool_backlog():
             """returns the approximate size of the Threadpool queue."""
             return app.POOL._work_queue.qsize()
 
@@ -155,7 +155,6 @@ class StableDiffusionServe(L.LightningWork):
             """
             try:
                 entry_time = time.time()
-                print(f"request: {data}")
                 result = app.POOL.submit(
                     self.predict,
                     data.batch,

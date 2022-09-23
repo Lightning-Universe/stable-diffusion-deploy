@@ -98,6 +98,7 @@ class RootWorkFlow(L.LightningFlow):
     def autoscale(self):
         """Upscale and down scale model inference works based on the number of requests."""
         while True:
+            print("autoscale")
             self.load_balancer.update_servers([server.url for server in self.model_servers if server.url])
 
             if time.time() - self._last_autoscale < self.autoscale_interval:
@@ -129,6 +130,7 @@ class RootWorkFlow(L.LightningFlow):
                 worker.stop()
                 self.num_workers -= 1
             self._last_autoscale = time.time()
+            print("end autoscale")
 
 
 if __name__ == "__main__":

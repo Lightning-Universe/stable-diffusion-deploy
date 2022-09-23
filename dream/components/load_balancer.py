@@ -183,8 +183,10 @@ class LoadBalancer(L.LightningWork):
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=True)
 
     def update_servers(self, servers: List[str]):
+        print("updating server")
         # self._scheduler.update_servers(servers)
         headers = {
             "accept": "application/json",
         }
-        requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)
+        resp = requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)
+        resp.raise_for_status()
