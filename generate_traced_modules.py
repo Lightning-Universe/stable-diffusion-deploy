@@ -15,66 +15,6 @@ from diffusers.pipelines.stable_diffusion.safety_checker import (
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 
-def unet_forward(
-    self,
-    sample: torch.FloatTensor,
-    timestep: Union[torch.Tensor, float, int],
-    encoder_hidden_states: torch.Tensor,
-    return_dict: bool = True,
-):
-    if self.config.center_input_sample:
-        sample = 2 * sample - 1.0
-
-    timesteps = timestep
-
-    # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-
-    t_emb = self.time_proj(timesteps)
-    emb = self.time_embedding(t_emb)
-
-    # 2. pre-process
-    sample = self.conv_in(sample)
-
-    # 3. down
-    down_block_res_samples = (sample,)
-    for downsample_block in self.down_blocks:
-        if hasattr(downsample_block, "attentions") and downsample_block.attentions is not None:
-            sample, res_samples = downsample_block(
-                hidden_states=sample, temb=emb, encoder_hidden_states=encoder_hidden_states
-            )
-        else:
-            sample, res_samples = downsample_block(hidden_states=sample, temb=emb)
-
-        down_block_res_samples += res_samples
-
-    # 4. mid
-    sample = self.mid_block(sample, emb, encoder_hidden_states=encoder_hidden_states)
-
-    # 5. up
-    for upsample_block in self.up_blocks:
-        res_samples = down_block_res_samples[-len(upsample_block.resnets) :]
-        down_block_res_samples = down_block_res_samples[: -len(upsample_block.resnets)]
-
-        if hasattr(upsample_block, "attentions") and upsample_block.attentions is not None:
-            sample = upsample_block(
-                hidden_states=sample,
-                temb=emb,
-                res_hidden_states_tuple=res_samples,
-                encoder_hidden_states=encoder_hidden_states,
-            )
-        else:
-            sample = upsample_block(hidden_states=sample, temb=emb, res_hidden_states_tuple=res_samples)
-
-    # 6. post-process
-    # make sure hidden states is in float32
-    # when running in half-precision
-    sample = self.conv_norm_out(sample.float()).type(sample.dtype)
-    sample = self.conv_act(sample)
-    sample = self.conv_out(sample)
-
-    return sample
-
-
 class StableDiffusionPipeline(DiffusionPipeline):
     def __init__(
         self,
@@ -238,7 +178,7 @@ class StableDiffusionPipeline(DiffusionPipeline):
 
 class Work(L.LightningWork):
     def __init__(self):
-        super().__init__()
+        super().__init__(cloud_compute=L.CloudCompute("gpu-fast"))
         # self.drive_1 = Drive("lit://drive_1", component_name='pipe_work')
         self._pipe = StableDiffusionPipeline.from_pretrained(
             "CompVis/stable-diffusion-v1-4",
