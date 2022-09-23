@@ -1,12 +1,16 @@
 import json
 import os
 import queue
+import random
 import sys
 from typing import Any, List, Optional
 
+import pandas as pd
 from fastapi import HTTPException
 from lightning_app.storage.drive import Drive
 from pydantic import BaseModel
+
+OPEN_PROMPTS = None
 
 
 def exit_threads(executor):
@@ -86,3 +90,10 @@ class Data(BaseModel):
 
 class DataBatch(BaseModel):
     batch: List[Data]
+
+
+def random_prompt() -> str:
+    global OPEN_PROMPTS
+    if not OPEN_PROMPTS:
+        OPEN_PROMPTS = pd.read_csv("./assets/1k-prompts.csv")["prompt"].values
+    return random.choice(OPEN_PROMPTS)
