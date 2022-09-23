@@ -1,6 +1,5 @@
 import base64
 import os.path
-import signal
 import tarfile
 import time
 import urllib.request
@@ -15,7 +14,7 @@ import torch
 from PIL import Image
 from torch import autocast
 
-from dream.components.utils import Data, DataBatch, TimeoutException, exit_threads
+from dream.components.utils import Data, DataBatch, TimeoutException
 from dream.CONST import IMAGE_SIZE, KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 
@@ -142,9 +141,10 @@ class StableDiffusionServe(L.LightningWork):
             allow_headers=["*"],
         )
 
-        @app.get("/api/health")
-        def health():
-            return True
+        @app.get("/system/backlog")
+        async def pool_backlog():
+            """returns the approximate size of the Threadpool queue."""
+            return app.POOL._work_queue.qsize()
 
         @app.post("/api/predict")
         def predict_api(data: DataBatch):

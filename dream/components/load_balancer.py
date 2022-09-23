@@ -4,13 +4,19 @@ import uuid
 from dataclasses import dataclass
 from http.client import HTTPException
 from itertools import cycle
-from typing import List
+from threading import Thread
+from typing import TYPE_CHECKING, List
 
 import aiohttp
 import lightning as L
+import requests
 
+from dream import StableDiffusionServe
 from dream.components.utils import Data, TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
+
+if TYPE_CHECKING:
+    from dream import StableDiffusionServe
 
 
 @dataclass
@@ -18,22 +24,61 @@ class FastAPIBuildConfig(L.BuildConfig):
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
 
+class Scheduler:
+    """Simple round-robin scheduling for servers."""
+
+    def __init__(self, servers: List[str]):
+        self.servers = servers
+        self._iter = cycle(self.servers)
+
+    def update_server(self, server_works: List["StableDiffusionServe"]):
+        old_servers = set(self.servers)
+        self.servers = [server.url for server in server_works if server.url]
+        new_servers = set(self.servers)
+        print("servers added:", new_servers - old_servers)
+        self._iter = cycle(self.servers)
+
+    def get_server(self):
+        return next(self._iter)
+
+
+class LeastConnectionScheduling(Scheduler):
+    def __init__(self, servers: List[str]):
+        super().__init__(servers=servers)
+        self.update_interval = 30  # seconds
+        self.server_backlogs = {server: 0 for server in servers}
+        Thread(target=self.run_in_background, daemon=True).start()
+
+    def run_in_background(self):
+        last_updated = time.time()
+        while True:
+            if time.time() - last_updated > self.update_interval:
+                self._update_backlog()
+                last_updated = time.time()
+
+    def _update_backlog(self) -> None:
+        for server in self.servers:
+            self.server_backlogs[server] = int(requests.get(f"{server}/system/backlog", timeout=10).json())
+
+    def get_server(self) -> str:
+        return sorted(self.server_backlogs.items(), key=lambda x: x[1])[0]
+
+
 class LoadBalancer(L.LightningWork):
     """Forward the requests to Model inference servers in Round Robin fashion and implements automatic batching."""
 
     def __init__(self, max_batch_size=8, max_wait_time=10, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
+        self._scheduler: Scheduler = None
         self._server_ready = False
-        self.servers = []
         self.max_batch_size = max_batch_size
         self.max_wait_time = max_wait_time
-        self._ITER = None
         self._batch = {"high": [], "low": []}
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
 
     async def send_batch(self, batch):
-        server = next(self._ITER)
+        server = self._scheduler.get_server()
         data = {"batch": [b[1] for b in batch]}
 
         try:
@@ -71,7 +116,7 @@ class LoadBalancer(L.LightningWork):
                 self._last_batch_sent = time.time()
 
     def run(self, servers: List[str]):
-        self.servers = servers
+        self._scheduler = LeastConnectionScheduling(servers)
         if self._server_ready:
             return
 
@@ -79,9 +124,8 @@ class LoadBalancer(L.LightningWork):
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
 
-        print(self.servers)
+        print(self._scheduler.servers)
 
-        self._ITER = cycle(self.servers)
         self._last_batch_sent = time.time()
 
         app = FastAPI()
@@ -113,7 +157,7 @@ class LoadBalancer(L.LightningWork):
         @app.post("/api/predict")
         async def balance_api(data: Data):
             """"""
-            if not self.servers:
+            if not self._scheduler.servers:
                 raise HTTPException(500, "None of the workers are healthy!")
 
             request_id = uuid.uuid4().hex
@@ -133,8 +177,4 @@ class LoadBalancer(L.LightningWork):
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
 
     def update_servers(self, servers: List[L.LightningWork]):
-        old_servers = set(self.servers)
-        self.servers = [server.url for server in servers if server.url]
-        new_servers = set(self.servers)
-        print("servers added:", new_servers - old_servers)
-        self._ITER = cycle(self.servers)
+        self._scheduler.update_server(servers)
