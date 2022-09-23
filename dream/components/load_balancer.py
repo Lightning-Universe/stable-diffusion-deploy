@@ -5,15 +5,15 @@ from dataclasses import dataclass
 from http.client import HTTPException
 from itertools import cycle
 from threading import Thread
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Dict
 
 import aiohttp
 import lightning as L
 import requests
 
 from dream import StableDiffusionServe
-from dream.components.utils import Data, TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
+from dream.components.utils import Data, TimeoutException
 
 if TYPE_CHECKING:
     from dream import StableDiffusionServe
@@ -42,26 +42,33 @@ class Scheduler:
         return next(self._iter)
 
 
-class LeastConnectionScheduling(Scheduler):
+class LeastConnectionScheduler(Scheduler):
     def __init__(self, servers: List[str]):
         super().__init__(servers=servers)
         self.update_interval = 30  # seconds
-        self.server_backlogs = {server: 0 for server in servers}
+        self.server_backlogs: Dict[str, int] = {server: 0 for server in servers}
         Thread(target=self.run_in_background, daemon=True).start()
+
+    def update_server(self, server_works: List["StableDiffusionServe"]):
+        super().update_server(server_works)
+        self.server_backlogs = {}
+        self.update_backlog()
+
+    def update_backlog(self) -> None:
+        for server in self.servers:
+            self.server_backlogs[server] = int(requests.get(f"{server}/system/backlog", timeout=10).json())
 
     def run_in_background(self):
         last_updated = time.time()
         while True:
             if time.time() - last_updated > self.update_interval:
-                self._update_backlog()
+                self.update_backlog()
                 last_updated = time.time()
 
-    def _update_backlog(self) -> None:
-        for server in self.servers:
-            self.server_backlogs[server] = int(requests.get(f"{server}/system/backlog", timeout=10).json())
-
     def get_server(self) -> str:
-        return sorted(self.server_backlogs.items(), key=lambda x: x[1])[0]
+        url = sorted(self.server_backlogs.items(), key=lambda x: x[1])[0]
+        print(url)
+        return url
 
 
 class LoadBalancer(L.LightningWork):
@@ -103,20 +110,20 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                    len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
+                        len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
                 ):
                     has_sent = True
 
                     asyncio.create_task(self.send_batch(batch))
 
-                    self._batch[quality] = self._batch[quality][self.max_batch_size :]
+                    self._batch[quality] = self._batch[quality][self.max_batch_size:]
                     batch = self._batch[quality][: self.max_batch_size]
 
             if has_sent:
                 self._last_batch_sent = time.time()
 
     def run(self, servers: List[str]):
-        self._scheduler = LeastConnectionScheduling(servers)
+        self._scheduler = LeastConnectionScheduler(servers)
         if self._server_ready:
             return
 
@@ -176,5 +183,5 @@ class LoadBalancer(L.LightningWork):
 
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
 
-    def update_servers(self, servers: List[L.LightningWork]):
+    def update_servers(self, servers: List["StableDiffusionServe"]):
         self._scheduler.update_server(servers)
