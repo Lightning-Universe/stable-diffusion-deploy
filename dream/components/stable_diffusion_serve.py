@@ -1,9 +1,9 @@
 import base64
+import importlib
 import os.path
 import signal
 import tarfile
 import time
-import importlib
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
@@ -55,7 +55,7 @@ class StableDiffusionServe(L.LightningWork):
 
         print("loading model...")
         if torch.cuda.is_available() or True:
-            device = torch.device('cuda')
+            device = torch.device("cuda")
             weights_folder = Path("resources/stable-diffusion-v1-4")
             os.makedirs(weights_folder, exist_ok=True)
 
@@ -70,14 +70,22 @@ class StableDiffusionServe(L.LightningWork):
             model = instantiate_from_config(config.model)
 
             model.apply_model = lambda x, t, c: sd_fused(_x=x, _t=t, _cnd=c)
-            # warmup
-            # tmp_x, tmp_c, tmp_t = torch.randn(3, 4, 64, 64).to(device), c.to(device), torch.randint(0, 5, (3,)).to(device)
-            # for _ in range(3):
-            #     model.apply_model(tmp_x, tmp_t, tmp_c)
-
             # delete the original model
             del model.model  # lol
             model = model.to(device)
+            torch.cuda.empty_cache()
+
+            # warmup
+            c, uc = get_texttensors(model, ["warm up machine"] * 3)
+            model.sample_log(
+                cond=c,
+                batch_size=3,
+                ddim=True,
+                ddim_steps=2,
+                unconditional_guidance_scale=5.0,
+                unconditional_conditioning=uc,
+            )
+
             torch.cuda.empty_cache()
             print("model loaded")
         else:
@@ -108,7 +116,7 @@ class StableDiffusionServe(L.LightningWork):
                 )
 
                 images = self._model.decode_first_stage(sample_scaled)
-                images = images.permute(0, 2, 3, 1) * 255.
+                images = images.permute(0, 2, 3, 1) * 255.0
                 images = images.cpu().numpy()
                 pil_results = [Image.fromarray(img.astype(np.uint8)) for img in images]
             else:
@@ -197,14 +205,16 @@ def get_texttensors(model, prompts):
     uc = model.get_learned_conditioning(len(c) * [""])
     return c, uc
 
+
 def instantiate_from_config(config):
     if not "target" in config:
-        if config == '__is_first_stage__':
+        if config == "__is_first_stage__":
             return None
         elif config == "__is_unconditional__":
             return None
         raise KeyError("Expected key `target` to instantiate.")
     return get_obj_from_str(config["target"])(**config.get("params", dict()))
+
 
 def get_obj_from_str(string, reload=False):
     module, cls = string.rsplit(".", 1)
