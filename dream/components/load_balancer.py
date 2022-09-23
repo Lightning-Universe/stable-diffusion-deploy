@@ -25,15 +25,17 @@ class Scheduler:
     """Simple round-robin scheduling for servers."""
 
     def __init__(self, servers: List[str]):
-        self.servers = servers
+        self.servers: List[str] = servers
         self._iter = cycle(self.servers)
 
     def update_server(self, server_works: List["StableDiffusionServe"]):
+        new_servers: List[str] = [server.url for server in server_works if server.url]
         old_servers = set(self.servers)
-        self.servers = [server.url for server in server_works if server.url]
-        new_servers = set(self.servers)
-        print("servers added:", new_servers - old_servers)
-        self._iter = cycle(self.servers)
+        server_diff = set(new_servers) - old_servers
+        if server_diff:
+            print("servers added:", server_diff)
+            self.servers = new_servers
+            self._iter = cycle(self.servers)
 
     def get_server(self):
         return next(self._iter)
@@ -78,7 +80,6 @@ class LoadBalancer(L.LightningWork):
     def __init__(self, max_batch_size=8, max_wait_time=10, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
         self._scheduler: Scheduler = None
-        self._server_ready = False
         self.max_batch_size = max_batch_size
         self.max_wait_time = max_wait_time
         self._batch = {"high": [], "low": []}
@@ -123,17 +124,12 @@ class LoadBalancer(L.LightningWork):
             if has_sent:
                 self._last_batch_sent = time.time()
 
-    def run(self, servers: List[str]):
-        self._scheduler = LeastConnectionScheduler(servers)
-        if self._server_ready:
-            return
-
+    def run(self):
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
 
-        print(self._scheduler.servers)
-
+        self._scheduler = LeastConnectionScheduler([])
         self._last_batch_sent = time.time()
 
         app = FastAPI()
@@ -151,12 +147,11 @@ class LoadBalancer(L.LightningWork):
         @app.on_event("startup")
         async def startup_event():
             app.SEND_TASK = asyncio.create_task(self.send_batches())
-            self._server_ready = True
 
         @app.on_event("shutdown")
         def shutdown_event():
             app.SEND_TASK.cancel()
-            self._server_ready = False
+            self._run_called = False
 
         @app.get("/num-requests")
         async def num_requests():

@@ -62,14 +62,13 @@ class RootWorkFlow(L.LightningFlow):
         return works
 
     def run(self):
+        self.fake_trigger += 1
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 
         for model_serve in self.model_servers:
             model_serve.run()
-        if all(model_serve.url for model_serve in self.model_servers):
-            # run the load balancer when all the model server is ready
-            self.load_balancer.run([serve.url for serve in self.model_servers])
+        self.load_balancer.run()
 
         if self.load_balancer.url:  # hack for getting the work url
             self.dream_url = self.load_balancer.url
@@ -81,9 +80,9 @@ class RootWorkFlow(L.LightningFlow):
                     print("model serve url=", self.load_balancer.url)
                     self.printed_url = True
 
-        if self.load_balancer.url:
-            self.fake_trigger += 1
+        if self.load_balancer.has_succeeded:
             self.autoscale()
+            self.load_balancer.update_servers(self.model_servers)
 
     def configure_layout(self):
         return [
@@ -116,7 +115,6 @@ class RootWorkFlow(L.LightningFlow):
             )
             setattr(self, f"serve_work_{work_index}", work)
             self.num_workers += 1
-            self.load_balancer.update_servers(self.model_servers)
 
         # downscale
         elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
@@ -124,7 +122,6 @@ class RootWorkFlow(L.LightningFlow):
             worker = self.model_servers[self.num_workers - 1]
             worker.stop()
             self.num_workers -= 1
-            self.load_balancer.update_servers(self.model_servers)
         self._last_autoscale = time.time()
 
 
