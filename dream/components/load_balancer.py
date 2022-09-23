@@ -12,8 +12,8 @@ import lightning as L
 import requests
 
 from dream import StableDiffusionServe
-from dream.components.utils import Data, TimeoutException
 from dream.CONST import REQUEST_TIMEOUT
+from dream.components.utils import Data, TimeoutException
 
 if TYPE_CHECKING:
     from dream import StableDiffusionServe
@@ -56,7 +56,9 @@ class LeastConnectionScheduler(Scheduler):
 
     def update_backlog(self) -> None:
         for server in self.servers:
-            self.server_backlogs[server] = int(requests.get(f"{server}/system/backlog", timeout=10).json())
+            resp = requests.get(f"{server}/system/backlog", timeout=self.update_interval)
+            resp.raise_for_status()
+            self.server_backlogs[server] = int(resp.json())
 
     def run_in_background(self):
         last_updated = time.time()
@@ -110,13 +112,13 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                    len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
+                        len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
                 ):
                     has_sent = True
 
                     asyncio.create_task(self.send_batch(batch))
 
-                    self._batch[quality] = self._batch[quality][self.max_batch_size :]
+                    self._batch[quality] = self._batch[quality][self.max_batch_size:]
                     batch = self._batch[quality][: self.max_batch_size]
 
             if has_sent:
