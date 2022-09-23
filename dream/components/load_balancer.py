@@ -29,6 +29,7 @@ class Scheduler:
         self._iter = cycle(self.servers)
 
     def update_server(self, server_works: List["StableDiffusionServe"]):
+        """Update the server list if a new model serve work is detected."""
         new_servers: List[str] = [server.url for server in server_works if server.url]
         old_servers = set(self.servers)
         server_diff = set(new_servers) - old_servers
