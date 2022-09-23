@@ -135,6 +135,8 @@ class LoadBalancer(L.LightningWork):
 
         @app.post("/api/predict")
         async def balance_api(data: Data):
+            if data.dream.lower() == "surprise me":
+                data.dream = random_prompt()
             return await process_request(data)
 
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
