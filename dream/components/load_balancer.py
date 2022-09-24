@@ -9,7 +9,7 @@ from typing import List
 import aiohttp
 import lightning as L
 
-from dream.components.utils import Data, TimeoutException
+from dream.components.utils import Data, TimeoutException, random_prompt
 from dream.CONST import REQUEST_TIMEOUT
 
 
@@ -110,9 +110,7 @@ class LoadBalancer(L.LightningWork):
         async def num_requests():
             return len(asyncio.all_tasks(loop=None)) - 4
 
-        @app.post("/api/predict")
-        async def balance_api(data: Data):
-            """"""
+        async def process_request(data: Data):
             if not self.servers:
                 raise HTTPException(500, "None of the workers are healthy!")
 
@@ -129,6 +127,17 @@ class LoadBalancer(L.LightningWork):
                     if isinstance(result, (Exception, HTTPException)):
                         raise result
                     return result
+
+        @app.post("/api/surprise-me")
+        async def surprise_me():
+            data = Data(dream=random_prompt())
+            return await process_request(data)
+
+        @app.post("/api/predict")
+        async def balance_api(data: Data):
+            if data.dream.lower() == "surprise me":
+                data.dream = random_prompt()
+            return await process_request(data)
 
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
 
