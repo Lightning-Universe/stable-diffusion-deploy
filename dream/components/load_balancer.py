@@ -49,7 +49,7 @@ class LoadBalancer(L.LightningWork):
             result = {request[0]: e for request in batch}
             self._responses.update(result)
 
-    async def send_batches(self):
+    async def consumer(self):
         while True:
             await asyncio.sleep(0.1)
 
@@ -98,7 +98,7 @@ class LoadBalancer(L.LightningWork):
 
         @app.on_event("startup")
         async def startup_event():
-            app.SEND_TASK = asyncio.create_task(self.send_batches())
+            app.SEND_TASK = asyncio.create_task(self.consumer())
             self._server_ready = True
 
         @app.on_event("shutdown")
@@ -124,8 +124,10 @@ class LoadBalancer(L.LightningWork):
                 if request_id in self._responses:
                     result = self._responses[request_id]
                     del self._responses[request_id]
-                    if isinstance(result, (Exception, HTTPException)):
+                    if isinstance(result, HTTPException):
                         raise result
+                    elif isinstance(result, Exception):
+                        raise HTTPException(500, result.args[0])
                     return result
 
         @app.post("/api/surprise-me")
