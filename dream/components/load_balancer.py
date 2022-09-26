@@ -155,13 +155,14 @@ class LoadBalancer(L.LightningWork):
 
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
 
-    def update_servers(self, servers: List[L.LightningWork]):
+    def update_servers(self, server_works: List[L.LightningWork]):
         old_servers = set(self.servers)
-        self.servers = [server.url for server in servers if server.url]
+        self.servers = [server.url for server in server_works if server.url]
         new_servers = set(self.servers)
         if new_servers - old_servers:
             print("servers added:", new_servers - old_servers)
 
+        servers = list(old_servers | new_servers)
         headers = {
             "accept": "application/json",
         }
