@@ -25,7 +25,7 @@ class RootWorkFlow(L.LightningFlow):
         initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=12,
-        batch_size_wait_s=10,
+        batch_size_wait_s=5,
         gpu_type="gpu-fast",
         max_workers: int = 10,
         autoscale_down_threshold: int = 5,
