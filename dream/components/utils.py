@@ -95,7 +95,7 @@ class DataBatch(BaseModel):
 def random_prompt() -> str:
     global OPEN_PROMPTS
     if OPEN_PROMPTS is None:
-        OPEN_PROMPTS = pd.read_csv("https://raw.githubusercontent.com/krea-ai/open-prompts/main/data/1k.csv")[
+        OPEN_PROMPTS = pd.read_csv("https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/1k-prompts.csv")[
             "prompt"
-        ].values
+        ]
     return random.choice(OPEN_PROMPTS)
