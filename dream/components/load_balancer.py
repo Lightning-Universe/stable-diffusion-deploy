@@ -9,8 +9,8 @@ import aiohttp
 import lightning as L
 from fastapi import HTTPException
 
+from dream.components.utils import Data, SysInfo, TimeoutException, random_prompt
 from dream.CONST import REQUEST_TIMEOUT
-from dream.components.utils import Data, TimeoutException, random_prompt, SysInfo
 
 
 @dataclass
