@@ -29,7 +29,7 @@ class RootWorkFlow(L.LightningFlow):
         gpu_type="gpu-fast",
         max_workers: int = 10,
         autoscale_down_threshold: int = 5,
-        autoscale_up_threshold: int = 10,
+        autoscale_up_threshold: int = 60,
     ):
         super().__init__()
         self._initial_num_workers = self.num_workers = initial_num_workers
@@ -118,9 +118,11 @@ class RootWorkFlow(L.LightningFlow):
 
         # downscale
         elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
-            print(f"Downscale to {self.num_workers - 1}")
-            worker = self.model_servers[self.num_workers - 1]
+            idx = self.num_workers - 1
+            print(f"Downscale to {idx}")
+            worker = self.model_servers[idx]
             worker.stop()
+            delattr(self, f"serve_work_{idx}")
             self.num_workers -= 1
             self.load_balancer.update_servers(self.model_servers)
         self._last_autoscale = time.time()

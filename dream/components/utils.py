@@ -99,6 +99,8 @@ class DataBatch(BaseModel):
 
 class SysInfo(BaseModel):
     num_workers: int
+    servers: List[str]
+    num_requests: int
 
 
 def random_prompt() -> str:

@@ -108,11 +108,13 @@ class LoadBalancer(L.LightningWork):
 
         @app.get("/system/info", response_model=SysInfo)
         async def sys_info():
-            return SysInfo(num_workers=len(self.servers))
+            return SysInfo(
+                num_workers=len(self.servers), servers=self.servers, num_requests=len(asyncio.all_tasks()) - 5
+            )
 
         @app.get("/num-requests")
         async def num_requests():
-            return len(asyncio.all_tasks(loop=None)) - 4
+            return len(asyncio.all_tasks(loop=None)) - 5
 
         async def process_request(data: Data):
             if not self.servers:
@@ -151,5 +153,6 @@ class LoadBalancer(L.LightningWork):
         old_servers = set(self.servers)
         self.servers = [server.url for server in servers if server.url]
         new_servers = set(self.servers)
-        print("servers added:", new_servers - old_servers)
+        if new_servers - old_servers:
+            print("servers added:", new_servers - old_servers)
         self._ITER = cycle(self.servers)
