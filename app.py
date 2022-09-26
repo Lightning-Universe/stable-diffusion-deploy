@@ -23,7 +23,7 @@ class RootWorkFlow(L.LightningFlow):
     def __init__(
         self,
         initial_num_workers=8,
-        autoscale_interval=1 * 10,
+        autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_size_wait_s=10,
         gpu_type="gpu-fast",
@@ -47,7 +47,7 @@ class RootWorkFlow(L.LightningFlow):
             work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
             setattr(self, f"serve_work_{i}", work)
 
-        self.slack_bot = DreamSlackCommandBot(command="/dream")
+        self.slack_bot = DreamSlackCommandBot(command="/inspire")
         self.printed_url = False
         self.slack_bot_url = ""
         self.dream_url = ""
