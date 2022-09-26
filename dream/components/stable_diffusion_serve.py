@@ -155,7 +155,7 @@ class StableDiffusionServe(L.LightningWork):
             """
             try:
                 entry_time = time.time()
-                print(f"request: {data}")
+                print(f"batch size: {len(data.batch)}")
                 result = app.POOL.submit(
                     self.predict,
                     data.batch,
