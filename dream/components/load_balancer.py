@@ -9,8 +9,8 @@ import aiohttp
 import lightning as L
 from fastapi import HTTPException
 
-from dream.components.utils import Data, TimeoutException, random_prompt
 from dream.CONST import REQUEST_TIMEOUT
+from dream.components.utils import Data, TimeoutException, random_prompt, SysInfo
 
 
 @dataclass
@@ -105,6 +105,10 @@ class LoadBalancer(L.LightningWork):
         def shutdown_event():
             app.SEND_TASK.cancel()
             self._server_ready = False
+
+        @app.get("/system/info", response_model=SysInfo)
+        async def sys_info():
+            return SysInfo(num_workers=len(self.servers))
 
         @app.get("/num-requests")
         async def num_requests():

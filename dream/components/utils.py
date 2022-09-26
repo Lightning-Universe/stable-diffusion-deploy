@@ -97,6 +97,10 @@ class DataBatch(BaseModel):
     batch: List[Data]
 
 
+class SysInfo(BaseModel):
+    num_workers: int
+
+
 def random_prompt() -> str:
     global OPEN_PROMPTS
     if OPEN_PROMPTS is None:
