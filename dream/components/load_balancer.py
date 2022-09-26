@@ -7,6 +7,7 @@ from typing import List
 
 import aiohttp
 import lightning as L
+import requests
 from fastapi import HTTPException
 
 from dream.components.utils import Data, SysInfo, TimeoutException, random_prompt
@@ -116,6 +117,11 @@ class LoadBalancer(L.LightningWork):
         async def num_requests():
             return len(asyncio.all_tasks(loop=None)) - 5
 
+        @app.put("/system/update-servers")
+        async def update_servers(servers: List[str]):
+            self.servers = servers
+            self._ITER = cycle(self.servers)
+
         async def process_request(data: Data):
             if not self.servers:
                 raise HTTPException(500, "None of the workers are healthy!")
@@ -155,4 +161,8 @@ class LoadBalancer(L.LightningWork):
         new_servers = set(self.servers)
         if new_servers - old_servers:
             print("servers added:", new_servers - old_servers)
-        self._ITER = cycle(self.servers)
+
+        headers = {
+            "accept": "application/json",
+        }
+        requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)
