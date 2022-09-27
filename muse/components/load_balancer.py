@@ -21,20 +21,20 @@ class FastAPIBuildConfig(L.BuildConfig):
 
 class LoadBalancer(L.LightningWork):
     r"""The LoadBalancer is a LightningWork component that collects the requests and sends it to the prediciton API
-    asynchronously. It also performs auto batching of the incoming requests.
+    asynchronously using RoundRobin scheduling. It also performs auto batching of the incoming requests.
 
     Args:
         max_batch_size: Number of requests processed at once.
-        max_wait_time: Number of seconds to wait before sending the requests to process.
+        batch_timeout_micros: Number of seconds to wait before sending the requests to process.
         \**kwargs: Arguments passed to :func:`LightningWork.init` like ``CloudCompute``, ``BuildConfig``, etc.
     """
 
-    def __init__(self, max_batch_size=8, max_wait_time=10, **kwargs):
+    def __init__(self, max_batch_size=8, batch_timeout_micros=10, **kwargs):
         super().__init__(cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=FastAPIBuildConfig(), **kwargs)
         self._server_ready = False
         self.servers = []
         self.max_batch_size = max_batch_size
-        self.max_wait_time = max_wait_time
+        self.batch_timeout_micros = batch_timeout_micros
         self._ITER = None
         self._batch = {"high": [], "low": []}
         self._responses = {}  # {request_id: response}
@@ -66,7 +66,8 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                    len(batch) >= self.max_batch_size or (time.time() - self._last_batch_sent) > self.max_wait_time
+                    (len(batch) >= self.max_batch_size)
+                    or ((time.time() - self._last_batch_sent) > self.batch_timeout_micros)
                 ):
                     has_sent = True
 

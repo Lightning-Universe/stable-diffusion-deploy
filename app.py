@@ -25,7 +25,7 @@ class MuseFlow(L.LightningFlow):
         initial_num_workers: Number of works to start when app initializes.
         autoscale_interval: Number of seconds to wait before checking whether to upscale or downscale the works.
         max_batch_size: Number of requests to process at once.
-        max_wait_time: Number of seconds to wait before sending the requests to process.
+        batch_timeout_micros: Number of seconds to wait before sending the requests to process.
         gpu_type: GPU type to use for the works.
         max_workers: Max numbers of works to spawn to handle the incoming requests.
         autoscale_down_limit: Lower limit to determine when to stop works.
@@ -37,7 +37,7 @@ class MuseFlow(L.LightningFlow):
         initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=12,
-        max_wait_time=10,
+        batch_timeout_micros=10,
         gpu_type="gpu-fast",
         max_workers: int = 10,
         autoscale_down_limit: int = None,
@@ -56,7 +56,7 @@ class MuseFlow(L.LightningFlow):
         self.gpu_type = gpu_type
         self._last_autoscale = time.time()
         self.load_balancer = LoadBalancer(
-            max_wait_time=max_wait_time, max_batch_size=max_batch_size, cache_calls=True, parallel=True
+            max_batch_size=max_batch_size, batch_timeout_micros=batch_timeout_micros, cache_calls=True, parallel=True
         )
         for i in range(initial_num_workers):
             work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
