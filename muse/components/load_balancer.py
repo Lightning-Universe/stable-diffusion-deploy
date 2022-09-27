@@ -71,6 +71,24 @@ class LoadBalancer(L.LightningWork):
             if has_sent:
                 self._last_batch_sent = time.time()
 
+    async def process_request(self, data: Data):
+        if not self.servers:
+            raise HTTPException(500, "None of the workers are healthy!")
+
+        request_id = uuid.uuid4().hex
+        request = (request_id, data.dict())
+        self._batch["high" if data.high_quality else "low"].append(request)
+
+        while True:
+            await asyncio.sleep(0.1)
+
+            if request_id in self._responses:
+                result = self._responses[request_id]
+                del self._responses[request_id]
+                if isinstance(result, (Exception, HTTPException)):
+                    raise result
+                return result
+
     def run(self, servers: List[str]):
         self.servers = servers
         if self._server_ready:
@@ -127,26 +145,6 @@ class LoadBalancer(L.LightningWork):
             self.servers = servers
             self._ITER = cycle(self.servers)
 
-        async def process_request(data: Data):
-            if not self.servers:
-                raise HTTPException(500, "None of the workers are healthy!")
-
-            request_id = uuid.uuid4().hex
-            request = (request_id, data.dict())
-            self._batch["high" if data.high_quality else "low"].append(request)
-
-            while True:
-                await asyncio.sleep(0.1)
-
-                if request_id in self._responses:
-                    result = self._responses[request_id]
-                    del self._responses[request_id]
-                    if isinstance(result, HTTPException):
-                        raise result
-                    elif isinstance(result, Exception):
-                        raise HTTPException(500, result.args[0])
-                    return result
-
         @app.post("/api/surprise-me")
         async def surprise_me():
             data = Data(dream=random_prompt())
@@ -178,21 +176,3 @@ class LoadBalancer(L.LightningWork):
             "accept": "application/json",
         }
         requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)
-
-    async def process_request(self, data: Data):
-        if not self.servers:
-            raise HTTPException(500, "None of the workers are healthy!")
-
-        request_id = uuid.uuid4().hex
-        request = (request_id, data.dict())
-        self._batch["high" if data.high_quality else "low"].append(request)
-
-        while True:
-            await asyncio.sleep(0.1)
-
-            if request_id in self._responses:
-                result = self._responses[request_id]
-                del self._responses[request_id]
-                if isinstance(result, (Exception, HTTPException)):
-                    raise result
-                return result
