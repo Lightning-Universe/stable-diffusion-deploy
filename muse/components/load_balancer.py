@@ -93,7 +93,9 @@ class LoadBalancer(L.LightningWork):
             if request_id in self._responses:
                 result = self._responses[request_id]
                 del self._responses[request_id]
-                if isinstance(result, (Exception, HTTPException)):
+                if isinstance(result, Exception):
+                    raise HTTPException(result.args[0])
+                elif isinstance(result, HTTPException):
                     raise result
                 return result
 
