@@ -103,7 +103,7 @@ class LoadBalancer(L.LightningWork):
                     raise result
                 return result
 
-    def run(self, servers: List[str], start_run: bool=True):
+    def run(self, servers: List[str], start_run: bool = True):
         if not start_run or self._server_ready:
             return
 
