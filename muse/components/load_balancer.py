@@ -11,7 +11,7 @@ import requests
 from fastapi import HTTPException
 
 from muse.components.utils import Data, SysInfo, TimeoutException, random_prompt
-from muse.CONST import REQUEST_TIMEOUT
+from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 
 @dataclass
@@ -158,7 +158,9 @@ class LoadBalancer(L.LightningWork):
                 data.dream = random_prompt()
             return await self.process_request(data)
 
-        uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
+        uvicorn.run(
+            app, host=self.host, port=self.port, loop="uvloop", timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False
+        )
 
     def update_servers(self, server_works: List[L.LightningWork]):
         old_servers = set(self.servers)
