@@ -24,9 +24,9 @@ class FastAPIBuildConfig(L.BuildConfig):
 
 
 class StableDiffusionServe(L.LightningWork):
-    """Deploys the Stable Diffusion model with FastAPI.
+    """The StableDiffusionServer handles the prediction.
 
-    tolerable_failures: total number of failures after which the worker status becomes unhealthy.
+    It initializes a model and expose an API to handle incoming requests and generate predictions.
     """
 
     def __init__(self, **kwargs):
