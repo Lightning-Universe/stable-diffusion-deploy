@@ -26,7 +26,7 @@ long_description = setup_tools._load_readme_description(_PATH_ROOT, homepage=abo
 # engineer specific practices
 
 setup(
-    name="dream",
+    name="muse",
     version=about.__version__,
     description=about.__docs__,
     author=about.__author__,

@@ -6,8 +6,8 @@ import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
 
-from dream import DreamSlackCommandBot, StableDiffusionServe
-from dream.components.load_balancer import LoadBalancer
+from muse import DreamSlackCommandBot, StableDiffusionServe
+from muse.components.load_balancer import LoadBalancer
 
 
 class ReactUI(L.LightningFlow):

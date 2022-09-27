@@ -9,8 +9,8 @@ from typing import List
 import aiohttp
 import lightning as L
 
-from dream.components.utils import Data, TimeoutException, random_prompt
-from dream.CONST import REQUEST_TIMEOUT
+from muse.components.utils import Data, TimeoutException, random_prompt
+from muse.CONST import REQUEST_TIMEOUT
 
 
 @dataclass
