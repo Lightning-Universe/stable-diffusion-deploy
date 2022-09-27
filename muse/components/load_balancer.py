@@ -11,7 +11,7 @@ import requests
 from fastapi import HTTPException
 
 from muse.components.utils import Data, SysInfo, TimeoutException, random_prompt
-from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
+from muse.CONST import KEEP_ALIVE_TIMEOUT, PREDICT_RATE_LIMIT, REQUEST_TIMEOUT
 
 
 @dataclass
@@ -169,7 +169,7 @@ class LoadBalancer(L.LightningWork):
             return await self.process_request(data)
 
         @app.post("/api/predict")
-        @limiter.limit("450/second")
+        @limiter.limit(PREDICT_RATE_LIMIT)
         async def balance_api(data: Data, request: Request):
             if data.dream.lower() == "surprise me":
                 data.dream = random_prompt()
