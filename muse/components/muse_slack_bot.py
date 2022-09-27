@@ -22,10 +22,10 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 from .utils import get_item, save_item
 
 
-class DreamSlackCommandBot(SlackCommandBot):
+class MuseSlackCommandBot(SlackCommandBot):
     def __init__(
         self,
-        command="/dream",
+        command="/inspire",
         signing_secret=None,
         bot_token=None,
         slack_client_id=None,
