@@ -121,6 +121,7 @@ class LoadBalancer(L.LightningWork):
         async def update_servers(servers: List[str]):
             self.servers = servers
             self._ITER = cycle(self.servers)
+            print("server list updated")
 
         async def process_request(data: Data):
             if not self.servers:
@@ -162,7 +163,7 @@ class LoadBalancer(L.LightningWork):
         if new_servers - old_servers:
             print("servers added:", new_servers - old_servers)
 
-        servers = list(old_servers | new_servers)
+        servers = list(new_servers)
         headers = {
             "accept": "application/json",
         }

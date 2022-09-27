@@ -141,9 +141,9 @@ class RootWorkFlow(L.LightningFlow):
         elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
             idx = self._num_workers - 1
             print(f"Downscale to {idx}")
-            print(self.model_servers)
-            print(len(self.model_servers))
+            print("prev num servers:", len(self.model_servers))
             self.remove_work(idx)
+            print("new num servers:", len(self.model_servers))
         self._last_autoscale = time.time()
 
 
