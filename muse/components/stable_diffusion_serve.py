@@ -61,8 +61,9 @@ class StableDiffusionServe(L.LightningWork):
                 "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
             )
 
+            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
             pipe = StableDiffusionPipeline.from_pretrained(
-                weights_folder,
+                repo_folder,
                 revision="fp16",
                 torch_dtype=torch.float16,
             )
