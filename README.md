@@ -11,7 +11,7 @@
 <p align="center">
   <a href="#getting-started">Getting Started</a> •
   <a href="https://www.lightning.ai/">Lightning AI</a> •
-  <a href="https://lightning.ai/apps">Lightning Apps Gallery</a> •
+  <a href="https://lightning.ai/apps">Lightning Apps Gallery</a>
 </p>
 
 [![ReadTheDocs](https://readthedocs.org/projects/pytorch-lightning/badge/?version=stable)](https://lightning.ai/lightning-docs/)
@@ -56,7 +56,8 @@ This application is fairly simple already showcases the following features of Li
 - Load Balancer to handle requests and serve them across multiple Lightning Works
 - Environment variables to parametrize execution environment
 
-## Integrate with Slack Bot
+<details>
+<summary><b><u>Integrate with Slack Bot</u></b></summary>
 
 You can integrate this app in your Slack Workspace and send art in slack channels.
 
@@ -99,6 +100,8 @@ implement `SlackCommandBot.save_new_workspace(...)` which should save `team_id` 
 database.
 
 During the `handle_command(...)` method you will need to fetch `bot_token` based on the received `team_id`.
+
+</details>
 
 ## Credits
 
