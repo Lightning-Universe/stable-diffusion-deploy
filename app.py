@@ -49,7 +49,7 @@ class MuseFlow(L.LightningFlow):
         self._work_registry = {}
         self.autoscale_interval = autoscale_interval
         self.max_workers = max_workers
-        self.autoscale_down_limit = autoscale_down_limit or initial_num_workers * max_batch_size
+        self.autoscale_down_limit = autoscale_down_limit or initial_num_workers
         self.autoscale_up_limit = autoscale_up_limit or initial_num_workers * max_batch_size
         self.fake_trigger = 0
         self.gpu_type = gpu_type
