@@ -1,36 +1,60 @@
-# Lightning Dream Generator
+<div align="center">
+    <h1>
+        Lightning Stable Diffusion App
+    </h1>
+    <img src="https://pl-flash-data.s3.amazonaws.com/assets_lightning/docs/images/logos/lightning-ai.png" width="400px">
+
+<div align="center">
+
+<p align="center" style="color:grey">Powered by <a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion</a></p>
 
 <p align="center">
-  <img width="250" alt="logo" src="https://i.ibb.co/BrsfpBj/Visualize-Your-word-banner-small.jpg"/>
-  <br>
-  <strong>Create beautiful works of art in seconds with the Lightning Dream Generator App.</strong>
-  <br>
-  <p align="center" style="color:grey">Powered by <a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion</a></p>
+  <a href="#getting-started">Getting Started</a> •
+  <a href="https://www.lightning.ai/">Lightning AI</a> •
+  <a href="https://lightning.ai/apps">Lightning Apps Gallery</a> •
 </p>
-<p align="center">
-</p>
+
+[![ReadTheDocs](https://readthedocs.org/projects/pytorch-lightning/badge/?version=stable)](https://lightning.ai/lightning-docs/)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://www.pytorchlightning.ai/community)
+[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/lightning/blob/master/LICENSE)
+
+</div>
+</div>
 
 ______________________________________________________________________
 
-With this you can launch a React UI for generating art from texts, integrate a Slack Command Bot that can generate art
-in your slack workspace.
+# Stable Diffusion App
 
-# Getting started
+\[TODO\]
 
-## Launch React UI
-
-![Demo image](./assets/demo.png)
+## Getting started
 
 ```bash
-lightning install app https://github.com/Lightning-AI/LAI-Stable-Diffusion-App
+conda create --name muse_app python=3.8
+conda activate muse_app
 
+git clone https://github.com/Lightning-AI/LAI-Stable-Diffusion-App.git
 cd LAI-Stable-Diffusion-App
+pip install -r requirements.txt
+pip install -e .
 
-lightning run app app.py --cloud
+## To run the app locally
+python -m lightning run app app.py
+
+## To run the app on the cloud to share it with your peers and users
+python -m lightning run app app.py --cloud
 ```
 
-This will launch your app on the Lightning.ai cloud. You can enter the text prompt in the input bar and click on the
-`Dream it` button to generate art.
+## About this Lightning App
+
+This Lightning App is powered by Stable Diffusion to generate images via text prompts.
+This application is fairly simple already showcases the following features of Lightning Framework:
+
+- Multi-tenant Frontend & Backend application architecture
+- UI written in React
+- Backend serving REST API (with FastAPI)
+- Load Balancer to handle requests and serve them across multiple Lightning Works
+- Environment variables to parametrize execution environment
 
 ## Integrate with Slack Bot
 
@@ -75,3 +99,7 @@ implement `SlackCommandBot.save_new_workspace(...)` which should save `team_id` 
 database.
 
 During the `handle_command(...)` method you will need to fetch `bot_token` based on the received `team_id`.
+
+## Credits
+
+\[TODO\]
