@@ -10,8 +10,8 @@ import lightning as L
 import requests
 from fastapi import HTTPException
 
-from dream.components.utils import Data, SysInfo, TimeoutException, random_prompt
-from dream.CONST import REQUEST_TIMEOUT
+from muse.components.utils import Data, SysInfo, TimeoutException, random_prompt
+from muse.CONST import REQUEST_TIMEOUT
 
 
 @dataclass
