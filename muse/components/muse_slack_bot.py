@@ -25,7 +25,7 @@ from .utils import get_item, save_item
 class MuseSlackCommandBot(SlackCommandBot):
     def __init__(
         self,
-        command="/inspire",
+        command="/muse",
         signing_secret=None,
         bot_token=None,
         slack_client_id=None,
