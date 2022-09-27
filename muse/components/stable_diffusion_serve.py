@@ -53,7 +53,7 @@ class StableDiffusionServe(L.LightningWork):
 
         import torch
 
-        from dream.models import StableDiffusionPipelineTraced
+        from muse.models import StableDiffusionPipelineTraced
 
         print("loading model...")
         if torch.cuda.is_available():
@@ -109,7 +109,6 @@ class StableDiffusionServe(L.LightningWork):
         from fastapi.middleware.cors import CORSMiddleware
 
         subprocess.run("nvidia-smi", shell=True)
-        subprocess.run("pip freeze", shell=True)
 
         if self._model is None:
             self._model = self.build_model()

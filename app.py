@@ -33,7 +33,7 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=5,
+        initial_num_workers=1,
         autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_timeout_secs=10,
