@@ -23,17 +23,14 @@ from .utils import get_item, save_item
 
 
 class MuseSlackCommandBot(SlackCommandBot):
+    """
+    The MuseSlackCommandBot
+    """
     def __init__(
         self,
-        command="/muse",
-        signing_secret=None,
-        bot_token=None,
-        slack_client_id=None,
-        client_secret=None,
-        *args,
         **kwargs,
     ):
-        super().__init__(command, signing_secret, bot_token, slack_client_id, client_secret, *args, **kwargs)
+        super().__init__(**kwargs)
         self.inference_url = None
         self.has_credentials = False
         self._slack_token: str = None

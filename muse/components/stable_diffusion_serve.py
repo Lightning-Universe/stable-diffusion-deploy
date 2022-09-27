@@ -24,9 +24,9 @@ class FastAPIBuildConfig(L.BuildConfig):
 
 
 class StableDiffusionServe(L.LightningWork):
-    """Deploys the Stable Diffusion model with FastAPI.
+    """The StableDiffusionServer handles the prediction.
 
-    tolerable_failures: total number of failures after which the worker status becomes unhealthy.
+    It initializes a model and expose an API to handle incoming requests and generate predictions.
     """
 
     def __init__(self, **kwargs):
@@ -61,9 +61,8 @@ class StableDiffusionServe(L.LightningWork):
                 "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
             )
 
-            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
             pipe = StableDiffusionPipeline.from_pretrained(
-                repo_folder,
+                weights_folder,
                 revision="fp16",
                 torch_dtype=torch.float16,
             )

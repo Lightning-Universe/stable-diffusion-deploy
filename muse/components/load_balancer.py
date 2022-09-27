@@ -20,7 +20,14 @@ class FastAPIBuildConfig(L.BuildConfig):
 
 
 class LoadBalancer(L.LightningWork):
-    """Forward the requests to Model inference servers in Round Robin fashion and implements automatic batching."""
+    r"""The LoadBalancer is a LightningWork component that collects the requests and sends it to the prediciton API
+    asynchronously. It also performs auto batching of the incoming requests.
+
+    Args:
+        max_batch_size: Number of requests processed at once.
+        max_wait_time: Number of seconds to wait before sending the requests to process.
+        \**kwargs: Arguments passed to :func:`LightningWork.init` like ``CloudCompute``, ``BuildConfig``, etc.
+    """
 
     def __init__(self, max_batch_size=8, max_wait_time=10, **kwargs):
         super().__init__(cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=FastAPIBuildConfig(), **kwargs)

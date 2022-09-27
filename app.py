@@ -16,9 +16,20 @@ class ReactUI(L.LightningFlow):
         return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "muse", "ui", "build"))
 
 
-class RootWorkFlow(L.LightningFlow):
-    """
-    autoscale_interval: time in seconds in which autoscale will run
+class MuseFlow(L.LightningFlow):
+    """The MuseFlow is a LightningFlow component that handles all the servers and uses load balancer to spawn up and
+    shutdown based on current requests in the queue.
+
+    Args:
+        autoscale_interval: time in seconds in which autoscale will run.
+        initial_num_workers: Number of works to start when app initializes.
+        autoscale_interval: Number of seconds to wait before checking whether to upscale or downscale the works.
+        max_batch_size: Number of requests to process at once.
+        max_wait_time: Number of seconds to wait before sending the requests to process.
+        gpu_type: GPU type to use for the works.
+        max_workers: Max numbers of works to spawn to handle the incoming requests.
+        autoscale_down_limit: Lower limit to determine when to stop works.
+        autoscale_up_limit: Upper limit to determine when to spawn up a new work.
     """
 
     def __init__(
@@ -26,11 +37,11 @@ class RootWorkFlow(L.LightningFlow):
         initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=12,
-        batch_size_wait_s=10,
+        max_wait_time=10,
         gpu_type="gpu-fast",
         max_workers: int = 10,
-        autoscale_down_threshold: int = None,
-        autoscale_up_threshold: int = None,
+        autoscale_down_limit: int = None,
+        autoscale_up_limit: int = None,
     ):
         super().__init__()
         self.load_balancer_started = False
@@ -39,13 +50,13 @@ class RootWorkFlow(L.LightningFlow):
         self._work_registry = {}
         self.autoscale_interval = autoscale_interval
         self.max_workers = max_workers
-        self.autoscale_down_threshold = autoscale_down_threshold or initial_num_workers * max_batch_size
-        self.autoscale_up_threshold = autoscale_up_threshold or initial_num_workers * max_batch_size
+        self.autoscale_down_limit = autoscale_down_threshold or initial_num_workers * max_batch_size
+        self.autoscale_up_limit = autoscale_up_threshold or initial_num_workers * max_batch_size
         self.fake_trigger = 0
         self.gpu_type = gpu_type
         self._last_autoscale = time.time()
         self.load_balancer = LoadBalancer(
-            max_wait_time=batch_size_wait_s, max_batch_size=max_batch_size, cache_calls=True, parallel=True
+            max_wait_time=max_wait_time, max_batch_size=max_batch_size, cache_calls=True, parallel=True
         )
         for i in range(initial_num_workers):
             work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
@@ -130,7 +141,7 @@ class RootWorkFlow(L.LightningFlow):
         num_workers = len(self.model_servers)
 
         # upscale
-        if num_requests > self.autoscale_up_threshold and num_workers < self.max_workers:
+        if num_requests > self.autoscale_up_limit and num_workers < self.max_workers:
             idx = self._num_workers
             print(f"Upscale to {self._num_workers + 1}")
             work = StableDiffusionServe(
@@ -143,7 +154,7 @@ class RootWorkFlow(L.LightningFlow):
             print(f"model_serve_{idx}")
 
         # downscale
-        elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
+        elif num_requests < self.autoscale_down_limit and num_workers > self._initial_num_workers:
             idx = self._num_workers - 1
             print(f"Downscale to {idx}")
             print("prev num servers:", len(self.model_servers))
@@ -155,4 +166,4 @@ class RootWorkFlow(L.LightningFlow):
 
 
 if __name__ == "__main__":
-    app = L.LightningApp(RootWorkFlow())
+    app = L.LightningApp(MuseFlow())
