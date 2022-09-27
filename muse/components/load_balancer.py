@@ -16,7 +16,7 @@ from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 @dataclass
 class FastAPIBuildConfig(L.BuildConfig):
-    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
+    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6", "slowapi==0.1.6"]
 
 
 class LoadBalancer(L.LightningWork):
@@ -109,13 +109,20 @@ class LoadBalancer(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
+        from fastapi.requests import Request
+        from slowapi import Limiter, _rate_limit_exceeded_handler
+        from slowapi.errors import RateLimitExceeded
+        from slowapi.util import get_remote_address
 
         print(self.servers)
 
         self._ITER = cycle(self.servers)
         self._last_batch_sent = time.time()
 
+        limiter = Limiter(key_func=get_remote_address)
         app = FastAPI()
+        app.state.limiter = limiter
+        app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
         app.SEND_TASK = None
 
@@ -154,12 +161,14 @@ class LoadBalancer(L.LightningWork):
             self._ITER = cycle(self.servers)
 
         @app.post("/api/surprise-me")
+        @limiter.limit("10/minute")
         async def surprise_me():
             data = Data(dream=random_prompt())
             return await self.process_request(data)
 
         @app.post("/api/predict")
-        async def balance_api(data: Data):
+        @limiter.limit("450/second")
+        async def balance_api(data: Data, request: Request):
             if data.dream.lower() == "surprise me":
                 data.dream = random_prompt()
             return await self.process_request(data)
