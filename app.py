@@ -12,7 +12,7 @@ from muse.components.load_balancer import LoadBalancer
 
 class ReactUI(L.LightningFlow):
     def configure_layout(self):
-        return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "dream", "ui", "build"))
+        return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "muse", "ui", "build"))
 
 
 class RootWorkFlow(L.LightningFlow):
