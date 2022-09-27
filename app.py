@@ -26,13 +26,14 @@ class RootWorkFlow(L.LightningFlow):
         initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=12,
-        batch_size_wait_s=5,
+        batch_size_wait_s=10,
         gpu_type="gpu-fast",
         max_workers: int = 10,
         autoscale_down_threshold: int = None,
         autoscale_up_threshold: int = None,
     ):
         super().__init__()
+        self.load_balancer_started = False
         self._initial_num_workers = initial_num_workers
         self._num_workers = 0
         self._work_registry = {}
@@ -91,9 +92,10 @@ class RootWorkFlow(L.LightningFlow):
 
         for model_serve in self.model_servers:
             model_serve.run()
-        if all(model_serve.url for model_serve in self.model_servers):
+        if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
             # run the load balancer when all the model server is ready
             self.load_balancer.run([serve.url for serve in self.model_servers])
+            self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
             self.dream_url = self.load_balancer.url
@@ -108,7 +110,6 @@ class RootWorkFlow(L.LightningFlow):
         if self.load_balancer.url:
             self.fake_trigger += 1
             self.autoscale()
-            self.load_balancer.update_servers(self.model_servers)
 
     def configure_layout(self):
         return [
@@ -122,6 +123,8 @@ class RootWorkFlow(L.LightningFlow):
         """Upscale and down scale model inference works based on the number of requests."""
         if time.time() - self._last_autoscale < self.autoscale_interval:
             return
+
+        self.load_balancer.update_servers(self.model_servers)
 
         num_requests = int(requests.get(f"{self.load_balancer.url}/num-requests").json())
         num_workers = len(self.model_servers)
