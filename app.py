@@ -64,19 +64,21 @@ class RootWorkFlow(L.LightningFlow):
             works.append(work)
         return works
 
-    def add_work(self, work):
+    def add_work(self, work) -> str:
         work_attribute = uuid.uuid4().hex
         work_attribute = f"model_serve_{self._num_workers}_{str(work_attribute)}"
         setattr(self, work_attribute, work)
         self._work_registry[self._num_workers] = work_attribute
         self._num_workers += 1
+        return work_attribute
 
-    def remove_work(self, index: int):
+    def remove_work(self, index: int) -> str:
         work_attribute = self._work_registry[index]
         del self._work_registry[index]
         work = getattr(self, work_attribute)
         work.stop()
         self._num_workers -= 1
+        return work_attribute
 
     def get_work(self, index: int):
         work_attribute = self._work_registry[index]
@@ -122,7 +124,6 @@ class RootWorkFlow(L.LightningFlow):
             return
 
         num_requests = int(requests.get(f"{self.load_balancer.url}/num-requests").json())
-        # num_requests = self.load_balancer.num_requests
         num_workers = len(self.model_servers)
 
         # upscale
@@ -134,15 +135,17 @@ class RootWorkFlow(L.LightningFlow):
                 cache_calls=True,
                 parallel=True,
             )
-            self.add_work(work)
-            print(f"serve_work_{idx}")
+            new_work_id = self.add_work(work)
+            print("new work id:", new_work_id)
+            print(f"model_serve_{idx}")
 
         # downscale
         elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
             idx = self._num_workers - 1
             print(f"Downscale to {idx}")
             print("prev num servers:", len(self.model_servers))
-            self.remove_work(idx)
+            removed_id = self.remove_work(idx)
+            print("removed:", removed_id)
             print("new num servers:", len(self.model_servers))
             self.load_balancer.update_servers(self.model_servers)
         self._last_autoscale = time.time()
