@@ -162,7 +162,7 @@ class LoadBalancer(L.LightningWork):
 
         @app.post("/api/surprise-me")
         @limiter.limit("10/minute")
-        async def surprise_me():
+        async def surprise_me(request: Request):
             data = Data(dream=random_prompt())
             return await self.process_request(data)
 
