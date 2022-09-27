@@ -6,13 +6,13 @@ import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
 
-from dream import DreamSlackCommandBot, StableDiffusionServe
-from dream.components.load_balancer import LoadBalancer
+from muse import DreamSlackCommandBot, StableDiffusionServe
+from muse.components.load_balancer import LoadBalancer
 
 
 class ReactUI(L.LightningFlow):
     def configure_layout(self):
-        return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "dream", "ui", "build"))
+        return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "muse", "ui", "build"))
 
 
 class RootWorkFlow(L.LightningFlow):
