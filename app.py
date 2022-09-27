@@ -23,7 +23,7 @@ class RootWorkFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=1,
+        initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_size_wait_s=5,
@@ -66,7 +66,8 @@ class RootWorkFlow(L.LightningFlow):
 
     def add_work(self, work):
         work_attribute = uuid.uuid4().hex
-        setattr(self, str(work_attribute), work)
+        work_attribute = f"model_serve_{self._num_workers}_{str(work_attribute)}"
+        setattr(self, work_attribute, work)
         self._work_registry[self._num_workers] = work_attribute
         self._num_workers += 1
 
@@ -144,6 +145,7 @@ class RootWorkFlow(L.LightningFlow):
             print("prev num servers:", len(self.model_servers))
             self.remove_work(idx)
             print("new num servers:", len(self.model_servers))
+            self.load_balancer.update_servers(self.model_servers)
         self._last_autoscale = time.time()
 
 
