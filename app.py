@@ -118,11 +118,12 @@ class RootWorkFlow(L.LightningFlow):
 
         # downscale
         elif num_requests < self.autoscale_down_threshold and num_workers > self._initial_num_workers:
+            work_index = len(self.model_servers)
             idx = self.num_workers - 1
             print(f"Downscale to {idx}")
             worker = self.model_servers[idx]
             worker.stop()
-            delattr(self, f"serve_work_{idx}")
+            delattr(self, f"serve_work_{work_index-1}")
             self.num_workers -= 1
             self.load_balancer.update_servers(self.model_servers)
         self._last_autoscale = time.time()
