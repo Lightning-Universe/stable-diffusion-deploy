@@ -23,9 +23,8 @@ from .utils import get_item, save_item
 
 
 class MuseSlackCommandBot(SlackCommandBot):
-    """
-    The MuseSlackCommandBot
-    """
+    """The MuseSlackCommandBot."""
+
     def __init__(
         self,
         **kwargs,
