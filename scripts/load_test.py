@@ -24,7 +24,7 @@ if __name__ == "__main__":
             try:
                 e.result().raise_for_status()
             except Exception as e:
-                failures.append(e)
+                failures.append(e.args[0])
 
     t1 = time.time()
     print(f"time taken:{t1 - t0}")

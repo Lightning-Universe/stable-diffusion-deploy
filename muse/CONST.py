@@ -3,4 +3,4 @@ import os
 REQUEST_TIMEOUT = os.environ.get("INFERENCE_REQUEST_TIMEOUT", 120)
 KEEP_ALIVE_TIMEOUT = os.environ.get("KEEP_ALIVE_TIMEOUT", 160)
 IMAGE_SIZE = 512
-PREDICT_RATE_LIMIT = os.environ.get("PREDICT_RATE_LIMIT", "450/minute")
+PREDICT_RATE_LIMIT = os.environ.get("PREDICT_RATE_LIMIT", "1/second")
