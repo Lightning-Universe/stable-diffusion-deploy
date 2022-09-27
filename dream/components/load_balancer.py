@@ -75,6 +75,10 @@ class LoadBalancer(L.LightningWork):
         if self._server_ready:
             return
 
+        self.start_fastapi_app()
+
+    def start_fastapi_app(self):
+
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
@@ -108,36 +112,19 @@ class LoadBalancer(L.LightningWork):
 
         @app.get("/num-requests")
         async def num_requests():
+            # TODO: improve the hard coded logic
             return len(asyncio.all_tasks(loop=None)) - 4
-
-        async def process_request(data: Data):
-            if not self.servers:
-                raise HTTPException(500, "None of the workers are healthy!")
-
-            request_id = uuid.uuid4().hex
-            request = (request_id, data.dict())
-            self._batch["high" if data.high_quality else "low"].append(request)
-
-            while True:
-                await asyncio.sleep(0.1)
-
-                if request_id in self._responses:
-                    result = self._responses[request_id]
-                    del self._responses[request_id]
-                    if isinstance(result, (Exception, HTTPException)):
-                        raise result
-                    return result
 
         @app.post("/api/surprise-me")
         async def surprise_me():
             data = Data(dream=random_prompt())
-            return await process_request(data)
+            return await self.process_request(data)
 
         @app.post("/api/predict")
         async def balance_api(data: Data):
             if data.dream.lower() == "surprise me":
                 data.dream = random_prompt()
-            return await process_request(data)
+            return await self.process_request(data)
 
         uvicorn.run(app, host=self.host, port=self.port, loop="uvloop", access_log=False)
 
@@ -147,3 +134,21 @@ class LoadBalancer(L.LightningWork):
         new_servers = set(self.servers)
         print("servers added:", new_servers - old_servers)
         self._ITER = cycle(self.servers)
+
+    async def process_request(self, data: Data):
+        if not self.servers:
+            raise HTTPException(500, "None of the workers are healthy!")
+
+        request_id = uuid.uuid4().hex
+        request = (request_id, data.dict())
+        self._batch["high" if data.high_quality else "low"].append(request)
+
+        while True:
+            await asyncio.sleep(0.1)
+
+            if request_id in self._responses:
+                result = self._responses[request_id]
+                del self._responses[request_id]
+                if isinstance(result, (Exception, HTTPException)):
+                    raise result
+                return result
