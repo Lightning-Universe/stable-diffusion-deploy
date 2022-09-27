@@ -1,6 +1,5 @@
 import base64
 import os.path
-import signal
 import tarfile
 import time
 import urllib.request
@@ -15,7 +14,7 @@ import torch
 from PIL import Image
 from torch import autocast
 
-from muse.components.utils import Data, DataBatch, TimeoutException, exit_threads
+from muse.components.utils import Data, DataBatch, TimeoutException
 from muse.CONST import IMAGE_SIZE, KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 
