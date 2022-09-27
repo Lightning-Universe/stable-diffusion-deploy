@@ -7,7 +7,7 @@ import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
 
-from muse import DreamSlackCommandBot, StableDiffusionServe
+from muse import MuseSlackCommandBot, StableDiffusionServe
 from muse.components.load_balancer import LoadBalancer
 
 
@@ -51,7 +51,7 @@ class RootWorkFlow(L.LightningFlow):
             work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
             self.add_work(work)
 
-        self.slack_bot = DreamSlackCommandBot(command="/inspire")
+        self.slack_bot = MuseSlackCommandBot(command="/muse")
         self.printed_url = False
         self.slack_bot_url = ""
         self.dream_url = ""
