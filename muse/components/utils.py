@@ -83,6 +83,11 @@ class TimeoutException(HTTPException):
         super().__init__(status_code=status_code, detail=detail, *args, **kwargs)
 
 
+class LimitBacklogException(HTTPException):
+    def __init__(self, status_code=408, detail="Model Server has too much backlog.", *args, **kwargs):
+        super().__init__(status_code=status_code, detail=detail, *args, **kwargs)
+
+
 class Data(BaseModel):
     dream: str
     high_quality: bool = False
@@ -90,6 +95,12 @@ class Data(BaseModel):
 
 class DataBatch(BaseModel):
     batch: List[Data]
+
+
+class SysInfo(BaseModel):
+    num_workers: int
+    servers: List[str]
+    num_requests: int
 
 
 def random_prompt() -> str:
