@@ -47,7 +47,7 @@ class RootWorkFlow(L.LightningFlow):
             work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
             setattr(self, f"serve_work_{i}", work)
 
-        self.slack_bot = DreamSlackCommandBot(command="/dream")
+        self.slack_bot = DreamSlackCommandBot(command="/inspire")
         self.printed_url = False
         self.slack_bot_url = ""
         self.dream_url = ""
