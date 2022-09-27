@@ -1,4 +1,5 @@
 import json
+import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -14,9 +15,10 @@ data = json.dumps(data)
 
 if __name__ == "__main__":
     threads = []
-    with ThreadPoolExecutor(max_workers=100) as pool:
+    with ThreadPoolExecutor(max_workers=400) as pool:
         for i in range(NUM_USERS):
             threads.append(pool.submit(requests.post, f"{SERVER}/api/predict", data=data, timeout=REQUEST_TIMEOUT))
+            time.sleep(random.random())
 
         failures = []
         t0 = time.time()
