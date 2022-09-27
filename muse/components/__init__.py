@@ -1,4 +1,4 @@
-from .dream_slack_bot import DreamSlackCommandBot
+from .muse_slack_bot import MuseSlackCommandBot
 from .stable_diffusion_serve import StableDiffusionServe
 
-__all__ = ["DreamSlackCommandBot", "StableDiffusionServe"]
+__all__ = ["MuseSlackCommandBot", "StableDiffusionServe"]

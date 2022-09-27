@@ -1,3 +1,3 @@
-from .components import DreamSlackCommandBot, StableDiffusionServe
+from .components import MuseSlackCommandBot, StableDiffusionServe
 
-__all__ = ["DreamSlackCommandBot", "StableDiffusionServe"]
+__all__ = ["MuseSlackCommandBot", "StableDiffusionServe"]
