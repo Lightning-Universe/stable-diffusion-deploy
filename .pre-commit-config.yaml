@@ -23,7 +23,7 @@ repos:
       - id: check-added-large-files
         exclude: |
           (?x)(
-              ^dream/ui/build
+              ^muse/ui/build
           )
       - id: check-docstring-first
       - id: detect-private-key
@@ -79,7 +79,7 @@ repos:
       - id: prettier
         exclude: |
           (?x)(
-              ^dream/ui/build|
+              ^muse/ui/build|
               ^README.md
           )
         additional_dependencies:
