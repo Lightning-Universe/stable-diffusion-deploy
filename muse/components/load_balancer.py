@@ -16,7 +16,7 @@ from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
 
 @dataclass
 class FastAPIBuildConfig(L.BuildConfig):
-    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6", "slowapi==0.1.6"]
+    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
 
 class LoadBalancer(L.LightningWork):
