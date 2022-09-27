@@ -25,16 +25,16 @@ class LoadBalancer(L.LightningWork):
 
     Args:
         max_batch_size: Number of requests processed at once.
-        batch_timeout_micros: Number of seconds to wait before sending the requests to process.
+        batch_timeout_secs: Number of seconds to wait before sending the requests to process.
         \**kwargs: Arguments passed to :func:`LightningWork.init` like ``CloudCompute``, ``BuildConfig``, etc.
     """
 
-    def __init__(self, max_batch_size=8, batch_timeout_micros=10, **kwargs):
+    def __init__(self, max_batch_size=8, batch_timeout_secs=10, **kwargs):
         super().__init__(cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=FastAPIBuildConfig(), **kwargs)
         self._server_ready = False
         self.servers = []
         self.max_batch_size = max_batch_size
-        self.batch_timeout_micros = batch_timeout_micros
+        self.batch_timeout_secs = batch_timeout_secs
         self._ITER = None
         self._batch = {"high": [], "low": []}
         self._responses = {}  # {request_id: response}
@@ -67,7 +67,7 @@ class LoadBalancer(L.LightningWork):
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
                     (len(batch) >= self.max_batch_size)
-                    or ((time.time() - self._last_batch_sent) > self.batch_timeout_micros)
+                    or ((time.time() - self._last_batch_sent) > self.batch_timeout_secs)
                 ):
                     has_sent = True
 
