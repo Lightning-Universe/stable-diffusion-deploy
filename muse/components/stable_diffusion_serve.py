@@ -19,8 +19,11 @@ from muse.utility.utils import Data, DataBatch, TimeoutException
 
 
 @dataclass
-class FastAPIBuildConfig(L.BuildConfig):
+class DiffusionBuildConfig(L.BuildConfig):
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
+
+    def build_commands(self):
+        return ["pip install torch --extra-index-url https://download.pytorch.org/whl/cu116"]
 
 
 class StableDiffusionServe(L.LightningWork):
@@ -30,7 +33,7 @@ class StableDiffusionServe(L.LightningWork):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
+        super().__init__(cloud_build_config=DiffusionBuildConfig(), **kwargs)
         self._model = None
 
     @staticmethod
