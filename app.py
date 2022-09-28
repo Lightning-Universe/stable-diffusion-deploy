@@ -101,6 +101,12 @@ class MuseFlow(L.LightningFlow):
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 
+        # provision these works early
+        if not self.load_balancer.is_running:
+            self.load_balancer.run([], start_run=False)
+        if not self.slack_bot.is_running:
+            self.slack_bot.run("", start_run=False)
+
         for model_serve in self.model_servers:
             model_serve.run()
         if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:

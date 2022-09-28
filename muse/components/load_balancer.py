@@ -102,11 +102,11 @@ class LoadBalancer(L.LightningWork):
                     raise result
                 return result
 
-    def run(self, servers: List[str]):
-        self.servers = servers
-        if self._server_ready:
+    def run(self, servers: List[str], start_run=True):
+        if (not start_run) or self._server_ready:
             return
 
+        self.servers = servers
         self.start_fastapi_app()
 
     def start_fastapi_app(self):
