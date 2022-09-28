@@ -34,7 +34,7 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=5,
+        initial_num_workers=1,
         autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_timeout_secs=10,
@@ -151,7 +151,6 @@ class MuseFlow(L.LightningFlow):
             )
             new_work_id = self.add_work(work)
             print("new work id:", new_work_id)
-            print(f"model_serve_{idx}")
 
         # downscale
         elif num_requests < self.autoscale_down_limit and num_workers > self._initial_num_workers:
