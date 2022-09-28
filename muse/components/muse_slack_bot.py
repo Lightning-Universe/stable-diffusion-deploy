@@ -19,7 +19,7 @@ from lightning_app.storage.drive import Drive
 from slack_command_bot import SlackCommandBot
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from .utils import get_item, save_item
+from ..utility.utils import get_item, save_item
 
 
 class MuseSlackCommandBot(SlackCommandBot):

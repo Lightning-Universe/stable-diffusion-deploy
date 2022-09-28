@@ -9,9 +9,12 @@ import aiohttp
 import lightning as L
 import requests
 from fastapi import HTTPException
+from ratelimit import RateLimitMiddleware
+from ratelimit.backends.simple import MemoryBackend
 
-from muse.components.utils import Data, SysInfo, TimeoutException, random_prompt
 from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
+from muse.utility.rate_limiter import RULES, auth_function
+from muse.utility.utils import Data, SysInfo, TimeoutException, random_prompt
 
 
 @dataclass
@@ -111,6 +114,7 @@ class LoadBalancer(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
+        from starlette.middleware.sessions import SessionMiddleware
 
         print(self.servers)
 
@@ -127,6 +131,17 @@ class LoadBalancer(L.LightningWork):
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
+        )
+
+        app.add_middleware(SessionMiddleware, secret_key=str(uuid.uuid4().hex))
+
+        app.add_middleware(
+            RateLimitMiddleware,
+            authenticate=auth_function,
+            backend=MemoryBackend(),
+            config={
+                r"^/api/predict": RULES,
+            },
         )
 
         @app.on_event("startup")
