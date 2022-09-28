@@ -36,7 +36,7 @@ class StableDiffusionServe(L.LightningWork):
         self.is_model_ready = False
 
     @staticmethod
-    def download_weights(url: str, target_folder: str):
+    def download_weights(url: str, target_folder: Path):
         dest = target_folder / f"{os.path.basename(url)}"
         if not os.path.exists(dest):
             print("Downloading weights...")
