@@ -122,6 +122,7 @@ class StableDiffusionServe(L.LightningWork):
 
         subprocess.run("nvidia-smi", shell=True)
         subprocess.run("pip freeze | grep torch", shell=True)
+        subprocess.run("df -H", shell=True)
 
         if self._model is None:
             self._model = self.build_model()

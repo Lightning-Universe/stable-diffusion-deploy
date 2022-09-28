@@ -58,7 +58,7 @@ class MuseFlow(L.LightningFlow):
             max_batch_size=max_batch_size, batch_timeout_secs=batch_timeout_secs, cache_calls=True, parallel=True
         )
         for i in range(initial_num_workers):
-            work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
+            work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type, disk_size=30), cache_calls=True, parallel=True)
             self.add_work(work)
 
         self.slack_bot = MuseSlackCommandBot(command="/muse")
@@ -144,7 +144,7 @@ class MuseFlow(L.LightningFlow):
             idx = self._num_workers
             print(f"Upscale to {self._num_workers + 1}")
             work = StableDiffusionServe(
-                cloud_compute=L.CloudCompute(self.gpu_type),
+                cloud_compute=L.CloudCompute(self.gpu_type, disk_size=30),
                 cache_calls=True,
                 parallel=True,
             )
