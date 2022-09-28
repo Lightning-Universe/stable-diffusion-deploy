@@ -1,6 +1,6 @@
 <div align="center">
     <h1>
-        Lightning Stable Diffusion App
+        Lightning Muse App
     </h1>
     <img src="https://pl-flash-data.s3.amazonaws.com/assets_lightning/docs/images/logos/lightning-ai.png" width="400px">
 
@@ -23,7 +23,7 @@
 
 ______________________________________________________________________
 
-# Stable Diffusion App
+# Lightning Muse App
 
 \[TODO\]
 
@@ -33,8 +33,8 @@ ______________________________________________________________________
 conda create --name muse_app python=3.8
 conda activate muse_app
 
-git clone https://github.com/Lightning-AI/LAI-Stable-Diffusion-App.git
-cd LAI-Stable-Diffusion-App
+git clone https://github.com/Lightning-AI/LAI-Muse-App.git
+cd LAI-Muse-App
 pip install -r requirements.txt
 pip install -e .
 
