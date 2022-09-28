@@ -23,7 +23,7 @@ class DiffusionBuildConfig(L.BuildConfig):
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
     def build_commands(self):
-        return ["pip install torch --extra-index-url https://download.pytorch.org/whl/cu116"]
+        return ["pip install torch --extra-index-url https://download.pytorch.org/whl/cu116 --ignore-installed"]
 
 
 class StableDiffusionServe(L.LightningWork):
