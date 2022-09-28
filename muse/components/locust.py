@@ -4,9 +4,11 @@ from lightning import LightningWork
 
 
 class Locust(LightningWork):
-    def __init__(self, num_users: int):
-        super().__init__(port=8089, parallel=True)
+    def __init__(self, num_users: int, locustfile: str, port: int = 8089):
+        super().__init__(port=port, parallel=True)
+        self.locustfile = locustfile
         self.num_users = num_users
+        self.html_file = "locust_report.html"
 
     def run(self, host: str):
         cmd = " ".join(
@@ -20,6 +22,10 @@ class Locust(LightningWork):
                 str(host),
                 "-u",
                 str(self.num_users),
+                "-f",
+                str(self.locustfile),
+                "--html",
+                str(self.html_file),
             ]
         )
         subprocess.Popen(cmd, shell=True).wait()
