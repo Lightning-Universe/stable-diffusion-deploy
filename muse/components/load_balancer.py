@@ -9,6 +9,7 @@ import aiohttp
 import lightning as L
 import requests
 from fastapi import HTTPException
+from fastapi.requests import Request
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
 
@@ -123,6 +124,8 @@ class LoadBalancer(L.LightningWork):
 
         app = FastAPI()
 
+        app.num_current_requests = 0
+        app.last_process_time = 0
         app.SEND_TASK = None
 
         app.add_middleware(
@@ -144,6 +147,18 @@ class LoadBalancer(L.LightningWork):
             },
         )
 
+        @app.middleware("http")
+        async def current_request_counter(request: Request, call_next):
+            if not request.scope["path"] == "/api/predict":
+                return await call_next(request)
+            app.num_current_requests += 1
+            start_time = time.time()
+            response = await call_next(request)
+            process_time = time.time() - start_time
+            app.last_process_time = process_time
+            app.num_current_requests -= 1
+            return response
+
         @app.on_event("startup")
         async def startup_event():
             app.SEND_TASK = asyncio.create_task(self.consumer())
@@ -157,13 +172,15 @@ class LoadBalancer(L.LightningWork):
         @app.get("/system/info", response_model=SysInfo)
         async def sys_info():
             return SysInfo(
-                num_workers=len(self.servers), servers=self.servers, num_requests=len(asyncio.all_tasks()) - 4
+                num_workers=len(self.servers),
+                servers=self.servers,
+                num_requests=app.num_current_requests,
+                process_time=app.last_process_time,
             )
 
         @app.get("/num-requests")
-        async def num_requests():
-            # TODO: improve the hard coded logic
-            return len(asyncio.all_tasks(loop=None)) - 4
+        async def num_requests() -> int:
+            return app.num_current_requests
 
         @app.put("/system/update-servers")
         async def update_servers(servers: List[str]):
