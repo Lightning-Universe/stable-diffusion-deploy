@@ -1,3 +1,6 @@
+--find-links https://download.pytorch.org/whl/cu116/torch_stable.html
+
+torch>=1.12
 slack_command_bot@ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Component@main
 diffusers==0.3.0
 transformers==4.21.3

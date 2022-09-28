@@ -118,6 +118,7 @@ class StableDiffusionServe(L.LightningWork):
         from fastapi.middleware.cors import CORSMiddleware
 
         subprocess.run("nvidia-smi", shell=True)
+        subprocess.run("pip freeze | grep torch", shell=True)
 
         if self._model is None:
             self._model = self.build_model()
