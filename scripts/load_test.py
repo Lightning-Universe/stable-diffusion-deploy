@@ -26,8 +26,9 @@ if __name__ == "__main__":
     threads = []
     with ThreadPoolExecutor(max_workers=400) as pool:
         for i in range(NUM_USERS):
-            threads.append(pool.submit(requests.post, f"{SERVER}/api/predict", data=data, headers=headers,
-                timeout=REQUEST_TIMEOUT))
+            threads.append(
+                pool.submit(requests.post, f"{SERVER}/api/predict", data=data, headers=headers, timeout=REQUEST_TIMEOUT)
+            )
             time.sleep(random.random())
 
         failures = []
