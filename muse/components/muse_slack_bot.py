@@ -19,7 +19,8 @@ from lightning_app.storage.drive import Drive
 from slack_command_bot import SlackCommandBot
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from .utils import get_item, save_item
+from ..CONST import RATE_LIMIT_KEY
+from ..utility.utils import get_item, save_item
 
 
 class MuseSlackCommandBot(SlackCommandBot):
@@ -177,12 +178,18 @@ def save_base64(b64_image, filename="generate.png"):
 def post_dream(inference_url: str, client: "slack.WebClient", data: dict):
     channel_id = data.get("channel_id")
     prompt = data.get("text")
+    headers = {
+        "accept": "application/json",
+        "x-api-key": RATE_LIMIT_KEY,
+        # Already added when you pass json= but not when you pass data=
+        "Content-Type": "application/json",
+    }
     payload = {
         "dream": prompt,  # represents text of 'Enter the text prompt' Textbox component
         "high_quality": True,
     }
     payload = json.dumps(payload)
-    response = requests.post(inference_url + "/api/predict", data=payload)
+    response = requests.post(inference_url + "/api/predict", data=payload, headers=headers)
     response.raise_for_status()
     generated_image: str = response.json()
     with tempfile.NamedTemporaryFile() as file:
