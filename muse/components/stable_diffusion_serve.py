@@ -35,6 +35,7 @@ class StableDiffusionServe(L.LightningWork):
     def __init__(self, **kwargs):
         super().__init__(cloud_build_config=DiffusionBuildConfig(), **kwargs)
         self._model = None
+        self.is_model_ready = False
 
     @staticmethod
     def download_weights(url: str, target_folder: str):
@@ -126,6 +127,7 @@ class StableDiffusionServe(L.LightningWork):
 
         if self._model is None:
             self._model = self.build_model()
+            self.is_model_ready = True
 
         self._fastapi_app = app = FastAPI()
         app.POOL: ThreadPoolExecutor = None
