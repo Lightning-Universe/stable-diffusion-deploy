@@ -33,12 +33,12 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=1,
+        initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=8,
         batch_timeout_secs=10,
         gpu_type="gpu-fast",
-        max_workers: int = 10,
+        max_workers: int = 5,
         autoscale_down_limit: int = None,
         autoscale_up_limit: int = None,
     ):
