@@ -312,7 +312,7 @@ data/
 *.zip
 wandb/
 .idea/
-.git/
+*.git*
 *.npy
 *.csv
 github/
