@@ -108,9 +108,10 @@ class MuseFlow(L.LightningFlow):
 
         for model_serve in self.model_servers:
             model_serve.run()
+
         if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
             # run the load balancer when all the model server is ready
-            self.load_balancer.run([serve.url for serve in self.model_servers])
+            self.load_balancer.run([serve.url for serve in self.model_servers if serve.is_model_ready])
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
@@ -118,12 +119,13 @@ class MuseFlow(L.LightningFlow):
             if self.slack_bot is not None:
                 self.slack_bot.run(self.load_balancer.url)
                 self.slack_bot_url = self.slack_bot.url
-                if self.slack_bot.url and not self.printed_url:
+                if self.slack_bot.url and not self.printed_url and self.load_balancer.servers:
                     print("Slack Bot Work ready with URL=", self.slack_bot.url)
                     print("model serve url=", self.load_balancer.url)
                     self.printed_url = True
 
         if self.load_balancer.url:
+            self.load_balancer.update_servers(self.model_servers)
             self.fake_trigger += 1
             self.autoscale()
 
@@ -154,6 +156,7 @@ class MuseFlow(L.LightningFlow):
                 cache_calls=True,
                 parallel=True,
             )
+            work.run()
             new_work_id = self.add_work(work)
             print("new work id:", new_work_id)
 

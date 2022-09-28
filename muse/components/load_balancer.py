@@ -204,7 +204,7 @@ class LoadBalancer(L.LightningWork):
 
     def update_servers(self, server_works: List[L.LightningWork]):
         old_servers = set(self.servers)
-        self.servers = [server.url for server in server_works if server.url]
+        self.servers = [server.url for server in server_works if server.url and server.is_model_ready]
         new_servers = set(self.servers)
         if new_servers - old_servers:
             print("servers added:", new_servers - old_servers)
