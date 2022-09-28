@@ -101,6 +101,7 @@ class SysInfo(BaseModel):
     num_workers: int
     servers: List[str]
     num_requests: int
+    process_time: int
 
 
 def random_prompt() -> str:
