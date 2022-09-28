@@ -1,6 +1,5 @@
 import json
 import os
-import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -9,7 +8,7 @@ from rich.progress import track
 
 # TODO: implement argparse
 
-NUM_USERS = 100
+NUM_USERS = 10
 SERVER = "https://gmpfx-01gdzqrj90xwpvvew1kw1bv2s5.litng-ai-03.litng.ai"
 REQUEST_TIMEOUT = 100
 
@@ -23,16 +22,16 @@ headers = {
 }
 
 if __name__ == "__main__":
+    print(f"Spawning {NUM_USERS} users")
     threads = []
-    with ThreadPoolExecutor(max_workers=400) as pool:
+    t0 = time.time()
+    with ThreadPoolExecutor(max_workers=NUM_USERS) as pool:
         for i in range(NUM_USERS):
             threads.append(
                 pool.submit(requests.post, f"{SERVER}/api/predict", data=data, headers=headers, timeout=REQUEST_TIMEOUT)
             )
-            time.sleep(random.random())
 
         failures = []
-        t0 = time.time()
         for e in track(as_completed(threads)):
             try:
                 e.result().raise_for_status()
