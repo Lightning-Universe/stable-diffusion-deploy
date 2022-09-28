@@ -11,4 +11,4 @@ flask-cors
 asgiref==3.5.2
 lightning
 pandas==1.4.3
-asgi-ratelimit
+asgi-ratelimit==0.9.0

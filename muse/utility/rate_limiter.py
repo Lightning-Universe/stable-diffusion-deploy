@@ -16,4 +16,8 @@ async def auth_function(scope) -> Tuple[str, str]:
     return user_unique_id, user_group
 
 
-RULES: List[Rule] = [Rule(second=1, group="default"), Rule(minute=10, group="localhost"), Rule(group="internal")]
+RULES: List[Rule] = [
+    Rule(second=1, group="default"),
+    Rule(minute=10, group="localhost"),  # 127.0.0.1
+    Rule(minute=400, group="internal"),  # Slack Bot
+]
