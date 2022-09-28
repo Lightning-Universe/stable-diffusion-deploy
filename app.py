@@ -21,7 +21,6 @@ class MuseFlow(L.LightningFlow):
     shutdown based on current requests in the queue.
 
     Args:
-        autoscale_interval: time in seconds in which autoscale will run.
         initial_num_workers: Number of works to start when app initializes.
         autoscale_interval: Number of seconds to wait before checking whether to upscale or downscale the works.
         max_batch_size: Number of requests to process at once.
@@ -34,7 +33,7 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=1,
+        initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_timeout_secs=10,
@@ -50,7 +49,7 @@ class MuseFlow(L.LightningFlow):
         self._work_registry = {}
         self.autoscale_interval = autoscale_interval
         self.max_workers = max_workers
-        self.autoscale_down_limit = autoscale_down_limit or initial_num_workers * max_batch_size
+        self.autoscale_down_limit = autoscale_down_limit or initial_num_workers
         self.autoscale_up_limit = autoscale_up_limit or initial_num_workers * max_batch_size
         self.fake_trigger = 0
         self.gpu_type = gpu_type
