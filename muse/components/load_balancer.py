@@ -112,8 +112,9 @@ class LoadBalancer(L.LightningWork):
     def start_fastapi_app(self):
 
         import uvicorn
-        from fastapi import FastAPI
+        from fastapi import FastAPI, Header
         from fastapi.middleware.cors import CORSMiddleware
+        from fastapi.requests import Request
         from starlette.middleware.sessions import SessionMiddleware
 
         print(self.servers)
@@ -176,7 +177,7 @@ class LoadBalancer(L.LightningWork):
             return await self.process_request(data)
 
         @app.post("/api/predict")
-        async def balance_api(data: Data):
+        async def balance_api(data: Data, x_api_key: str = Header(default=None)):
             if data.dream.lower() == "surprise me":
                 data.dream = random_prompt()
             return await self.process_request(data)
