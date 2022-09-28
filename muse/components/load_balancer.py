@@ -8,12 +8,13 @@ from typing import List
 import aiohttp
 import lightning as L
 import requests
+import sentry_sdk
 from fastapi import HTTPException
 from fastapi.requests import Request
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
 
-from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
+from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT, SENTRY_API_KEY
 from muse.utility.rate_limiter import RULES, auth_function
 from muse.utility.utils import Data, SysInfo, TimeoutException, random_prompt
 
@@ -115,7 +116,6 @@ class LoadBalancer(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI, Header
         from fastapi.middleware.cors import CORSMiddleware
-        from starlette.middleware.sessions import SessionMiddleware
 
         print(self.servers)
 
@@ -124,28 +124,19 @@ class LoadBalancer(L.LightningWork):
 
         app = FastAPI()
 
+        if SENTRY_API_KEY:
+            print("enabled sentry monitoring")
+            sentry_sdk.init(
+                dsn=SENTRY_API_KEY,
+                # Set traces_sample_rate to 1.0 to capture 100%
+                # of transactions for performance monitoring.
+                # We recommend adjusting this value in production,
+                traces_sample_rate=1.0,
+            )
+
         app.num_current_requests = 0
         app.last_process_time = 0
         app.SEND_TASK = None
-
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-
-        app.add_middleware(SessionMiddleware, secret_key=str(uuid.uuid4().hex))
-
-        app.add_middleware(
-            RateLimitMiddleware,
-            authenticate=auth_function,
-            backend=MemoryBackend(),
-            config={
-                r"^/api/predict": RULES,
-            },
-        )
 
         @app.middleware("http")
         async def current_request_counter(request: Request, call_next):
@@ -158,6 +149,23 @@ class LoadBalancer(L.LightningWork):
             app.last_process_time = process_time
             app.num_current_requests -= 1
             return response
+
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+        app.add_middleware(
+            RateLimitMiddleware,
+            authenticate=auth_function,
+            backend=MemoryBackend(),
+            config={
+                r"^/api/predict": RULES,
+            },
+        )
 
         @app.on_event("startup")
         async def startup_event():
