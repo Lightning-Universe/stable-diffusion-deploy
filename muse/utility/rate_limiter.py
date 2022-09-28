@@ -5,6 +5,7 @@ from ratelimit import Rule
 from muse.CONST import RATE_LIMIT_KEY
 
 
+# TODO: improve unique user (ip) detection logic. Use Session or JWT
 async def auth_function(scope) -> Tuple[str, str]:
     ip = ""
     if scope["client"]:
@@ -27,7 +28,7 @@ async def auth_function(scope) -> Tuple[str, str]:
 
 
 RULES: List[Rule] = [
-    Rule(second=1, group="default"),
+    Rule(second=1, group="default"),  # global unique users
     Rule(minute=10, group="localhost"),  # 127.0.0.1
     Rule(minute=400, group="internal"),  # Slack Bot
 ]

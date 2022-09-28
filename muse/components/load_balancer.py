@@ -97,7 +97,7 @@ class LoadBalancer(L.LightningWork):
                 result = self._responses[request_id]
                 del self._responses[request_id]
                 if isinstance(result, Exception):
-                    raise HTTPException(result.args[0])
+                    raise HTTPException(500, result.args[0])
                 elif isinstance(result, HTTPException):
                     raise result
                 return result
@@ -114,7 +114,6 @@ class LoadBalancer(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI, Header
         from fastapi.middleware.cors import CORSMiddleware
-        from fastapi.requests import Request
         from starlette.middleware.sessions import SessionMiddleware
 
         print(self.servers)
