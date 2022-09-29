@@ -3,7 +3,7 @@ import json
 from locust import HttpUser, task
 
 
-class DreamUser(HttpUser):
+class MuseUser(HttpUser):
     @task
     def predict(self):
         data = {"dream": "A purple cloud with Lightning", "high_quality": False}
