@@ -138,7 +138,7 @@ function DreamSearch() {
                   <Switch checked={fastGen} onChange={e => setFastGen(e.target.checked)} />
                 </Box>
                 <Typography colorI={'primary'} fontFamily={'Roboto'} variant={'body2'}>
-                  {fastGen ? 'Fast, low quality' : 'high quality, slow'}
+                  {fastGen ? 'Fast' : 'More creative (slower)'}
                 </Typography>
               </Row>
 
