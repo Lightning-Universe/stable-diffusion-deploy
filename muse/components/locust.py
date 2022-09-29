@@ -1,11 +1,11 @@
 import subprocess
 
-from lightning import LightningWork
+import lightning as L
 
 
-class Locust(LightningWork):
+class Locust(L.LightningWork):
     def __init__(self, locustfile: str, num_users: int = 10, port: int = 8089):
-        super().__init__(port=port, parallel=True)
+        super().__init__(port=port, parallel=True, cloud_build_config=L.BuildConfig(requirements=["locust"]))
         self.locustfile = locustfile
         self.num_users = num_users
         self.html_file = "locust_report.html"
