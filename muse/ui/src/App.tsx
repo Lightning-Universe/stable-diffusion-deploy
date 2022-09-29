@@ -1,18 +1,22 @@
+import CopyAllRoundedIcon from '@mui/icons-material/CopyAllRounded';
 import {
   Box,
   Container,
   createTheme,
   CssBaseline,
   Grid,
+  IconButton,
+  IconButtonProps,
   OutlinedInput,
   StackProps,
   ThemeProvider as MuiThemeProvider,
   useTheme,
 } from '@mui/material';
 import { Switch } from 'components/Switch';
+import { getAndroidVersion } from 'hooks/usePlatform';
 import { Button, Stack } from 'lightning-ui/src/design-system/components';
 import { theme } from 'lightning-ui/src/design-system/theme';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
@@ -51,11 +55,11 @@ function Dream({ dream, image }: DreamProps) {
 }
 
 function DreamSearch() {
+  const androidVersion = useMemo(() => getAndroidVersion(), []);
   const { lightningState } = useLightningState();
   const [dream, setDream] = React.useState<string | null>('woman painting a large red egg in a dali landscape');
-  const [result, setResult] = React.useState<string | null>(null);
+  const [result, setResult] = React.useState<string | null>(MetaImage);
   const [requestedDream, setRequestedDream] = React.useState('');
-
   const [fastGen, setFastGen] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -75,7 +79,7 @@ function DreamSearch() {
 
   return (
     <div>
-      <Box sx={{ position: 'sticky', left: 0, right: 0, top: 0 }}>
+      <Box sx={{ position: 'sticky', left: 0, right: 0, top: 0, zIndex: 10 }}>
         <BuildYourAppBanner />
       </Box>
       <Grid
@@ -93,7 +97,19 @@ function DreamSearch() {
         </Grid>
 
         {/* image generation */}
-        <Grid item xs={12} sm={12} md={7} lg={8} xl={7} textAlign={'center'} sx={{ position: 'relative', zIndex: -1 }}>
+        <Grid item xs={12} sm={12} md={7} lg={8} xl={7} textAlign={'center'} sx={{ position: 'relative' }}>
+          <Box
+            sx={{
+              display: androidVersion === 0 ? 'block' : 'none',
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              zIndex: 8,
+              background: '#FFFFFFBF',
+              borderRadius: 40,
+            }}>
+            <DownloadImageButton disabled={!result} onClick={() => result && copyImageToClipboard(result)} />
+          </Box>
           <Box
             sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%' }}>
             <Dream dream={requestedDream} image={result} />
@@ -233,3 +249,29 @@ const AppAbout = (props: Pick<StackProps, 'display' | 'paddingBottom' | 'padding
     </Typography>
   </Stack>
 );
+
+const DownloadImageButton = (props: IconButtonProps) => {
+  return (
+    <IconButton {...props}>
+      <CopyAllRoundedIcon style={{ color: '#1C1C1C' }} />
+    </IconButton>
+  );
+};
+
+const copyImageToClipboard = async (content: string) => {
+  const blobToClipboard = (content: string | Promise<Blob> | Blob) => {
+    try {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': content })]);
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
+  // todo: add better error handler
+  if (content.startsWith('/static')) {
+    const imgContent = await (await fetch(content)).blob();
+    blobToClipboard(imgContent);
+    return;
+  }
+  blobToClipboard(content);
+};
