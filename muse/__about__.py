@@ -4,9 +4,9 @@ __author_email__ = "aniket@lightning.ai"
 __license__ = "Apache 2.0"
 __copyright__ = f"Copyright (c) 2021-2022, {__author__}."
 __homepage__ = "https://github.com/Lightning-AI/LAI-Stable-Diffusion-App"
-__docs__ = "Visualize your words with Stable Diffusion Lightning App"
+__docs__ = "Visualize your words with Lightning Muse App"
 __long_doc__ = """
-Create beautiful works of art in seconds with the Lightning Dream Generator App.
+Create beautiful works of art in seconds with the Lightning Muse App.
 """
 
 __all__ = [
