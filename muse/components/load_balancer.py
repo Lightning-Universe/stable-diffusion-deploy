@@ -15,6 +15,7 @@ from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
 
 from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT, SENTRY_API_KEY
+from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
 from muse.utility.utils import Data, SysInfo, TimeoutException, random_prompt
 
@@ -98,10 +99,7 @@ class LoadBalancer(L.LightningWork):
             if request_id in self._responses:
                 result = self._responses[request_id]
                 del self._responses[request_id]
-                if isinstance(result, Exception):
-                    raise HTTPException(500, result.args[0])
-                elif isinstance(result, HTTPException):
-                    raise result
+                raise_granular_exception(result)
                 return result
 
     def run(self, servers: List[str]):
