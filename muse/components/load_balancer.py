@@ -14,7 +14,7 @@ from fastapi.requests import Request
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
 
-from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT, SENTRY_API_KEY
+from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
 from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
 from muse.utility.utils import Data, SysInfo, TimeoutException, random_prompt
@@ -52,7 +52,9 @@ class LoadBalancer(L.LightningWork):
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(f"{server}/api/predict", json=data, timeout=REQUEST_TIMEOUT) as result:
+                async with session.post(
+                    f"{server}/api/predict", json=data, timeout=INFERENCE_REQUEST_TIMEOUT
+                ) as result:
                     if result.status == 408:
                         raise TimeoutException()
                     result.raise_for_status()

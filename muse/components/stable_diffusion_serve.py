@@ -14,7 +14,7 @@ import torch
 from PIL import Image
 from torch import autocast
 
-from muse.CONST import IMAGE_SIZE, KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
+from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
 from muse.utility.utils import Data, DataBatch, TimeoutException
 
 
@@ -77,7 +77,7 @@ class StableDiffusionServe(L.LightningWork):
 
     @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
-        if time.time() - entry_time > REQUEST_TIMEOUT:
+        if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
             raise TimeoutException()
 
         height = width = IMAGE_SIZE
@@ -159,7 +159,7 @@ class StableDiffusionServe(L.LightningWork):
                     self.predict,
                     data.batch,
                     entry_time=entry_time,
-                ).result(timeout=REQUEST_TIMEOUT)
+                ).result(timeout=INFERENCE_REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
                 # hack: once there is a timeout then all requests after that is getting timeout
