@@ -48,7 +48,7 @@ export const AppDetailsFooter = () => (
       <VerticalLine />
       <Typography fontSize={'14px'} fontFamily={'Roboto'}>
         <Link href={Links.github} target={'_blank'}>
-          Get Code
+          Get the Code
         </Link>
       </Typography>
     </Stack>
