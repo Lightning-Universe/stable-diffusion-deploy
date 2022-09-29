@@ -117,7 +117,8 @@ class StableDiffusionServe(L.LightningWork):
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
 
-        subprocess.run("nvidia-smi", shell=True)
+        if torch.cuda.is_available():
+            subprocess.run("nvidia-smi", shell=True)
 
         if self._model is None:
             self._model = self.build_model()
