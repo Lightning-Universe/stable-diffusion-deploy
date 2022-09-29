@@ -1,3 +1,13 @@
+import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
+import LogoIcon from './assets/Logo.svg';
+import MetaImage from './assets/header.png';
+import { AppDetailsFooter, BuildYourAppBanner } from './components/FooterLinks';
+import { ProgressBar } from './components/Loader';
+import { AddYourSlackCredentials } from './components/SlackTokensModel';
+import { Typography } from './components/Typography';
+import { useLightningState } from './hooks/useLightningState';
+import { postDream } from './services/api';
+import { LightingState } from './types/lightning';
 import CopyAllRoundedIcon from '@mui/icons-material/CopyAllRounded';
 import {
   Box,
@@ -10,7 +20,6 @@ import {
   OutlinedInput,
   StackProps,
   ThemeProvider as MuiThemeProvider,
-  useTheme,
 } from '@mui/material';
 import { Switch } from 'components/Switch';
 import { getAndroidVersion } from 'hooks/usePlatform';
@@ -19,16 +28,6 @@ import { theme } from 'lightning-ui/src/design-system/theme';
 import React, { useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
-import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
-import MetaImage from './assets/header.png';
-import LogoIcon from './assets/Logo.svg';
-import { AppDetailsFooter, BuildYourAppBanner } from './components/FooterLinks';
-import { ProgressBar } from './components/Loader';
-import { AddYourSlackCredentials } from './components/SlackTokensModel';
-import { Typography } from './components/Typography';
-import { useLightningState } from './hooks/useLightningState';
-import { postDream } from './services/api';
-import { LightingState } from './types/lightning';
 
 const queryClient = new QueryClient();
 
@@ -218,20 +217,24 @@ function App() {
 export default App;
 
 const SlackFormAndLicense = (lightningState: LightingState) => {
-  const theme = useTheme();
   return (
     <Box
-      component={'div'}
       sx={{
         background: '#fff',
         textAlign: 'center',
-        [theme.breakpoints.down('sm')]: { paddingBottom: '50px', paddingTop: '20px' },
-        [theme.breakpoints.up('sm')]: { position: 'fixed', left: 0, right: 0, paddingBottom: '30px', bottom: 0 },
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        paddingBottom: 1.5,
       }}>
       <AddYourSlackCredentials {...lightningState} />
-      <br />
-
-      <AppDetailsFooter />
+      <Box height={8} />
+      <Grid container>
+        <Grid item xs={12} sm={12} md={5} lg={4} xl={5} paddingX={2}>
+          <AppDetailsFooter />
+        </Grid>
+      </Grid>
     </Box>
   );
 };
