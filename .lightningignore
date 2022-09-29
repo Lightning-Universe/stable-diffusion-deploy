@@ -321,3 +321,6 @@ _output/
 .git/
 node_modules/
 *node_modules/*
+
+*.html
+assests/
