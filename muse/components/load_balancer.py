@@ -116,6 +116,7 @@ class LoadBalancer(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI, Header
         from fastapi.middleware.cors import CORSMiddleware
+        from starlette_prometheus import PrometheusMiddleware, metrics
 
         print(self.servers)
 
@@ -149,6 +150,9 @@ class LoadBalancer(L.LightningWork):
             app.last_process_time = process_time
             app.num_current_requests -= 1
             return response
+
+        app.add_middleware(PrometheusMiddleware)
+        app.add_route("/metrics/", metrics)
 
         app.add_middleware(
             CORSMiddleware,

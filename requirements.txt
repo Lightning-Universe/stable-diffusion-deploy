@@ -13,3 +13,4 @@ lightning
 pandas==1.4.3
 asgi-ratelimit==0.9.0
 sentry-sdk[fastapi]
+starlette-prometheus-middleware==0.9.0
