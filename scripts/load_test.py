@@ -32,7 +32,7 @@ if __name__ == "__main__":
             )
 
         failures = []
-        for e in track(as_completed(threads)):
+        for e in track(as_completed(threads), total=len(threads)):
             try:
                 e.result().raise_for_status()
             except Exception as e:
