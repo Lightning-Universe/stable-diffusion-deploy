@@ -120,7 +120,7 @@ class MuseFlow(L.LightningFlow):
                     print("model serve url=", self.load_balancer.url)
                     self.printed_url = True
 
-        if self.load_testing:
+        if self.load_testing and self.load_balancer.url:
             self.locust.run(self.load_balancer.url)
 
         if self.load_balancer.url:
