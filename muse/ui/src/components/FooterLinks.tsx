@@ -1,6 +1,6 @@
+import { Box, Link, Stack } from '@mui/material';
 import SlackIcon from '../assets/Slack.svg';
 import { Typography } from './Typography';
-import { Stack, Box, Link } from '@mui/material';
 
 export enum Links {
   stableDiffusion = 'https://stability.ai/blog/stable-diffusion-public-release',

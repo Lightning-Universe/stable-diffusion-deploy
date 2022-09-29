@@ -1,5 +1,5 @@
-import MuiSwitch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
+import MuiSwitch from '@mui/material/Switch';
 
 const SIZE = 20;
 
