@@ -64,11 +64,9 @@ const VerticalLine = () => (
 export const BuildYourAppBanner = () => {
   return (
     <Box sx={theme => ({ background: theme.palette.primary.main, textAlign: 'center' })} padding={1}>
-      <Typography fontSize={'14px'} fontWeight={600} color={'#fff'}>
-        Learn how to build apps like this!
+      <Typography fontSize={'14px'} fontWeight={600}>
         <Link href={Links.lightningAI} target={'_blank'} color={'#fff'}>
-          {' '}
-          Learn more
+          Learn how to build apps like this!
         </Link>
       </Typography>
     </Box>
