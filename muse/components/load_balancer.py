@@ -218,6 +218,8 @@ class LoadBalancer(L.LightningWork):
         old_servers = set(self.servers)
         self.servers = [server.url for server in server_works if server.url]
         new_servers = set(self.servers)
+        if new_servers == old_servers:
+            return
         if new_servers - old_servers:
             print("servers added:", new_servers - old_servers)
 
