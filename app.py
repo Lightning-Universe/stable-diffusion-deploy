@@ -17,6 +17,25 @@ class ReactUI(L.LightningFlow):
         return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "muse", "ui", "build"))
 
 
+class APIUsageFlow(L.LightningFlow):
+    def __init__(self, api_url: str = ""):
+        super().__init__()
+        self.api_url = api_url
+
+    def configure_layout(self):
+        return APIAccessFrontend(
+            apis=[
+                {
+                    "name": "Predict Method",
+                    "url": f"{self.api_url}/api/predict",
+                    "method": "POST",
+                    "request": {"dream": "cats in hats", "high_quality": "true"},
+                    "response": "base64 string",
+                }
+            ]
+        )
+
+
 class MuseFlow(L.LightningFlow):
     """The MuseFlow is a LightningFlow component that handles all the servers and uses load balancer to spawn up and
     shutdown based on current requests in the queue.
@@ -71,6 +90,7 @@ class MuseFlow(L.LightningFlow):
         self.slack_bot_url = ""
         self.dream_url = ""
         self.ui = ReactUI()
+        self.api_component = APIUsageFlow()
 
     @property
     def model_servers(self) -> List[StableDiffusionServe]:
@@ -113,6 +133,7 @@ class MuseFlow(L.LightningFlow):
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
+            self.api_component.api_url = self.load_balancer.url
             self.dream_url = self.load_balancer.url
             if self.slack_bot is not None:
                 self.slack_bot.run(self.load_balancer.url)
@@ -134,17 +155,8 @@ class MuseFlow(L.LightningFlow):
         if self.load_testing:
             ui.append({"name": "Locust", "content": self.locust.url})
 
-        frontend = APIAccessFrontend(
-            apis={
-                "name": "Predict Method",
-                "url": f"api/predict",
-                "method": "POST",
-                "request": {"id": "string"},
-                "response": json.dumps({"dream": "...", "high_quality": "..."}, indent=2),
-            }
-        )
-        ui.append(frontend)
-        return frontend
+        ui.append({"name": "API Usage", "content": self.api_component})
+        return ui
 
     def autoscale(self):
         """Upscale and down scale model inference works based on the number of requests."""
