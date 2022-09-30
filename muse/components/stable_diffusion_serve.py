@@ -33,6 +33,7 @@ class StableDiffusionServe(L.LightningWork):
     def __init__(self, safety_embeddings_drive: Optional[Drive] = None, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
         self.safety_embeddings_drive = safety_embeddings_drive
+        self.safety_embeddings_filename = "safety_embedding.pt"
         self._model = None
 
     @staticmethod
@@ -113,6 +114,12 @@ class StableDiffusionServe(L.LightningWork):
         return results
 
     def run(self):
+
+        if self.safety_embeddings_filename not in self.safety_embeddings_drive.list("."):
+            return
+
+        self.safety_embeddings_drive.get(self.safety_embeddings_filename)
+
         import subprocess
 
         import uvicorn

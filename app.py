@@ -89,6 +89,8 @@ class MuseFlow(L.LightningFlow):
         self.dream_url = ""
         self.ui = ReactUI()
 
+        self.safety_embeddings_ready = False
+
     @property
     def model_servers(self) -> List[StableDiffusionServe]:
         works = []
@@ -121,6 +123,13 @@ class MuseFlow(L.LightningFlow):
     def run(self):
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
+
+        if not self.safety_embeddings_ready:
+            self.safety_checker_embedding_work.run()
+
+        if self.safety_checker_embedding_work.has_succeeded:
+            self.safety_embeddings_ready = True
+            self.safety_checker_embedding_work.stop()
 
         for model_serve in self.model_servers:
             model_serve.run()
