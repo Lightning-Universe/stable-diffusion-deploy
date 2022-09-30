@@ -232,7 +232,7 @@ const SlackFormAndLicense = (lightningState: LightingState) => {
       <Box height={8} />
       <Grid container>
         <Grid item xs={12} sm={12} md={5} lg={4} xl={5} paddingX={2}>
-          <AppDetailsFooter />
+          <AppDetailsFooter apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
         </Grid>
       </Grid>
     </Box>
