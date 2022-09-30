@@ -151,7 +151,7 @@ class LoadBalancer(L.LightningWork):
             app.num_current_requests -= 1
             return response
 
-        app.add_middleware(PrometheusMiddleware)
+        app.add_middleware(PrometheusMiddleware, app_name="load_balancer", prefix="muse")
         app.add_route("/metrics", handle_metrics)
 
         app.add_middleware(
