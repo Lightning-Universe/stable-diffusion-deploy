@@ -1,13 +1,3 @@
-import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
-import LogoIcon from './assets/Logo.svg';
-import MetaImage from './assets/header.png';
-import { AppDetailsFooter, BuildYourAppBanner } from './components/FooterLinks';
-import { ProgressBar } from './components/Loader';
-import { AddYourSlackCredentials } from './components/SlackTokensModel';
-import { Typography } from './components/Typography';
-import { useLightningState } from './hooks/useLightningState';
-import { postDream } from './services/api';
-import { LightingState } from './types/lightning';
 import CopyAllRoundedIcon from '@mui/icons-material/CopyAllRounded';
 import {
   Box,
@@ -28,6 +18,16 @@ import { theme } from 'lightning-ui/src/design-system/theme';
 import React, { useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
+import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
+import MetaImage from './assets/header.png';
+import LogoIcon from './assets/Logo.svg';
+import { AppDetailsFooter, BuildYourAppBanner } from './components/FooterLinks';
+import { ProgressBar } from './components/Loader';
+import { AddYourSlackCredentials } from './components/SlackTokensModel';
+import { Typography } from './components/Typography';
+import { useLightningState } from './hooks/useLightningState';
+import { postDream } from './services/api';
+import { LightingState } from './types/lightning';
 
 const queryClient = new QueryClient();
 
