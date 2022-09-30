@@ -2,12 +2,12 @@ from typing import List, Tuple
 
 from ratelimit import Rule
 
-from muse.CONST import LOAD_TESTING, RATE_LIMIT_KEY
+from muse.CONST import MUSE_LOAD_TESTING, RATE_LIMIT_KEY
 
 
 # TODO: improve unique user (ip) detection logic. Use Session or JWT
 async def auth_function(scope) -> Tuple[str, str]:
-    if LOAD_TESTING:
+    if MUSE_LOAD_TESTING:
         return "", "load_test"
 
     ip = ""

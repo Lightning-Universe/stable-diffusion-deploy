@@ -10,7 +10,7 @@ from rich.progress import track
 
 NUM_USERS = 10
 SERVER = "https://gmpfx-01gdzqrj90xwpvvew1kw1bv2s5.litng-ai-03.litng.ai"
-REQUEST_TIMEOUT = 100
+REQUEST_TIMEOUT = 160
 
 data = {"dream": "A purple cloud with Lightning", "high_quality": False}
 data = json.dumps(data)
@@ -32,7 +32,7 @@ if __name__ == "__main__":
             )
 
         failures = []
-        for e in track(as_completed(threads)):
+        for e in track(as_completed(threads), total=len(threads)):
             try:
                 e.result().raise_for_status()
             except Exception as e:
