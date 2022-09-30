@@ -141,6 +141,7 @@ class MuseFlow(L.LightningFlow):
                 if self.slack_bot.url and not self.printed_url:
                     print("Slack Bot Work ready with URL=", self.slack_bot.url)
                     print("model serve url=", self.load_balancer.url)
+                    print("API component url=", self.api_component.state_vars["vars"]["_layout"]["target"])
                     self.printed_url = True
 
         if self.load_testing and self.load_balancer.url:
@@ -155,7 +156,6 @@ class MuseFlow(L.LightningFlow):
         if self.load_testing:
             ui.append({"name": "Locust", "content": self.locust.url})
 
-        ui.append({"name": "API Usage", "content": self.api_component})
         return ui
 
     def autoscale(self):
