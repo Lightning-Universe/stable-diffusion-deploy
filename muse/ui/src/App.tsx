@@ -219,6 +219,7 @@ export default App;
 const SlackFormAndLicense = (lightningState: LightingState) => {
   return (
     <Box
+      paddingBottom={{ md: 1.5, xs: 6 }}
       sx={{
         background: '#fff',
         textAlign: 'center',
@@ -226,13 +227,12 @@ const SlackFormAndLicense = (lightningState: LightingState) => {
         left: 0,
         right: 0,
         bottom: 0,
-        paddingBottom: 1.5,
       }}>
       <AddYourSlackCredentials {...lightningState} />
       <Box height={8} />
       <Grid container>
         <Grid item xs={12} sm={12} md={5} lg={4} xl={5} paddingX={2}>
-          <AppDetailsFooter />
+          <AppDetailsFooter apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
         </Grid>
       </Grid>
     </Box>
