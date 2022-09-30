@@ -1,4 +1,3 @@
-import json
 import os
 import time
 import uuid
@@ -30,7 +29,7 @@ class APIUsageFlow(L.LightningFlow):
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
                     "request": {"dream": "cats in hats", "high_quality": "true"},
-                    "response": "base64 string",
+                    "response": "Base64 String",
                 }
             ]
         )
@@ -53,7 +52,7 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=1,
+        initial_num_workers=5,
         autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_timeout_secs=10,
