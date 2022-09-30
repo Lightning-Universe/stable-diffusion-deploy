@@ -64,16 +64,21 @@ class MuseFlow(L.LightningFlow):
         self._last_autoscale = time.time()
 
         # Create Drive to store Safety Checker embeddings
-        self.embeddings_drive = Drive("lit://embeddings")
+        self.safety_embeddings_drive = Drive("lit://embeddings")
 
         # Safety Checker Embedding Work to create and store embeddings in the Drive
-        self.safety_checker_embedding_work = SafetyCheckerEmbedding(drive=self.embeddings_drive)
+        self.safety_checker_embedding_work = SafetyCheckerEmbedding(drive=self.safety_embeddings_drive)
 
         self.load_balancer = LoadBalancer(
             max_batch_size=max_batch_size, batch_timeout_secs=batch_timeout_secs, cache_calls=True, parallel=True
         )
         for i in range(initial_num_workers):
-            work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
+            work = StableDiffusionServe(
+                safety_embeddings_drive=self.safety_embeddings_drive,
+                cloud_compute=L.CloudCompute(gpu_type),
+                cache_calls=True,
+                parallel=True,
+            )
             self.add_work(work)
 
         self.slack_bot = MuseSlackCommandBot(command="/muse")
