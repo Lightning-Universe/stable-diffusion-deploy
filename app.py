@@ -63,6 +63,7 @@ class MuseFlow(L.LightningFlow):
         load_testing: bool = False,
     ):
         super().__init__()
+        self.footer_color = "#fff0"
         self.load_balancer_started = False
         self._initial_num_workers = initial_num_workers
         self._num_workers = 0
