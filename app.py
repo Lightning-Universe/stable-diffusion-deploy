@@ -151,7 +151,7 @@ class MuseFlow(L.LightningFlow):
             self.autoscale()
 
     def configure_layout(self):
-        ui = [{"name": None, "content": self.ui}]
+        ui = [{"name": "Muse App" if self.load_testing else None, "content": self.ui}]
         if self.load_testing:
             ui.append({"name": "Locust", "content": self.locust.url})
 
