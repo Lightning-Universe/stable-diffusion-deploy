@@ -216,7 +216,7 @@ class LoadBalancer(L.LightningWork):
 
     def update_servers(self, server_works: List[L.LightningWork]):
         old_servers = set(self.servers)
-        self.servers = [server.url for server in server_works if server.url]
+        self.servers: List[str] = [server.url for server in server_works if server.url]
         new_servers = set(self.servers)
         if new_servers == old_servers:
             return
@@ -227,7 +227,7 @@ class LoadBalancer(L.LightningWork):
         if deleted_servers:
             print("deleted servers:", deleted_servers)
 
-        servers = list(new_servers)
+        servers = self.servers
         headers = {
             "accept": "application/json",
         }
