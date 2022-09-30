@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import uuid
@@ -6,6 +7,7 @@ from typing import List
 import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
+from lightning_api_access import APIAccessFrontend
 
 from muse import LoadBalancer, Locust, MuseSlackCommandBot, StableDiffusionServe
 
@@ -32,7 +34,7 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=5,
+        initial_num_workers=1,
         autoscale_interval=1 * 30,
         max_batch_size=12,
         batch_timeout_secs=10,
@@ -131,7 +133,18 @@ class MuseFlow(L.LightningFlow):
         ui = [{"name": "Muse App", "content": self.ui}]
         if self.load_testing:
             ui.append({"name": "Locust", "content": self.locust.url})
-        return ui
+
+        frontend = APIAccessFrontend(
+            apis={
+                "name": "Predict Method",
+                "url": f"api/predict",
+                "method": "POST",
+                "request": {"id": "string"},
+                "response": json.dumps({"dream": "...", "high_quality": "..."}, indent=2),
+            }
+        )
+        ui.append(frontend)
+        return frontend
 
     def autoscale(self):
         """Upscale and down scale model inference works based on the number of requests."""
