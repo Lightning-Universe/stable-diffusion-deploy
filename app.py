@@ -6,8 +6,15 @@ from typing import List
 import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
+from lightning.app.storage import Drive
 
-from muse import LoadBalancer, Locust, MuseSlackCommandBot, StableDiffusionServe
+from muse import (
+    LoadBalancer,
+    Locust,
+    MuseSlackCommandBot,
+    SafetyCheckerEmbedding,
+    StableDiffusionServe,
+)
 
 
 class ReactUI(L.LightningFlow):
@@ -55,6 +62,13 @@ class MuseFlow(L.LightningFlow):
         self.fake_trigger = 0
         self.gpu_type = gpu_type
         self._last_autoscale = time.time()
+
+        # Create Drive to store Safety Checker embeddings
+        self.embeddings_drive = Drive("lit://embeddings")
+
+        # Safety Checker Embedding Work to create and store embeddings in the Drive
+        self.safety_checker_embedding_work = SafetyCheckerEmbedding(drive=self.embeddings_drive)
+
         self.load_balancer = LoadBalancer(
             max_batch_size=max_batch_size, batch_timeout_secs=batch_timeout_secs, cache_calls=True, parallel=True
         )
