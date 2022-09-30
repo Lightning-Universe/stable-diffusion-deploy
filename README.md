@@ -54,6 +54,7 @@ This application is fairly simple already showcases the following features of Li
 - UI written in React
 - Backend serving REST API (with FastAPI)
 - Load Balancer to handle requests and serve them across multiple Lightning Works
+- Load Testing Lightning Component using Locust
 - Environment variables to parametrize execution environment
 
 <details>

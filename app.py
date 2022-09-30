@@ -7,8 +7,7 @@ import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
 
-from muse import MuseSlackCommandBot, StableDiffusionServe
-from muse.components.load_balancer import LoadBalancer
+from muse import LoadBalancer, Locust, MuseSlackCommandBot, StableDiffusionServe
 
 
 class ReactUI(L.LightningFlow):
@@ -41,6 +40,7 @@ class MuseFlow(L.LightningFlow):
         max_workers: int = 10,
         autoscale_down_limit: int = None,
         autoscale_up_limit: int = None,
+        load_testing: bool = False,
     ):
         super().__init__()
         self.load_balancer_started = False
@@ -51,6 +51,7 @@ class MuseFlow(L.LightningFlow):
         self.max_workers = max_workers
         self.autoscale_down_limit = autoscale_down_limit or initial_num_workers
         self.autoscale_up_limit = autoscale_up_limit or initial_num_workers * max_batch_size
+        self.load_testing = load_testing or os.getenv("MUSE_LOAD_TESTING", False)
         self.fake_trigger = 0
         self.gpu_type = gpu_type
         self._last_autoscale = time.time()
@@ -62,6 +63,8 @@ class MuseFlow(L.LightningFlow):
             self.add_work(work)
 
         self.slack_bot = MuseSlackCommandBot(command="/muse")
+        if self.load_testing:
+            self.locust = Locust(locustfile="./scripts/locustfile.py")
         self.printed_url = False
         self.slack_bot_url = ""
         self.dream_url = ""
@@ -117,17 +120,18 @@ class MuseFlow(L.LightningFlow):
                     print("model serve url=", self.load_balancer.url)
                     self.printed_url = True
 
+        if self.load_testing and self.load_balancer.url:
+            self.locust.run(self.load_balancer.url)
+
         if self.load_balancer.url:
             self.fake_trigger += 1
             self.autoscale()
 
     def configure_layout(self):
-        return [
-            {
-                "name": None,
-                "content": self.ui,
-            },
-        ]
+        ui = [{"name": "Muse App", "content": self.ui}]
+        if self.load_testing:
+            ui.append({"name": "Locust", "content": self.locust.url})
+        return ui
 
     def autoscale(self):
         """Upscale and down scale model inference works based on the number of requests."""

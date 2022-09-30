@@ -1,3 +1,3 @@
-from .components import MuseSlackCommandBot, StableDiffusionServe
+from .components import LoadBalancer, Locust, MuseSlackCommandBot, StableDiffusionServe
 
-__all__ = ["MuseSlackCommandBot", "StableDiffusionServe"]
+__all__ = ["MuseSlackCommandBot", "StableDiffusionServe", "LoadBalancer", "Locust"]

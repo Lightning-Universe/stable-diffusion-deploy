@@ -1,21 +1,22 @@
 {
   "files": {
     "main.css": "/static/css/main.2c16595e.css",
-    "main.js": "/static/js/main.afc065c5.js",
+    "main.js": "/static/js/main.668208aa.js",
     "static/js/787.8c33e357.chunk.js": "/static/js/787.8c33e357.chunk.js",
+    "static/media/header.png": "/static/media/header.67b10b41f8eb6687ce48.png",
     "static/media/UCity-Regular.otf": "/static/media/UCity-Regular.e28f5006c1976d08baaa.otf",
     "static/media/UCity-Light.otf": "/static/media/UCity-Light.8352e423a843d9a0c52a.otf",
     "static/media/UCity-Semibold.otf": "/static/media/UCity-Semibold.b37489cc447430fe4ba7.otf",
-    "static/media/Logo.svg": "/static/media/Logo.5a4a0e53430aa27b0ac1c21ac7853525.svg",
-    "static/media/LightningAI.svg": "/static/media/LightningAI.5fadbc4b2b303df894a76c5a6a74179a.svg",
+    "static/media/Logo.svg": "/static/media/Logo.a813b7478514b732f03964db61591480.svg",
     "static/media/Slack.svg": "/static/media/Slack.53435980573fa6fea1c93f596c9808c7.svg",
     "index.html": "/index.html",
-    "static/media/Speed.svg": "/static/media/Speed.6fc913e62c169b1e0151a15f1e2c7a4b.svg",
-    "static/media/Dream.svg": "/static/media/Dream.dfffb9a8e3c319ca1d7839f963238958.svg",
-    "static/media/Flashes.svg": "/static/media/Flashes.629a23bca50dc5c15091ae09e429181a.svg",
+    "static/media/Flashes.svg": "/static/media/Flashes.b681a57ea3fef62885ceced1b6630438.svg",
     "main.2c16595e.css.map": "/static/css/main.2c16595e.css.map",
-    "main.afc065c5.js.map": "/static/js/main.afc065c5.js.map",
+    "main.668208aa.js.map": "/static/js/main.668208aa.js.map",
     "787.8c33e357.chunk.js.map": "/static/js/787.8c33e357.chunk.js.map"
   },
-  "entrypoints": ["static/css/main.2c16595e.css", "static/js/main.afc065c5.js"]
+  "entrypoints": [
+    "static/css/main.2c16595e.css",
+    "static/js/main.668208aa.js"
+  ]
 }

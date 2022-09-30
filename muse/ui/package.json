@@ -16,7 +16,7 @@
     "craco": "^0.0.3",
     "filter-material-ui": "2.7.0",
     "fontfaceobserver": "^2.1.0",
-    "lightning-ui": "git+ssh://git@github.com/Lightning-AI/lightning-ui.git",
+    "lightning-ui": "git+ssh://git@github.com/Lightning-AI/lightning-ui.git#1fff090ab288199ad3596381a49ce69d5160b5bc",
     "lodash": "^4.17.21",
     "notistack": "^2.0.4",
     "query-string": "^7.1.0",
