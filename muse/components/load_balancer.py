@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import time
 import uuid
 from dataclasses import dataclass
@@ -61,6 +62,7 @@ class LoadBalancer(L.LightningWork):
                     result = {request[0]: r for request, r in zip(batch, result)}
                     self._responses.update(result)
         except Exception as e:
+            logging.exception(e)
             result = {request[0]: e for request in batch}
             self._responses.update(result)
 
@@ -232,7 +234,11 @@ class LoadBalancer(L.LightningWork):
                 )
                 session.add(request_monitor)
                 session.commit()
-                return result
+
+            if app.request_count % 10 == 0:
+                logging.info("refreshing db drive")
+                self.db_drive.put(sqlite_file_name)
+            return result
 
         uvicorn.run(
             app, host=self.host, port=self.port, loop="uvloop", timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False
