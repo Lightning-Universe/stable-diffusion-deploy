@@ -12,7 +12,7 @@ export enum Links {
   github = 'https://github.com/Lightning-AI/LAI-Stable-Diffusion-App',
 }
 
-export const AppDetailsFooter = () => (
+export const AppDetailsFooter = ({ apiLink }: { apiLink?: string }) => (
   <Stack
     direction={{ xs: 'column', md: 'row' }}
     alignItems={'center'}
@@ -26,7 +26,7 @@ export const AppDetailsFooter = () => (
       </Typography>
       <VerticalLine />
       <Typography fontSize={'14px'} fontFamily={'Roboto'}>
-        <Link href={Links.license} target={'_blank'}>
+        <Link href={apiLink} target={'_blank'}>
           API
         </Link>
       </Typography>
