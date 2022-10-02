@@ -13,8 +13,11 @@ from fastapi import HTTPException
 from fastapi.requests import Request
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
+from sqlmodel import Session
 
 from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
+from muse.db.backend import create_db_and_tables, engine
+from muse.db.models import RequestMonitor
 from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
 from muse.utility.utils import Data, SysInfo, TimeoutException, random_prompt
@@ -53,7 +56,7 @@ class LoadBalancer(L.LightningWork):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    f"{server}/api/predict", json=data, timeout=INFERENCE_REQUEST_TIMEOUT
+                        f"{server}/api/predict", json=data, timeout=INFERENCE_REQUEST_TIMEOUT
                 ) as result:
                     if result.status == 408:
                         raise TimeoutException()
@@ -74,14 +77,14 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                    (len(batch) >= self.max_batch_size)
-                    or ((time.time() - self._last_batch_sent) > self.batch_timeout_secs)
+                        (len(batch) >= self.max_batch_size)
+                        or ((time.time() - self._last_batch_sent) > self.batch_timeout_secs)
                 ):
                     has_sent = True
 
                     asyncio.create_task(self.send_batch(batch))
 
-                    self._batch[quality] = self._batch[quality][self.max_batch_size :]
+                    self._batch[quality] = self._batch[quality][self.max_batch_size:]
                     batch = self._batch[quality][: self.max_batch_size]
 
             if has_sent:
@@ -174,6 +177,7 @@ class LoadBalancer(L.LightningWork):
         @app.on_event("startup")
         async def startup_event():
             app.SEND_TASK = asyncio.create_task(self.consumer())
+            create_db_and_tables()
             self._server_ready = True
 
         @app.on_event("shutdown")
@@ -206,9 +210,22 @@ class LoadBalancer(L.LightningWork):
 
         @app.post("/api/predict")
         async def balance_api(data: Data, x_api_key: str = Header(default=None)):
-            if data.dream.lower() == "surprise me":
-                data.dream = random_prompt()
-            return await self.process_request(data)
+            with Session(engine) as session:
+                start_time = time.perf_counter()
+
+                if data.dream.lower() == "surprise me":
+                    data.dream = random_prompt()
+                result = await self.process_request(data)
+
+                process_time = time.perf_counter() - start_time
+                request_monitor = RequestMonitor(
+                    prompt=data.dream,
+                    model_server_process_time=-1,  # TODO: fetch worker server time
+                    load_balancer_process_time=process_time,
+                )
+                session.add(request_monitor)
+                session.commit()
+                return result
 
         uvicorn.run(
             app, host=self.host, port=self.port, loop="uvloop", timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False

@@ -14,3 +14,4 @@ pandas==1.4.3
 asgi-ratelimit==0.9.0
 sentry-sdk[fastapi]
 starlette-exporter==0.14.0
+sqlmodel==0.0.8

@@ -116,6 +116,7 @@ class StableDiffusionServe(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
+        from fastapi.requests import Request
 
         if torch.cuda.is_available():
             subprocess.run("nvidia-smi", shell=True)
@@ -125,6 +126,16 @@ class StableDiffusionServe(L.LightningWork):
 
         self._fastapi_app = app = FastAPI()
         app.POOL: ThreadPoolExecutor = None
+
+        @app.middleware("http")
+        async def add_process_time_header(request: Request, call_next):
+            if not request.scope["path"] == "/api/predict":
+                return await call_next(request)
+            start_time = time.perf_counter()
+            response = await call_next(request)
+            process_time = time.perf_counter() - start_time
+            response.headers["x-process-time"] = str(process_time)
+            return response
 
         @app.on_event("startup")
         def startup_event():
