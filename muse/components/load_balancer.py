@@ -56,7 +56,7 @@ class LoadBalancer(L.LightningWork):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                        f"{server}/api/predict", json=data, timeout=INFERENCE_REQUEST_TIMEOUT
+                    f"{server}/api/predict", json=data, timeout=INFERENCE_REQUEST_TIMEOUT
                 ) as result:
                     if result.status == 408:
                         raise TimeoutException()
@@ -77,14 +77,14 @@ class LoadBalancer(L.LightningWork):
             for quality in self._batch.keys():
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
-                        (len(batch) >= self.max_batch_size)
-                        or ((time.time() - self._last_batch_sent) > self.batch_timeout_secs)
+                    (len(batch) >= self.max_batch_size)
+                    or ((time.time() - self._last_batch_sent) > self.batch_timeout_secs)
                 ):
                     has_sent = True
 
                     asyncio.create_task(self.send_batch(batch))
 
-                    self._batch[quality] = self._batch[quality][self.max_batch_size:]
+                    self._batch[quality] = self._batch[quality][self.max_batch_size :]
                     batch = self._batch[quality][: self.max_batch_size]
 
             if has_sent:
