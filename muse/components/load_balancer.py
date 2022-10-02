@@ -8,16 +8,10 @@ from typing import List
 import aiohttp
 import lightning as L
 import requests
-import sentry_sdk
 from fastapi import HTTPException
 from fastapi.requests import Request
-from ratelimit import RateLimitMiddleware
-from ratelimit.backends.simple import MemoryBackend
-from sqlmodel import Session
 
 from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
-from muse.db.backend import create_db_and_tables, engine
-from muse.db.models import RequestMonitor
 from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
 from muse.utility.utils import Data, SysInfo, TimeoutException, random_prompt
@@ -116,10 +110,17 @@ class LoadBalancer(L.LightningWork):
 
     def start_fastapi_app(self):
 
+        import sentry_sdk
         import uvicorn
         from fastapi import FastAPI, Header
         from fastapi.middleware.cors import CORSMiddleware
+        from ratelimit import RateLimitMiddleware
+        from ratelimit.backends.simple import MemoryBackend
+        from sqlmodel import Session
         from starlette_exporter import PrometheusMiddleware, handle_metrics
+
+        from muse.db.backend import create_db_and_tables, engine
+        from muse.db.models import RequestMonitor
 
         print(self.servers)
 
