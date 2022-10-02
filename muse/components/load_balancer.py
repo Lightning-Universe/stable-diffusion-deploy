@@ -10,6 +10,7 @@ import lightning as L
 import requests
 from fastapi import HTTPException
 from fastapi.requests import Request
+from lightning.app.storage import Drive
 
 from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
 from muse.utility.exception_handling import raise_granular_exception
@@ -42,6 +43,7 @@ class LoadBalancer(L.LightningWork):
         self._batch = {"high": [], "low": []}
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
+        self.db_drive = Drive("lit://muse_db")
 
     async def send_batch(self, batch):
         server = next(self._ITER)
@@ -119,7 +121,7 @@ class LoadBalancer(L.LightningWork):
         from sqlmodel import Session
         from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-        from muse.db.backend import create_db_and_tables, engine
+        from muse.db.backend import create_db_and_tables, engine, sqlite_file_name
         from muse.db.models import RequestMonitor
 
         print(self.servers)
@@ -183,6 +185,7 @@ class LoadBalancer(L.LightningWork):
 
         @app.on_event("shutdown")
         def shutdown_event():
+            self.db_drive.put(sqlite_file_name)
             app.SEND_TASK.cancel()
             self._server_ready = False
 
