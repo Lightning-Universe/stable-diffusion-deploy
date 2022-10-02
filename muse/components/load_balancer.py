@@ -130,6 +130,7 @@ class LoadBalancer(L.LightningWork):
         self._last_batch_sent = time.time()
 
         app = FastAPI()
+        app.request_count = 0
 
         if SENTRY_API_KEY:
             print("enabled sentry monitoring")
@@ -155,6 +156,7 @@ class LoadBalancer(L.LightningWork):
             process_time = time.time() - start_time
             app.last_process_time = process_time
             app.num_current_requests -= 1
+            app.request_count += 1
             return response
 
         app.add_middleware(PrometheusMiddleware, app_name="load_balancer", prefix="muse")
@@ -224,6 +226,7 @@ class LoadBalancer(L.LightningWork):
                 process_time = time.perf_counter() - start_time
                 request_monitor = RequestMonitor(
                     prompt=data.dream,
+                    request_count=app.request_count,
                     model_server_process_time=-1,  # TODO: fetch worker server time
                     load_balancer_process_time=process_time,
                 )
