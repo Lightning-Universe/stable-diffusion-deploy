@@ -6,8 +6,6 @@ from omegaconf import OmegaConf
 from PIL import Image
 from torch import autocast
 
-from muse.CONST import IMAGE_SIZE
-
 
 def load_model_from_config(config, ckpt, verbose=False):
     print(f"Loading model from {ckpt}")

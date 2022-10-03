@@ -12,3 +12,4 @@ lightning@ git+https://github.com/Lightning-AI/lightning@master
 asgi-ratelimit==0.9.0
 sentry-sdk[fastapi]
 starlette-exporter==0.14.0
+Pillow==9.2.0
