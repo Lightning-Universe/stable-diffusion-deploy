@@ -6,9 +6,16 @@ from typing import List
 import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
+from lightning.app.storage import Drive
 from lightning_api_access import APIAccessFrontend
 
-from muse import LoadBalancer, Locust, MuseSlackCommandBot, StableDiffusionServe
+from muse import (
+    LoadBalancer,
+    Locust,
+    MuseSlackCommandBot,
+    SafetyCheckerEmbedding,
+    StableDiffusionServe,
+)
 
 
 class ReactUI(L.LightningFlow):
@@ -76,11 +83,23 @@ class MuseFlow(L.LightningFlow):
         self.fake_trigger = 0
         self.gpu_type = gpu_type
         self._last_autoscale = time.time()
+
+        # Create Drive to store Safety Checker embeddings
+        self.safety_embeddings_drive = Drive("lit://embeddings")
+
+        # Safety Checker Embedding Work to create and store embeddings in the Drive
+        self.safety_checker_embedding_work = SafetyCheckerEmbedding(drive=self.safety_embeddings_drive)
+
         self.load_balancer = LoadBalancer(
             max_batch_size=max_batch_size, batch_timeout_secs=batch_timeout_secs, cache_calls=True, parallel=True
         )
         for i in range(initial_num_workers):
-            work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
+            work = StableDiffusionServe(
+                safety_embeddings_drive=self.safety_embeddings_drive,
+                cloud_compute=L.CloudCompute(gpu_type),
+                cache_calls=True,
+                parallel=True,
+            )
             self.add_work(work)
 
         self.slack_bot = MuseSlackCommandBot(command="/muse")
@@ -91,6 +110,8 @@ class MuseFlow(L.LightningFlow):
         self.dream_url = ""
         self.ui = ReactUI()
         self.api_component = APIUsageFlow()
+
+        self.safety_embeddings_ready = False
 
     @property
     def model_servers(self) -> List[StableDiffusionServe]:
@@ -124,6 +145,14 @@ class MuseFlow(L.LightningFlow):
     def run(self):
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
+
+        if False:
+            if not self.safety_embeddings_ready:
+                self.safety_checker_embedding_work.run()
+
+            if not self.safety_embeddings_ready and self.safety_checker_embedding_work.has_succeeded:
+                self.safety_embeddings_ready = True
+                self.safety_checker_embedding_work.stop()
 
         for model_serve in self.model_servers:
             model_serve.run()

@@ -6,6 +6,7 @@ import sys
 from typing import Any, List, Optional
 
 import numpy as np
+import requests
 from fastapi import HTTPException
 from lightning_app.storage.drive import Drive
 from pydantic import BaseModel
@@ -117,6 +118,14 @@ def random_prompt() -> str:
             encoding="utf-8",
         )
     return random.choice(OPEN_PROMPTS)
+
+
+def fetch_nsfw_list() -> List[str]:
+    response = requests.get(
+        "https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/master/en"
+    )
+    response.raise_for_status()
+    return response.text.splitlines()
 
 
 def _remove_initial_quotes(prompt):
