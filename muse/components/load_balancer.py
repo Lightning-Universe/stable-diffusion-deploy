@@ -152,13 +152,13 @@ class LoadBalancer(L.LightningWork):
         async def current_request_counter(request: Request, call_next):
             if not request.scope["path"] == "/api/predict":
                 return await call_next(request)
+            app.request_count += 1
             app.num_current_requests += 1
             start_time = time.time()
             response = await call_next(request)
             process_time = time.time() - start_time
             app.last_process_time = process_time
             app.num_current_requests -= 1
-            app.request_count += 1
             return response
 
         app.add_middleware(PrometheusMiddleware, app_name="load_balancer", prefix="muse")
