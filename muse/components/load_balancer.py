@@ -182,6 +182,9 @@ class LoadBalancer(L.LightningWork):
 
         @app.on_event("startup")
         async def startup_event():
+            if "muse.db" in self.db_drive.list():
+                logging.info("loading DB from Drive")
+                self.db_drive.get(sqlite_file_name, overwrite=True)
             app.SEND_TASK = asyncio.create_task(self.consumer())
             create_db_and_tables()
             self._server_ready = True
