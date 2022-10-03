@@ -5,8 +5,8 @@ import random
 import sys
 from typing import Any, List, Optional
 
-import requests
 import numpy as np
+import requests
 from fastapi import HTTPException
 from lightning_app.storage.drive import Drive
 from pydantic import BaseModel
@@ -126,6 +126,7 @@ def fetch_nsfw_list() -> List[str]:
     )
     response.raise_for_status()
     return response.text.splitlines()
+
 
 def _remove_initial_quotes(prompt):
     if prompt.startswith('"'):
