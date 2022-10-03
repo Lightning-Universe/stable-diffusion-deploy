@@ -3,7 +3,6 @@ from typing import List, Optional
 import torch
 from lightning import BuildConfig, LightningWork
 from lightning.app.storage import Drive
-from torch import nn
 
 from muse.CONST import NSFW_PREDEFINED_LIST
 
@@ -24,8 +23,21 @@ class SafetyCheckerEmbedding(LightningWork):
 
     def run(self):
 
-        # TODO: implement the safety check embedding using the nsfw list words
-        embedding = nn.Embedding(10, 3)
-        torch.save(embedding, self.safety_embeddings_filename)
+        from flash import Trainer
+        from flash.text import TextClassificationData, TextClassifier
+
+        datamodule = TextClassificationData.from_lists(
+            predict_data=self.nsfw_list,
+            batch_size=4,
+        )
+
+        model = TextClassifier(backbone="clip_vitl14", num_classes=2)
+        embedder = model.as_embedder("adapter.backbone")
+
+        trainer = Trainer()
+        embedding_batches = trainer.predict(embedder, datamodule)
+        embeddings = [embedding for embedding_batch in embedding_batches for embedding in embedding_batch]
+
+        torch.save(embeddings, self.safety_embeddings_filename)
 
         self.drive.put(self.safety_embeddings_filename)
