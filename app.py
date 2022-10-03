@@ -124,12 +124,13 @@ class MuseFlow(L.LightningFlow):
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 
-        if not self.safety_embeddings_ready:
-            self.safety_checker_embedding_work.run()
+        if False:
+            if not self.safety_embeddings_ready:
+                self.safety_checker_embedding_work.run()
 
-        if self.safety_checker_embedding_work.has_succeeded:
-            self.safety_embeddings_ready = True
-            self.safety_checker_embedding_work.stop()
+            if not self.safety_embeddings_ready and self.safety_checker_embedding_work.has_succeeded:
+                self.safety_embeddings_ready = True
+                self.safety_checker_embedding_work.stop()
 
         for model_serve in self.model_servers:
             model_serve.run()

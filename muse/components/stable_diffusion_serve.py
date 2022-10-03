@@ -115,10 +115,8 @@ class StableDiffusionServe(L.LightningWork):
 
     def run(self):
 
-        if self.safety_embeddings_filename not in self.safety_embeddings_drive.list("."):
+        if False and self.safety_embeddings_filename not in self.safety_embeddings_drive.list("."):
             return
-
-        self.safety_embeddings_drive.get(self.safety_embeddings_filename)
 
         import subprocess
 
