@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 import aiohttp.client_exceptions
 from fastapi import HTTPException
@@ -15,9 +16,10 @@ def raise_granular_exception(exception: Exception):
         raise exception
 
     if isinstance(exception, aiohttp.client_exceptions.ServerDisconnectedError):
-        raise HTTPException(500, "Worker server Disconnected")
+        raise HTTPException(500, "Worker Server Disconnected")
 
     if isinstance(exception, aiohttp.client_exceptions.ClientError):
+        logging.exception(exception)
         raise HTTPException(500, "Worker Server error")
 
     if isinstance(exception, asyncio.TimeoutError):
@@ -25,6 +27,7 @@ def raise_granular_exception(exception: Exception):
 
     if isinstance(exception, Exception):
         if exception.args[0] == "Server disconnected":
-            raise HTTPException(500, "Worker server disconnected")
+            raise HTTPException(500, "Worker Server disconnected")
 
+    logging.exception(exception)
     raise HTTPException(500, exception.args[0])
