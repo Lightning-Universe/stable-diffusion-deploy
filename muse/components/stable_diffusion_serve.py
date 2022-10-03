@@ -6,14 +6,14 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import lightning as L
 import numpy as np
 import torch
 from lightning.app.storage import Drive
 from PIL import Image
-from torch import autocast
+from torch import autocast, nn
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
 from muse.utility.utils import Data, DataBatch, TimeoutException
@@ -180,3 +180,24 @@ class StableDiffusionServe(L.LightningWork):
         uvicorn.run(
             app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False, loop="uvloop"
         )
+
+
+def nsfw_content_or_not(image_features: torch.Tensor, text_features: torch.Tensor) -> Tuple[torch.Tensor, List[bool]]:
+    """Utility to check if the images have NSFW content or not.
+
+    Args:
+        image_features (torch.Tensor): The image features generated from the user prompts.
+        text_features (torch.Tensor): The text features generated from the NSFW prompts.
+
+    Returns:
+        torch.Tensor: The probability of the image having NSFW content.
+        list[bool]: A list of boolean values indicating whether the image has NSFW content or not.
+    """
+    logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
+    # cosine similarity as logits
+    logit_scale = logit_scale.exp()
+    logits_per_image = logit_scale * image_features @ text_features.t()
+
+    probs = torch.from_numpy(logits_per_image.softmax(dim=-1).cpu().detach().numpy())
+
+    return probs, torch.any(probs > 0.5, dim=1).tolist()
