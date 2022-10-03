@@ -1,5 +1,3 @@
-import argparse
-
 import numpy as np
 import torch
 from ldm.models.diffusion.ddim import DDIMSampler
@@ -7,13 +5,8 @@ from ldm.util import instantiate_from_config
 from omegaconf import OmegaConf
 from PIL import Image
 from torch import autocast
-from transformers import AutoFeatureExtractor
 
 from muse.CONST import IMAGE_SIZE
-
-# load safety model
-safety_model_id = "CompVis/stable-diffusion-safety-checker"
-safety_feature_extractor = AutoFeatureExtractor.from_pretrained(safety_model_id)
 
 
 def load_model_from_config(config, ckpt, verbose=False):
@@ -36,54 +29,45 @@ def load_model_from_config(config, ckpt, verbose=False):
     return model
 
 
-def main():
-    parser = argparse.ArgumentParser()
+class StableDiffusionPipeline:
+    def __init__(self, model_path):
+        config_path = model_path / "v1-inference.yml"
+        weights_path = model_path / "sd-v1-4.ckpt"
+        config = OmegaConf.load(f"{config_path}")
+        self.model = load_model_from_config(config, f"{weights_path}")
+        self.sampler = DDIMSampler(self.model)
+        self.device = torch.device("cuda")
+        self.model = self.model.to(self.device)
+        torch.cuda.empty_cache()
 
-    parser.add_argument(
-        "--config",
-        type=str,
-        default="configs/stable-diffusion/v1-inference.yaml",
-        help="path to config which constructs model",
-    )
-    parser.add_argument(
-        "--ckpt",
-        type=str,
-        default="models/ldm/stable-diffusion-v1/model.ckpt",
-        help="path to checkpoint of model",
-    )
-    opt = parser.parse_args()
+    def __call__(self, prompts, height, width, num_inference_steps):
+        batch_size = len(prompts)
 
-    config = OmegaConf.load(f"{opt.config}")
-    model = load_model_from_config(config, f"{opt.ckpt}")
+        with torch.inference_mode(), autocast("cuda"), self.model.ema_scope():
+            torch.cuda.empty_cache()
+            uc = self.model.get_learned_conditioning(batch_size * [""])
+            c = self.model.get_learned_conditioning(prompts)
+            shape = [4, height // 8, width // 8]
+            samples_ddim, _ = self.sampler.sample(
+                S=num_inference_steps,
+                conditioning=c,
+                batch_size=batch_size,
+                shape=shape,
+                verbose=False,
+                unconditional_guidance_scale=7.5,
+                unconditional_conditioning=uc,
+                eta=0.0,
+                x_T=None,
+            )
 
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    model = model.to(device)
-    sampler = DDIMSampler(model)
+            x_samples_ddim = self.model.decode_first_stage(samples_ddim)
+            x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
+            x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
 
-    batch_size = len(opt.prompt)
+            # SAFTY CHECKER GOES HERE
+            x_checked_image = x_samples_ddim
 
-    with torch.inference_mode(), autocast("cuda"), model.ema_scope():
-        uc = model.get_learned_conditioning(batch_size * [""])
-        c = model.get_learned_conditioning(prompts)
-        shape = [4, IMAGE_SIZE // 8, IMAGE_SIZE // 8]
-        samples_ddim, _ = sampler.sample(
-            S=num_inference_steps,
-            conditioning=c,
-            batch_size=batch_size,
-            shape=shape,
-            verbose=False,
-            unconditional_guidance_scale=7.5,
-            unconditional_conditioning=uc,
-            eta=0.0,
-            x_T=None,
-        )
+            x_checked_image = (255.0 * x_checked_image).astype(np.uint8)
+            pil_results = [Image.fromarray(x_sample) for x_sample in x_checked_image]
 
-        x_samples_ddim = model.decode_first_stage(samples_ddim)
-        x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
-        x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
-
-        # SAFTY CHECKER GOES HERE
-        x_checked_image = x_samples_ddim
-
-        x_checked_image = (255.0 * x_checked_image).astype(np.uint8)
-        pil_results = [Image.fromarray(x_sample) for x_sample in x_checked_image]
+        return pil_results

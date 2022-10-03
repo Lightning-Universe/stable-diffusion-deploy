@@ -6,6 +6,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
 from typing import List, Optional, Tuple
 
 import lightning as L
@@ -16,12 +17,16 @@ from PIL import Image
 from torch import autocast, nn
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
+from muse.models.pipeline import StableDiffusionPipeline
 from muse.utility.utils import Data, DataBatch, TimeoutException
 
 
 @dataclass
-class FastAPIBuildConfig(L.BuildConfig):
+class DiffusionBuildConfig(L.BuildConfig):
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
+
+    def build_commands(self):
+        return ["git clone https://github.com/CompVis/stable-diffusion && cd stable-diffusion && pip install -e ."]
 
 
 class StableDiffusionServe(L.LightningWork):
@@ -31,15 +36,16 @@ class StableDiffusionServe(L.LightningWork):
     """
 
     def __init__(self, safety_embeddings_drive: Optional[Drive] = None, **kwargs):
-        super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
+        super().__init__(cloud_build_config=DiffusionBuildConfig(), **kwargs)
         self.safety_embeddings_drive = safety_embeddings_drive
         self.safety_embeddings_filename = "safety_embedding.pt"
         self._model = None
 
     @staticmethod
-    def download_weights(url: str, target_folder: str):
-        dest = target_folder + f"/{os.path.basename(url)}"
+    def download_weights(url: str, target_folder: Path):
+        dest = target_folder / f"{os.path.basename(url)}"
         if not os.path.exists(dest):
+            print("Downloading weights...")
             urllib.request.urlretrieve(url, dest)
             file = tarfile.open(dest)
 
@@ -48,30 +54,18 @@ class StableDiffusionServe(L.LightningWork):
 
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
-
-        import os
-
-        import torch
-        from diffusers import StableDiffusionPipeline
-
         print("loading model...")
         if torch.cuda.is_available():
-            weights_folder = "resources/stable-diffusion-v1-4"
-            os.makedirs(weights_folder, exist_ok=True)
+            weights_folder = Path("resources/stable_diffusion_weights")
+            weights_folder.mkdir(parents=True, exist_ok=True)
 
-            print("Downloading weights...")
             self.download_weights(
                 "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_weights.tar.gz", weights_folder
             )
 
-            repo_folder = f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/models--CompVis--stable-diffusion-v1-4/snapshots/a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
-            pipe = StableDiffusionPipeline.from_pretrained(
-                repo_folder,
-                revision="fp16",
-                torch_dtype=torch.float16,
-            )
-            pipe = pipe.to("cuda")
-            pipe.enable_attention_slicing()
+            pipe = StableDiffusionPipeline(weights_folder / "sd_weights")
+            # TODO: Add this for stable diffusion pipeline
+            # pipe.enable_attention_slicing()
             print("model loaded")
         else:
             pipe = None
@@ -90,16 +84,12 @@ class StableDiffusionServe(L.LightningWork):
         if torch.cuda.is_available():
             with autocast("cuda"):
                 torch.cuda.empty_cache()
-                preds = self._model(
+                pil_results = self._model(
                     prompts,
                     height=height,
                     width=width,
                     num_inference_steps=num_inference_steps,
                 )
-                pil_results = preds.images
-                for i, has_nsfw in enumerate(preds.nsfw_content_detected):
-                    if has_nsfw:
-                        pil_results[i] = Image.open("./assets/nsfw-warning.png")
         else:
             time.sleep(4)
             pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
