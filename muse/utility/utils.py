@@ -5,8 +5,8 @@ import random
 import sys
 from typing import Any, List, Optional
 
-import pandas as pd
 import requests
+import numpy as np
 from fastapi import HTTPException
 from lightning_app.storage.drive import Drive
 from pydantic import BaseModel
@@ -108,9 +108,15 @@ class SysInfo(BaseModel):
 def random_prompt() -> str:
     global OPEN_PROMPTS
     if OPEN_PROMPTS is None:
-        OPEN_PROMPTS = pd.read_csv("https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/1k-prompts.csv")[
-            "prompt"
-        ]
+        OPEN_PROMPTS = np.loadtxt(
+            "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/1k-prompts.csv",
+            usecols=0,
+            skiprows=1,
+            delimiter=",",
+            dtype=str,
+            converters=_remove_initial_quotes,
+            encoding="utf-8",
+        )
     return random.choice(OPEN_PROMPTS)
 
 
@@ -120,3 +126,8 @@ def fetch_nsfw_list() -> List[str]:
     )
     response.raise_for_status()
     return response.text.splitlines()
+
+def _remove_initial_quotes(prompt):
+    if prompt.startswith('"'):
+        return prompt[1:]
+    return prompt

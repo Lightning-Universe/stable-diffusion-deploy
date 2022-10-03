@@ -7,6 +7,7 @@ import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
 from lightning.app.storage import Drive
+from lightning_api_access import APIAccessFrontend
 
 from muse import (
     LoadBalancer,
@@ -20,6 +21,25 @@ from muse import (
 class ReactUI(L.LightningFlow):
     def configure_layout(self):
         return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "muse", "ui", "build"))
+
+
+class APIUsageFlow(L.LightningFlow):
+    def __init__(self, api_url: str = ""):
+        super().__init__()
+        self.api_url = api_url
+
+    def configure_layout(self):
+        return APIAccessFrontend(
+            apis=[
+                {
+                    "name": "Predict Method",
+                    "url": f"{self.api_url}/api/predict",
+                    "method": "POST",
+                    "request": {"dream": "cats in hats", "high_quality": "true"},
+                    "response": "Base64 String",
+                }
+            ]
+        )
 
 
 class MuseFlow(L.LightningFlow):
@@ -50,6 +70,7 @@ class MuseFlow(L.LightningFlow):
         load_testing: bool = False,
     ):
         super().__init__()
+        self.footer_color = "#fff0"
         self.load_balancer_started = False
         self._initial_num_workers = initial_num_workers
         self._num_workers = 0
@@ -88,6 +109,7 @@ class MuseFlow(L.LightningFlow):
         self.slack_bot_url = ""
         self.dream_url = ""
         self.ui = ReactUI()
+        self.api_component = APIUsageFlow()
 
         self.safety_embeddings_ready = False
 
@@ -140,6 +162,7 @@ class MuseFlow(L.LightningFlow):
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
+            self.api_component.api_url = self.load_balancer.url
             self.dream_url = self.load_balancer.url
             if self.slack_bot is not None:
                 self.slack_bot.run(self.load_balancer.url)
@@ -147,6 +170,7 @@ class MuseFlow(L.LightningFlow):
                 if self.slack_bot.url and not self.printed_url:
                     print("Slack Bot Work ready with URL=", self.slack_bot.url)
                     print("model serve url=", self.load_balancer.url)
+                    print("API component url=", self.api_component.state_vars["vars"]["_layout"]["target"])
                     self.printed_url = True
 
         if self.load_testing and self.load_balancer.url:
@@ -157,9 +181,10 @@ class MuseFlow(L.LightningFlow):
             self.autoscale()
 
     def configure_layout(self):
-        ui = [{"name": "Muse App", "content": self.ui}]
+        ui = [{"name": "Muse App" if self.load_testing else None, "content": self.ui}]
         if self.load_testing:
             ui.append({"name": "Locust", "content": self.locust.url})
+
         return ui
 
     def autoscale(self):
