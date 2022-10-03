@@ -6,7 +6,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import lightning as L
 import numpy as np
@@ -182,7 +182,7 @@ class StableDiffusionServe(L.LightningWork):
         )
 
 
-def nsfw_content_or_not(image_features: torch.Tensor, text_features: torch.Tensor) -> List[bool]:
+def nsfw_content_or_not(image_features: torch.Tensor, text_features: torch.Tensor) -> Tuple[torch.Tensor, List[bool]]:
     """Utility to check if the images have NSFW content or not.
 
     Args:
@@ -190,6 +190,7 @@ def nsfw_content_or_not(image_features: torch.Tensor, text_features: torch.Tenso
         text_features (torch.Tensor): The text features generated from the NSFW prompts.
 
     Returns:
+        torch.Tensor: The probability of the image having NSFW content.
         list[bool]: A list of boolean values indicating whether the image has NSFW content or not.
     """
     logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
@@ -199,4 +200,4 @@ def nsfw_content_or_not(image_features: torch.Tensor, text_features: torch.Tenso
 
     probs = torch.from_numpy(logits_per_image.softmax(dim=-1).cpu().detach().numpy())
 
-    return torch.any(probs > 0.5, dim=1).tolist()
+    return probs, torch.any(probs > 0.5, dim=1).tolist()
