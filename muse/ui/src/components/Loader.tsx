@@ -3,7 +3,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { styled } from '@mui/material/styles';
 import { useCallback, useEffect, useState } from 'react';
 
-export const ProgressBar = ({ maxTime = 60 }: { maxTime?: number }) => {
+export const ProgressBar = ({ maxTime = 60, title }: { maxTime?: number; title?: string }) => {
   const [time, setValue] = useState(0);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export const ProgressBar = ({ maxTime = 60 }: { maxTime?: number }) => {
 
   return (
     <div>
-      {maxTime > time && <Typography fontFamily={'Roboto'}>Fetching inspiration...</Typography>}
+      {maxTime > time && title && <Typography fontFamily={'Roboto'}>{title}</Typography>}
 
       {/* 375 is iphone se, nothing is less than 300 fr */}
       <Box component={'div'} sx={{ width: '100%', minWidth: '300px' }} py={2}>
