@@ -1,4 +1,4 @@
-import { Box, Link, Stack } from '@mui/material';
+import { Link, Stack } from '@mui/material';
 import SlackIcon from '../assets/Slack.svg';
 import { Typography } from './Typography';
 
@@ -63,12 +63,20 @@ const VerticalLine = () => (
 
 export const BuildYourAppBanner = () => {
   return (
-    <Box sx={theme => ({ background: theme.palette.primary.main, textAlign: 'center' })} padding={1}>
-      <Typography fontSize={'14px'} fontWeight={600}>
-        <Link href={Links.lightningAI} target={'_blank'} color={'#fff'}>
-          Learn how to build apps like this!
-        </Link>
-      </Typography>
-    </Box>
+    <Link href={Links.lightningAI} target={'_blank'}>
+      <Stack
+        direction={'row'}
+        justifyContent={'center'}
+        alignItems={'center'}
+        sx={theme => ({ background: theme.palette.primary.main, textAlign: 'center' })}
+        padding={1}>
+        <Typography color={'#FFFFFF'} fontSize={'14px'} fontWeight={400}>
+          ⚡️ Learn how to build apps like this!&nbsp;
+        </Typography>
+        <Typography color={'#D6CEF5'} fontSize={'16px'} fontWeight={600} fontFamily={'UCity'} lineHeight={'unset'}>
+          Get started
+        </Typography>
+      </Stack>
+    </Link>
   );
 };
