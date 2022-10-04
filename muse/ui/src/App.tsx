@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Switch } from 'components/Switch';
 import { getAndroidVersion } from 'hooks/usePlatform';
-import { Button, Stack } from 'lightning-ui/src/design-system/components';
+import { Button, SnackbarProvider, Stack, useSnackbar } from 'lightning-ui/src/design-system/components';
 import { theme } from 'lightning-ui/src/design-system/theme';
 import React, { useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -55,21 +55,35 @@ function Dream({ dream, image }: DreamProps) {
 
 function DreamSearch() {
   const androidVersion = useMemo(() => getAndroidVersion(), []);
-  const { lightningState } = useLightningState();
-  const [dream, setDream] = React.useState<string | null>('woman painting a large red egg in a dali landscape');
-  const [result, setResult] = React.useState<string | null>(MetaImage);
-  const [requestedDream, setRequestedDream] = React.useState('');
-  const [fastGen, setFastGen] = useState(true);
 
+  const { lightningState } = useLightningState();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const [query, setQuery] = React.useState<string>('woman painting a large red egg in a dali landscape');
   const [loading, setLoading] = useState(false);
+  const [imgResult, setImgResult] = React.useState<string | null>(null);
+  const [placeHolderImage, setPlaceholderImage] = useState(MetaImage);
+
+  const [highQuality, setHighQuality] = useState(false);
+  const [requestedDream, setRequestedDream] = React.useState('');
+
+  const handleCopyImage = () => {
+    if (!imgResult) return;
+    copyImageToClipboard(imgResult);
+    enqueueSnackbar({
+      title: 'Image copied',
+    });
+  };
+
   const dreamIt = async () => {
-    if (dream && lightningState) {
-      setResult(null);
-      setRequestedDream(dream);
+    if (query && lightningState) {
+      if (imgResult) setPlaceholderImage(imgResult);
+      setImgResult(null);
+      setRequestedDream(query);
       setLoading(true);
       try {
-        const result = await postDream(dream, fastGen === false, lightningState.vars.dream_url);
-        setResult(result);
+        const result = await postDream(query, highQuality, lightningState.vars.dream_url);
+        setImgResult(result);
       } finally {
         setLoading(false);
       }
@@ -86,10 +100,7 @@ function DreamSearch() {
         justifyContent="center"
         alignItems="stretch"
         sx={{ paddingBottom: 10 }}
-        direction={{
-          xs: 'row',
-          md: 'row-reverse',
-        }}>
+        direction={{ xs: 'row', md: 'row-reverse' }}>
         {/* app logo and details */}
         <Grid item xs={12}>
           <AppAbout display={{ md: 'none' }} />
@@ -107,35 +118,34 @@ function DreamSearch() {
               background: '#FFFFFFBF',
               borderRadius: 40,
             }}>
-            <DownloadImageButton disabled={!result} onClick={() => result && copyImageToClipboard(result)} />
+            <DownloadImageButton disabled={!imgResult} onClick={handleCopyImage} />
           </Box>
           <Box
             sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%' }}>
-            <Dream dream={requestedDream} image={result} />
+            <Dream dream={requestedDream} image={imgResult} />
           </Box>
           <img
-            src={result ?? MetaImage}
+            src={imgResult ?? placeHolderImage}
             loading="lazy"
             alt={'bg'}
-            style={{ opacity: result ? 1 : 0.25 }}
+            style={{ opacity: imgResult ? 1 : 0.25 }}
             width={'100%'}
           />
         </Grid>
 
         {/* controls */}
         <Grid item xs={12} sm={12} md={5} lg={4} xl={5} paddingX={2}>
-          {/* maxWidth={'500px !important'} */}
           <AppAbout display={{ xs: 'none', md: 'block' }} paddingBottom={6} paddingTop={6} />
           <Box height={16} />
           <Container maxWidth={'sm'} disableGutters>
             <OutlinedInput
               multiline
-              value={dream}
-              onChange={e => setDream(e.target.value)}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
               placeholder={'Type in anything you can imagine'}
               fullWidth
               inputProps={{
-                enterkeyhint: 'go',
+                enterKeyHint: 'go',
                 onKeyDown: ev => {
                   if (ev.key === 'Enter' && !ev.shiftKey) {
                     ev.preventDefault();
@@ -150,22 +160,28 @@ function DreamSearch() {
             <Row sx={{ 'justifyContent': 'space-between', '>div': { width: '100%' } }}>
               <Row>
                 <Box mr={1}>
-                  <Switch checked={fastGen} onChange={e => setFastGen(e.target.checked)} />
+                  <Switch checked={!highQuality} onChange={() => setHighQuality(x => !x)} />
                 </Box>
                 <Typography colorI={'primary'} fontFamily={'Roboto'} variant={'body2'}>
-                  {fastGen ? 'Fast' : 'More creative (slower)'}
+                  {highQuality ? 'More creative (slower)' : 'Fast'}
                 </Typography>
               </Row>
 
               <Box sx={{ '.MuiButton-root': { borderRadius: 40 } }}>
-                <Button disabled={!dream || loading} text="Muse" onClick={dreamIt} fullWidth icon={<FlashesIcon />} />
+                <Button
+                  disabled={!query || loading || !lightningState?.vars?.dream_url}
+                  text="Muse"
+                  onClick={dreamIt}
+                  fullWidth
+                  icon={<FlashesIcon />}
+                />
               </Box>
             </Row>
           </Container>
         </Grid>
       </Grid>
 
-      {lightningState && <SlackFormAndLicense {...lightningState} />}
+      {lightningState && <FooterWithLicense {...lightningState} />}
     </div>
   );
 }
@@ -206,9 +222,11 @@ function App() {
       })}>
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <DreamSearch />
-        </BrowserRouter>
+        <SnackbarProvider>
+          <BrowserRouter>
+            <DreamSearch />
+          </BrowserRouter>
+        </SnackbarProvider>
       </QueryClientProvider>
     </MuiThemeProvider>
   );
@@ -216,18 +234,12 @@ function App() {
 
 export default App;
 
-const SlackFormAndLicense = (lightningState: LightingState) => {
+const FooterWithLicense = (lightningState: LightingState) => {
   return (
     <Box
       paddingBottom={{ md: 1.5, xs: 6 }}
-      sx={{
-        background: '#fff',
-        textAlign: 'center',
-        position: 'fixed',
-        left: 0,
-        right: 0,
-        bottom: 0,
-      }}>
+      position={{ xs: 'initial', md: 'fixed' }}
+      sx={{ background: '#fff', textAlign: 'center', left: 0, right: 0, bottom: 0 }}>
       <AddYourSlackCredentials {...lightningState} />
       <Box height={8} />
       <Grid container>
