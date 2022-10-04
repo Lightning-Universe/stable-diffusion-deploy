@@ -6,13 +6,40 @@ from typing import List
 import lightning as L
 import requests
 from lightning.app.frontend import StaticWebFrontend
+from lightning.app.storage import Drive
+from lightning_api_access import APIAccessFrontend
 
-from muse import LoadBalancer, Locust, MuseSlackCommandBot, StableDiffusionServe
+from muse import (
+    LoadBalancer,
+    Locust,
+    MuseSlackCommandBot,
+    SafetyCheckerEmbedding,
+    StableDiffusionServe,
+)
 
 
 class ReactUI(L.LightningFlow):
     def configure_layout(self):
         return StaticWebFrontend(os.path.join(os.path.dirname(__file__), "muse", "ui", "build"))
+
+
+class APIUsageFlow(L.LightningFlow):
+    def __init__(self, api_url: str = ""):
+        super().__init__()
+        self.api_url = api_url
+
+    def configure_layout(self):
+        return APIAccessFrontend(
+            apis=[
+                {
+                    "name": "Predict Method",
+                    "url": f"{self.api_url}/api/predict",
+                    "method": "POST",
+                    "request": {"dream": "cats in hats", "high_quality": "true"},
+                    "response": "Base64 String",
+                }
+            ]
+        )
 
 
 class MuseFlow(L.LightningFlow):
@@ -43,6 +70,7 @@ class MuseFlow(L.LightningFlow):
         load_testing: bool = False,
     ):
         super().__init__()
+        self.footer_color = "#fff0"
         self.load_balancer_started = False
         self._initial_num_workers = initial_num_workers
         self._num_workers = 0
@@ -55,11 +83,23 @@ class MuseFlow(L.LightningFlow):
         self.fake_trigger = 0
         self.gpu_type = gpu_type
         self._last_autoscale = time.time()
+
+        # Create Drive to store Safety Checker embeddings
+        self.safety_embeddings_drive = Drive("lit://embeddings")
+
+        # Safety Checker Embedding Work to create and store embeddings in the Drive
+        self.safety_checker_embedding_work = SafetyCheckerEmbedding(drive=self.safety_embeddings_drive)
+
         self.load_balancer = LoadBalancer(
             max_batch_size=max_batch_size, batch_timeout_secs=batch_timeout_secs, cache_calls=True, parallel=True
         )
         for i in range(initial_num_workers):
-            work = StableDiffusionServe(cloud_compute=L.CloudCompute(gpu_type), cache_calls=True, parallel=True)
+            work = StableDiffusionServe(
+                safety_embeddings_drive=self.safety_embeddings_drive,
+                cloud_compute=L.CloudCompute(gpu_type),
+                cache_calls=True,
+                parallel=True,
+            )
             self.add_work(work)
 
         self.slack_bot = MuseSlackCommandBot(command="/muse")
@@ -69,6 +109,9 @@ class MuseFlow(L.LightningFlow):
         self.slack_bot_url = ""
         self.dream_url = ""
         self.ui = ReactUI()
+        self.api_component = APIUsageFlow()
+
+        self.safety_embeddings_ready = False
 
     @property
     def model_servers(self) -> List[StableDiffusionServe]:
@@ -109,6 +152,14 @@ class MuseFlow(L.LightningFlow):
         if not self.slack_bot.is_running:
             self.slack_bot.run("", start_run=False)
 
+        if False:
+            if not self.safety_embeddings_ready:
+                self.safety_checker_embedding_work.run()
+
+            if not self.safety_embeddings_ready and self.safety_checker_embedding_work.has_succeeded:
+                self.safety_embeddings_ready = True
+                self.safety_checker_embedding_work.stop()
+
         for model_serve in self.model_servers:
             model_serve.run()
         if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
@@ -117,6 +168,7 @@ class MuseFlow(L.LightningFlow):
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
+            self.api_component.api_url = self.load_balancer.url
             self.dream_url = self.load_balancer.url
             if self.slack_bot is not None:
                 self.slack_bot.run(self.load_balancer.url)
@@ -124,6 +176,7 @@ class MuseFlow(L.LightningFlow):
                 if self.slack_bot.url and not self.printed_url:
                     print("Slack Bot Work ready with URL=", self.slack_bot.url)
                     print("model serve url=", self.load_balancer.url)
+                    print("API component url=", self.api_component.state_vars["vars"]["_layout"]["target"])
                     self.printed_url = True
 
         if self.load_testing and self.load_balancer.url:
@@ -134,9 +187,10 @@ class MuseFlow(L.LightningFlow):
             self.autoscale()
 
     def configure_layout(self):
-        ui = [{"name": "Muse App", "content": self.ui}]
+        ui = [{"name": "Muse App" if self.load_testing else None, "content": self.ui}]
         if self.load_testing:
             ui.append({"name": "Locust", "content": self.locust.url})
+
         return ui
 
     def autoscale(self):

@@ -6,15 +6,16 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
-from typing import List
+from typing import List, Optional, Tuple
 
 import lightning as L
 import numpy as np
 import torch
+from lightning.app.storage import Drive
 from PIL import Image
-from torch import autocast
+from torch import autocast, nn
 
-from muse.CONST import IMAGE_SIZE, KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
+from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
 from muse.utility.utils import Data, DataBatch, TimeoutException
 
 
@@ -29,8 +30,10 @@ class StableDiffusionServe(L.LightningWork):
     It initializes a model and expose an API to handle incoming requests and generate predictions.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, safety_embeddings_drive: Optional[Drive] = None, **kwargs):
         super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
+        self.safety_embeddings_drive = safety_embeddings_drive
+        self.safety_embeddings_filename = "safety_embedding.pt"
         self._model = None
 
     @staticmethod
@@ -77,7 +80,7 @@ class StableDiffusionServe(L.LightningWork):
 
     @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
-        if time.time() - entry_time > REQUEST_TIMEOUT:
+        if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
             raise TimeoutException()
 
         height = width = IMAGE_SIZE
@@ -111,6 +114,10 @@ class StableDiffusionServe(L.LightningWork):
         return results
 
     def run(self):
+
+        if False and self.safety_embeddings_filename not in self.safety_embeddings_drive.list("."):
+            return
+
         import subprocess
 
         import uvicorn
@@ -160,7 +167,7 @@ class StableDiffusionServe(L.LightningWork):
                     self.predict,
                     data.batch,
                     entry_time=entry_time,
-                ).result(timeout=REQUEST_TIMEOUT)
+                ).result(timeout=INFERENCE_REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
                 # hack: once there is a timeout then all requests after that is getting timeout
@@ -173,3 +180,24 @@ class StableDiffusionServe(L.LightningWork):
         uvicorn.run(
             app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False, loop="uvloop"
         )
+
+
+def nsfw_content_or_not(image_features: torch.Tensor, text_features: torch.Tensor) -> Tuple[torch.Tensor, List[bool]]:
+    """Utility to check if the images have NSFW content or not.
+
+    Args:
+        image_features (torch.Tensor): The image features generated from the user prompts.
+        text_features (torch.Tensor): The text features generated from the NSFW prompts.
+
+    Returns:
+        torch.Tensor: The probability of the image having NSFW content.
+        list[bool]: A list of boolean values indicating whether the image has NSFW content or not.
+    """
+    logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
+    # cosine similarity as logits
+    logit_scale = logit_scale.exp()
+    logits_per_image = logit_scale * image_features @ text_features.t()
+
+    probs = torch.from_numpy(logits_per_image.softmax(dim=-1).cpu().detach().numpy())
+
+    return probs, torch.any(probs > 0.5, dim=1).tolist()

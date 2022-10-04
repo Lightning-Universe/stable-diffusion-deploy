@@ -20,7 +20,7 @@ export const ProgressBar = ({ maxTime = 60 }: { maxTime?: number }) => {
 
   return (
     <div>
-      {maxTime > time && <p>Waiting for results...</p>}
+      {maxTime > time && <Typography fontFamily={'Roboto'}>Fetching inspiration...</Typography>}
 
       {/* 375 is iphone se, nothing is less than 300 fr */}
       <Box component={'div'} sx={{ width: '100%', minWidth: '300px' }} py={2}>
@@ -29,14 +29,12 @@ export const ProgressBar = ({ maxTime = 60 }: { maxTime?: number }) => {
           value={progressValue()}
           sx={{ marginBottom: '4px' }}
         />
-        <Typography component={'span'} {...fontStyles.header}>
+        <Typography {...fontStyles.header} textAlign={'left'}>
           {hasReachedMaximum() ? `Taking longer than usual, try reloading the page` : `${progressValue()}%`}
+          <span style={{ color: fontStyles.body.color }}>
+            {!hasReachedMaximum() && ` - ${formatSeconds(maxTime - time)} left`}
+          </span>
         </Typography>
-        {!hasReachedMaximum() && (
-          <Typography component={'span'} {...fontStyles.body}>
-            {` - ${formatSeconds(maxTime - time)} left`}
-          </Typography>
-        )}
       </Box>
     </div>
   );
@@ -57,7 +55,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 const formatSeconds = (seconds: number | undefined) => {
   if (!seconds) return '';
   const date = new Date(seconds * 1000);
-  if (seconds <= 60) return `${date.getSeconds()} seconds`;
+  if (seconds <= 60) return `Less than one minute`;
   const minutes = date.getMinutes();
   if (minutes > 1) return `${minutes} minutes and ${date.getSeconds()} seconds`;
   return `1 minute and ${date.getSeconds()} seconds`;

@@ -8,12 +8,14 @@ from typing import List
 import aiohttp
 import lightning as L
 import requests
+import sentry_sdk
 from fastapi import HTTPException
 from fastapi.requests import Request
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
 
-from muse.CONST import KEEP_ALIVE_TIMEOUT, REQUEST_TIMEOUT
+from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
+from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
 from muse.utility.utils import Data, SysInfo, TimeoutException, random_prompt
 
@@ -50,7 +52,9 @@ class LoadBalancer(L.LightningWork):
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(f"{server}/api/predict", json=data, timeout=REQUEST_TIMEOUT) as result:
+                async with session.post(
+                    f"{server}/api/predict", json=data, timeout=INFERENCE_REQUEST_TIMEOUT
+                ) as result:
                     if result.status == 408:
                         raise TimeoutException()
                     result.raise_for_status()
@@ -97,10 +101,7 @@ class LoadBalancer(L.LightningWork):
             if request_id in self._responses:
                 result = self._responses[request_id]
                 del self._responses[request_id]
-                if isinstance(result, Exception):
-                    raise HTTPException(500, result.args[0])
-                elif isinstance(result, HTTPException):
-                    raise result
+                raise_granular_exception(result)
                 return result
 
     def run(self, servers: List[str], start_run=True):
@@ -115,7 +116,7 @@ class LoadBalancer(L.LightningWork):
         import uvicorn
         from fastapi import FastAPI, Header
         from fastapi.middleware.cors import CORSMiddleware
-        from starlette.middleware.sessions import SessionMiddleware
+        from starlette_exporter import PrometheusMiddleware, handle_metrics
 
         print(self.servers)
 
@@ -124,28 +125,19 @@ class LoadBalancer(L.LightningWork):
 
         app = FastAPI()
 
+        if SENTRY_API_KEY:
+            print("enabled sentry monitoring")
+            sentry_sdk.init(
+                dsn=SENTRY_API_KEY,
+                # Set traces_sample_rate to 1.0 to capture 100%
+                # of transactions for performance monitoring.
+                # We recommend adjusting this value in production,
+                traces_sample_rate=1.0,
+            )
+
         app.num_current_requests = 0
         app.last_process_time = 0
         app.SEND_TASK = None
-
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-
-        app.add_middleware(SessionMiddleware, secret_key=str(uuid.uuid4().hex))
-
-        app.add_middleware(
-            RateLimitMiddleware,
-            authenticate=auth_function,
-            backend=MemoryBackend(),
-            config={
-                r"^/api/predict": RULES,
-            },
-        )
 
         @app.middleware("http")
         async def current_request_counter(request: Request, call_next):
@@ -158,6 +150,26 @@ class LoadBalancer(L.LightningWork):
             app.last_process_time = process_time
             app.num_current_requests -= 1
             return response
+
+        app.add_middleware(PrometheusMiddleware, app_name="load_balancer", prefix="muse")
+        app.add_route("/metrics", handle_metrics)
+
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+        app.add_middleware(
+            RateLimitMiddleware,
+            authenticate=auth_function,
+            backend=MemoryBackend(),
+            config={
+                r"^/api/predict": RULES,
+            },
+        )
 
         @app.on_event("startup")
         async def startup_event():
@@ -204,8 +216,10 @@ class LoadBalancer(L.LightningWork):
 
     def update_servers(self, server_works: List[L.LightningWork]):
         old_servers = set(self.servers)
-        self.servers = [server.url for server in server_works if server.url]
+        self.servers: List[str] = [server.url for server in server_works if server.url]
         new_servers = set(self.servers)
+        if new_servers == old_servers:
+            return
         if new_servers - old_servers:
             print("servers added:", new_servers - old_servers)
 
@@ -213,7 +227,7 @@ class LoadBalancer(L.LightningWork):
         if deleted_servers:
             print("deleted servers:", deleted_servers)
 
-        servers = list(new_servers)
+        servers = self.servers
         headers = {
             "accept": "application/json",
         }
