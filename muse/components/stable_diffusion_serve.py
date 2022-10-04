@@ -26,7 +26,7 @@ class DiffusionBuildConfig(L.BuildConfig):
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
     def build_commands(self):
-        return ["git clone https://github.com/CompVis/stable-diffusion && cd stable-diffusion && pip install -e ."]
+        return ["git clone https://github.com/CompVis/stable-diffusion && pip install -e stable-diffusion"]
 
 
 class StableDiffusionServe(L.LightningWork):

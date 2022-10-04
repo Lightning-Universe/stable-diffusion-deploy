@@ -54,6 +54,7 @@ jobs:
           pip --version
           pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
           pip install --requirement tests/requirements.txt --quiet
+          git clone https://github.com/CompVis/stable-diffusion && pip install -e stable-diffusion
           pip list
         shell: bash
 
