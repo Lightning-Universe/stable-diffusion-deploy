@@ -17,3 +17,7 @@ pre {
 }
 
 @import 'lightning-ui/src/design-system/style.css';
+
+.SnackbarContainer-bottom.SnackbarContainer-left.SnackbarContainer-root {
+  bottom: 50px;
+}
