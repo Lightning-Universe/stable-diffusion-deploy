@@ -56,9 +56,9 @@ const formatSeconds = (seconds: number | undefined) => {
   if (!seconds) return '';
   const date = new Date(seconds * 1000);
   if (seconds <= 60) return `Less than one minute`;
-  const minutes = date.getMinutes();
-  if (minutes > 1) return `${minutes} minutes and ${date.getSeconds()} seconds`;
-  return `1 minute and ${date.getSeconds()} seconds`;
+  const minutes = date.getUTCMinutes();
+  if (minutes > 1) return `${minutes} minutes and ${date.getUTCSeconds()} seconds`;
+  return `1 minute and ${date.getUTCSeconds()} seconds`;
 };
 
 const fontStyles = {
