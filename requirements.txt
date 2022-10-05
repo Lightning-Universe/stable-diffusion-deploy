@@ -1,6 +1,5 @@
 slack_command_bot@ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Component@main
 lightning_api_access@ git+https://github.com/Lightning-AI/LAI-API-Access-UI-Component@main
-latent-diffusion@ git+https://github.com/CompVis/stable-diffusion@main
 ftfy==6.1.1
 scipy
 slack_bolt==1.14.3
