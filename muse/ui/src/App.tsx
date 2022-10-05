@@ -37,7 +37,7 @@ type DreamProps = {
 };
 
 function Dream({ dream, image, maxTime }: DreamProps) {
-  if (dream && !image) return <ProgressBar maxTime={maxTime} title={'Finding your inspiration...'} />;
+  if (dream && !image) return <ProgressBar maxTime={maxTime} title={'Finding inspiration...'} />;
 
   if (!image)
     return (
