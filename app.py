@@ -147,6 +147,12 @@ class MuseFlow(L.LightningFlow):
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 
+        # provision these works early
+        if not self.load_balancer.is_running:
+            self.load_balancer.run([])
+        if not self.slack_bot.is_running:
+            self.slack_bot.run("")
+
         if False:
             if not self.safety_embeddings_ready:
                 self.safety_checker_embedding_work.run()
