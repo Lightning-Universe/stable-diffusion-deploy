@@ -149,9 +149,9 @@ class MuseFlow(L.LightningFlow):
 
         # provision these works early
         if not self.load_balancer.is_running:
-            self.load_balancer.run([], start_run=False)
+            self.load_balancer.run([])
         if not self.slack_bot.is_running:
-            self.slack_bot.run("", start_run=False)
+            self.slack_bot.run("")
 
         if False:
             if not self.safety_embeddings_ready:

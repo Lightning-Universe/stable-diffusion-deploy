@@ -68,10 +68,7 @@ class MuseSlackCommandBot(SlackCommandBot):
         response = requests.post(self._SHEET_API_URL, data=data)
         response.raise_for_status()
 
-    def run(self, inference_url, start_run=True) -> None:
-        if not start_run:
-            return
-
+    def run(self, inference_url) -> None:
         self._get_credentials()
         self.inference_url = inference_url
         self.run_app()

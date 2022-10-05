@@ -104,8 +104,8 @@ class LoadBalancer(L.LightningWork):
                 raise_granular_exception(result)
                 return result
 
-    def run(self, servers: List[str], start_run=True):
-        if (not start_run) or self._server_ready:
+    def run(self, servers: List[str]):
+        if self._server_ready:
             return
 
         self.servers = servers
