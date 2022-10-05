@@ -66,7 +66,7 @@ function DreamSearch() {
   const [requestedDream, setRequestedDream] = React.useState('');
 
   const dreamIt = async () => {
-    if (query && lightningState) {
+    if (query && lightningState && !loading) {
       if (imgResult) setPlaceholderImage(imgResult);
       setImgResult(null);
       setRequestedDream(query);
