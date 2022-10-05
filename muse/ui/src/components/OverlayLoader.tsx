@@ -6,7 +6,7 @@ export const OverlayLoader = () => {
     <Dialog open={true}>
       <DialogTitle>Muse is getting ready...</DialogTitle>
       <DialogContent>
-        <ProgressBar maxTime={5 * 60} />
+        <ProgressBar maxTime={10 * 60} />
       </DialogContent>
     </Dialog>
   );
