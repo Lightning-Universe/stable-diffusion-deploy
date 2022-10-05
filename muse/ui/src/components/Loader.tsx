@@ -20,7 +20,11 @@ export const ProgressBar = ({ maxTime = 60, title }: { maxTime?: number; title?:
 
   return (
     <div>
-      {maxTime > time && title && <Typography fontFamily={'Roboto'}>{title}</Typography>}
+      {maxTime > time && title && (
+        <Typography fontFamily={'Roboto'} textAlign={'center'}>
+          {title}
+        </Typography>
+      )}
 
       {/* 375 is iphone se, nothing is less than 300 fr */}
       <Box component={'div'} sx={{ width: '100%', minWidth: '300px' }} py={2}>
