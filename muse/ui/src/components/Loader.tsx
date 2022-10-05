@@ -20,7 +20,11 @@ export const ProgressBar = ({ maxTime = 60, title }: { maxTime?: number; title?:
 
   return (
     <div>
-      {maxTime > time && title && <Typography fontFamily={'Roboto'}>{title}</Typography>}
+      {maxTime > time && title && (
+        <Typography fontFamily={'Roboto'} textAlign={'center'}>
+          {title}
+        </Typography>
+      )}
 
       {/* 375 is iphone se, nothing is less than 300 fr */}
       <Box component={'div'} sx={{ width: '100%', minWidth: '300px' }} py={2}>
@@ -55,7 +59,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 const formatSeconds = (seconds: number | undefined) => {
   if (!seconds) return '';
   const date = new Date(seconds * 1000);
-  if (seconds <= 60) return `Less than one minute`;
+  if (seconds <= 60) return `${date.getUTCSeconds()} seconds`;
   const minutes = date.getUTCMinutes();
   if (minutes > 1) return `${minutes} minutes and ${date.getUTCSeconds()} seconds`;
   return `1 minute and ${date.getUTCSeconds()} seconds`;

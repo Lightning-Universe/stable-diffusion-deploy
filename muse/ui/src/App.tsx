@@ -37,7 +37,7 @@ type DreamProps = {
 };
 
 function Dream({ dream, image, maxTime }: DreamProps) {
-  if (dream && !image) return <ProgressBar maxTime={maxTime} title={'Fetching inspiration...'} />;
+  if (dream && !image) return <ProgressBar maxTime={maxTime} title={'Finding your inspiration...'} />;
 
   if (!image)
     return (
@@ -66,7 +66,7 @@ function DreamSearch() {
   const [requestedDream, setRequestedDream] = React.useState('');
 
   const dreamIt = async () => {
-    if (query && lightningState) {
+    if (query && lightningState && !loading) {
       if (imgResult) setPlaceholderImage(imgResult);
       setImgResult(null);
       setRequestedDream(query);
@@ -142,7 +142,7 @@ function DreamSearch() {
               <Row sx={{ 'justifyContent': 'space-between', '>div': { width: '100%' } }}>
                 <Row>
                   <Box mr={1}>
-                    <Switch checked={!highQuality} onChange={() => setHighQuality(x => !x)} />
+                    <Switch checked={!highQuality} onChange={() => setHighQuality(x => !x)} disabled={loading} />
                   </Box>
                   <Typography colorI={'primary'} fontFamily={'Roboto'} variant={'body2'}>
                     {highQuality ? 'More creative (slower)' : 'Fast'}
@@ -231,7 +231,7 @@ const FooterWithLicense = (lightningState: LightingState) => {
           'right': 0,
           'bottom': 0,
           '>div': {
-            paddingBottom: { md: 1.5, xs: 6 },
+            paddingBottom: { md: 1.5, xs: 7 },
             paddingTop: { md: 2, xs: 6 },
             boxShadow: {
               xs: 'none',

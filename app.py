@@ -8,6 +8,7 @@ import requests
 from lightning.app.frontend import StaticWebFrontend
 from lightning.app.storage import Drive
 from lightning_api_access import APIAccessFrontend
+from lightning_app.utilities.frontend import AppInfo
 
 from muse import (
     LoadBalancer,
@@ -70,7 +71,7 @@ class MuseFlow(L.LightningFlow):
         load_testing: bool = False,
     ):
         super().__init__()
-        self.footer_color = "#fff0"
+
         self.load_balancer_started = False
         self._initial_num_workers = initial_num_workers
         self._num_workers = 0
@@ -228,4 +229,7 @@ class MuseFlow(L.LightningFlow):
 
 
 if __name__ == "__main__":
-    app = L.LightningApp(MuseFlow())
+    app = L.LightningApp(
+        MuseFlow(),
+        info=AppInfo(title="Muse app by Lightning AI", meta_tags=['<meta name="theme-color" content="#792EE5" />']),
+    )

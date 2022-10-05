@@ -3,7 +3,8 @@ import MuiSwitch from '@mui/material/Switch';
 
 const SIZE = 16;
 
-export const Switch = styled(MuiSwitch)(({ theme }) => ({
+export const Switch = styled(MuiSwitch)(({ theme, disabled }) => ({
+  'opacity': disabled ? 0.5 : 1,
   'width': SIZE * 2 + 4,
   'height': SIZE + 4,
   'padding': 0,
