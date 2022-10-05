@@ -48,6 +48,7 @@ python -m lightning run app app.py --cloud
 ```
 
 ## About this Lightning App
+
 Muse isn’t just another image generator — we think of it like a blueprint. Not just for other image generators, but for all kinds of cloud applications powered by AI. We built Muse to show you what Lightning can do, and, even more importantly, what you can do with Lightning.
 <br><br>
 This simple application showcases the following features of the Lightning Framework:
@@ -60,6 +61,7 @@ This simple application showcases the following features of the Lightning Framew
 - Environment variables to parametrize execution environment
 
 ## Slackbot
+
 <details>
 <summary><b><u>How to integrate Muse to a Slack Workspace</u></b></summary>
 <br>
