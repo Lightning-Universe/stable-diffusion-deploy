@@ -17,7 +17,7 @@ from PIL import Image
 from torch import autocast, nn
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
-from muse.models.pipeline import StableDiffusionPipeline
+from muse.models import StableDiffusionModel
 from muse.utility.utils import Data, DataBatch, TimeoutException
 
 
@@ -63,14 +63,14 @@ class StableDiffusionServe(L.LightningWork):
                 "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_weights.tar.gz", weights_folder
             )
 
-            pipe = StableDiffusionPipeline(weights_folder / "sd_weights")
+            model = StableDiffusionModel(weights_folder / "sd_weights")
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
-            print("model loaded")
+            model("model loaded")
         else:
-            pipe = None
+            model = None
             print("model set to None")
-        return pipe
+        return model
 
     @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):

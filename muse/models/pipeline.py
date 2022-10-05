@@ -1,13 +1,13 @@
 import numpy as np
 import torch
-from ldm.models.diffusion.ddim import DDIMSampler
-from ldm.util import instantiate_from_config
 from omegaconf import OmegaConf
 from PIL import Image
 from torch import autocast
 
 
 def load_model_from_config(config, ckpt, verbose=False):
+    from ldm.util import instantiate_from_config
+
     print(f"Loading model from {ckpt}")
     pl_sd = torch.load(ckpt, map_location="cpu")
     if "global_step" in pl_sd:
@@ -27,8 +27,10 @@ def load_model_from_config(config, ckpt, verbose=False):
     return model
 
 
-class StableDiffusionPipeline:
+class StableDiffusionModel:
     def __init__(self, model_path):
+        from ldm.models.diffusion.ddim import DDIMSampler
+
         config_path = model_path / "v1-inference.yml"
         weights_path = model_path / "sd-v1-4.ckpt"
         config = OmegaConf.load(f"{config_path}")
