@@ -3,8 +3,8 @@
         <img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/image-21.png">
         <br>
         Use AI to inspire your art
+        </br>
     </h1>
-    <img src="https://pl-flash-data.s3.amazonaws.com/assets_lightning/docs/images/logos/lightning-ai.png" width="250px">
 
 <div align="center">
 
