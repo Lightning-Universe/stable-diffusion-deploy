@@ -20,7 +20,7 @@ from slack_command_bot import SlackCommandBot
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from ..CONST import RATE_LIMIT_KEY
-from ..utility.utils import get_item, save_item
+from ..utility.data_io import get_item, save_item
 
 
 class MuseSlackCommandBot(SlackCommandBot):

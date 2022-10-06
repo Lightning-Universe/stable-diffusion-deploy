@@ -16,7 +16,7 @@ from PIL import Image
 from torch import autocast, nn
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
-from muse.utility.utils import Data, DataBatch, TimeoutException
+from muse.utility.data_io import Data, DataBatch, TimeoutException
 
 
 @dataclass
