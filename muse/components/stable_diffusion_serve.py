@@ -26,7 +26,9 @@ class DiffusionBuildConfig(L.BuildConfig):
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
 
     def build_commands(self):
-        return ["git clone https://github.com/CompVis/stable-diffusion", "pip install -e stable-diffusion"]
+        return [
+            "git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion" "pip install -e stable-diffusion",
+        ]
 
 
 class StableDiffusionServe(L.LightningWork):
@@ -66,7 +68,8 @@ class StableDiffusionServe(L.LightningWork):
             model = StableDiffusionModel(weights_folder / "sd_weights")
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
-            model("model loaded")
+            print("model loaded")
+            results = model(["cats in hats"] * 3, 512, 512, 25)
         else:
             model = None
             print("model set to None")
