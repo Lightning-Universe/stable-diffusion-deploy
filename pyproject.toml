@@ -28,6 +28,7 @@ warn_no_return = "False"
 module = [
     "muse.utility.utils",
     "muse.utility.exception_handling",
+    "muse.utility.rate_limiter",
     "muse.components.stable_diffusion_serve",
     "muse.components.safety_checker_embedding",
     "muse.components.muse_slack_bot",
