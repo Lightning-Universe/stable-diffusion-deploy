@@ -27,7 +27,9 @@ class DiffusionBuildConfig(L.BuildConfig):
 
     def build_commands(self):
         return [
-            "git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion" "pip install -e stable-diffusion",
+            "git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion",
+            "pip install -r stable-diffusion/requirements.txt",
+            "pip install -e stable-diffusion",
         ]
 
 
@@ -69,7 +71,14 @@ class StableDiffusionServe(L.LightningWork):
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
             print("model loaded")
-            results = model(["cats in hats"] * 3, 512, 512, 25)
+            for batch_size in list(range(12, 1, -1)):
+                torch.cuda.empty_cache()
+                try:
+                    model(["cats in hats"] * batch_size, 512, 512, 50)
+                    print("successfull batch_size ".batch_size)
+                    break
+                except:
+                    print("failed with batch size ", batch_size)
         else:
             model = None
             print("model set to None")

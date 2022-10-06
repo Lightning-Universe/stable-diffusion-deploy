@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from omegaconf import OmegaConf
 from PIL import Image
 from torch import autocast
 
@@ -30,6 +29,7 @@ def load_model_from_config(config, ckpt, verbose=False):
 class StableDiffusionModel:
     def __init__(self, model_path):
         from ldm.models.diffusion.ddim import DDIMSampler
+        from omegaconf import OmegaConf
 
         config_path = model_path / "v1-inference.yml"
         weights_path = model_path / "sd-v1-4.ckpt"
