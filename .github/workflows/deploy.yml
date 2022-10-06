@@ -1,10 +1,7 @@
 name: Trigger Deployment
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
-on:
-  # Trigger the workflow on push or pull request, but only for the master branch
-  push:
-    branches: [main]
+on: workflow_dispatch
 
 jobs:
   pytest:
@@ -55,7 +52,7 @@ jobs:
           pip list
         shell: bash
 
-      - name: Tests
+      - name: Deploy
         env:
           BOT_TOKEN: ${{secrets.BOT_TOKEN}}
           SLACK_TOKEN: ${{secrets.SLACK_TOKEN}}
