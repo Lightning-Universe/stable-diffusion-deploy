@@ -4,7 +4,7 @@ import torch
 from lightning import BuildConfig, LightningWork
 from lightning.app.storage import Drive
 
-from muse.utility.utils import fetch_nsfw_list
+from muse.utility.data_io import fetch_nsfw_list
 
 
 class LightningFlashBuildConfig(BuildConfig):
