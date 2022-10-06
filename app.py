@@ -97,6 +97,7 @@ class MuseFlow(L.LightningFlow):
         for i in range(initial_num_workers):
             work = StableDiffusionServe(
                 safety_embeddings_drive=self.safety_embeddings_drive,
+                safety_embeddings_filename=self.safety_checker_embedding_work.safety_embeddings_filename,
                 cloud_compute=L.CloudCompute(gpu_type, disk_size=30),
                 cache_calls=True,
                 parallel=True,
@@ -153,16 +154,16 @@ class MuseFlow(L.LightningFlow):
         if not self.slack_bot.is_running:
             self.slack_bot.run("")
 
-        if False:
-            if not self.safety_embeddings_ready:
-                self.safety_checker_embedding_work.run()
+        if not self.safety_embeddings_ready:
+            self.safety_checker_embedding_work.run()
 
-            if not self.safety_embeddings_ready and self.safety_checker_embedding_work.has_succeeded:
-                self.safety_embeddings_ready = True
-                self.safety_checker_embedding_work.stop()
+        if not self.safety_embeddings_ready and self.safety_checker_embedding_work.has_succeeded:
+            self.safety_embeddings_ready = True
+            self.safety_checker_embedding_work.stop()
 
         for model_serve in self.model_servers:
             model_serve.run()
+
         if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
             # run the load balancer when all the model server is ready
             self.load_balancer.run([serve.url for serve in self.model_servers])
@@ -209,6 +210,8 @@ class MuseFlow(L.LightningFlow):
             idx = self._num_workers
             print(f"Upscale to {self._num_workers + 1}")
             work = StableDiffusionServe(
+                safety_embeddings_drive=self.safety_embeddings_drive,
+                safety_embeddings_filename=self.safety_checker_embedding_work.safety_embeddings_filename,
                 cloud_compute=L.CloudCompute(self.gpu_type, disk_size=30),
                 cache_calls=True,
                 parallel=True,
