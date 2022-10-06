@@ -18,3 +18,9 @@ jobs:
     uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@v0.1.0
     with:
       azure-dir: ""
+
+  check-package:
+    uses: Lightning-AI/utilities/.github/workflows/check-package.yml@v0.1.0
+    with:
+      import-name: "muse"
+      pypi-name: "lightning-muse"
