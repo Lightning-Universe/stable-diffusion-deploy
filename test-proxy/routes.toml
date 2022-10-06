@@ -1,0 +1,25 @@
+[log]
+  level = "DEBUG"
+[http]
+  [http.middlewares]
+
+    [http.middlewares.api-stripprefix.stripPrefix]
+      prefixes = ["/abc"]
+
+    [http.middlewares.api-addprefix.addprefix]
+      prefix = "/static"
+
+  [http.routers]
+
+    [http.routers.app-state]
+      entryPoints = ["http"]
+      service = "app"
+      rule = "PathPrefix(`/abc`)"
+      middlewares = ["api-stripprefix"]
+
+  [http.services]
+
+    [http.services.app]
+      [http.services.app.loadBalancer]
+        [[http.services.app.loadBalancer.servers]]
+          url = "http://127.0.0.1:7501"
