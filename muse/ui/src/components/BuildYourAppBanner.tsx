@@ -1,5 +1,5 @@
 import { Box, Link, Stack } from '@mui/material';
-import { Links } from './FooterLinks';
+import { Links } from './Links';
 import { Typography } from './Typography';
 
 export const BuildYourAppBanner = () => {

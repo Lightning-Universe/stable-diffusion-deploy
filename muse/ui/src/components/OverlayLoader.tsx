@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import { ProgressBar } from './Loader';
+import { ProgressBar } from './ProgressBar';
 
 export const OverlayLoader = () => {
   return (
