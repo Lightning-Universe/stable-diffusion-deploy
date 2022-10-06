@@ -7,6 +7,11 @@ recursive-exclude __pycache__  *.py[cod] *.orig
 include *.md
 recursive-include muse *.md
 recursive-include muse/ui *
+recursive-include assets *.png
+
+exclude app.py
+exclude .lightning
+exclude .lightningignore
 
 # Include the license file
 include LICENSE
@@ -35,8 +40,6 @@ exclude Makefile
 
 prune .git
 prune .github
-prune .circleci
-prune notebook*
+prune scripts
 prune temp*
 prune test*
-prune benchmark*
