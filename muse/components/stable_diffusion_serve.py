@@ -71,14 +71,6 @@ class StableDiffusionServe(L.LightningWork):
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
             print("model loaded")
-            for batch_size in list(range(12, 1, -1)):
-                torch.cuda.empty_cache()
-                try:
-                    model(["cats in hats"] * batch_size, 512, 512, 50)
-                    print("successfull batch_size ".batch_size)
-                    break
-                except:
-                    print("failed with batch size ", batch_size)
         else:
             model = None
             print("model set to None")
