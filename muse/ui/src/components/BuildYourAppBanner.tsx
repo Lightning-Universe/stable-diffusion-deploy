@@ -1,10 +1,10 @@
 import { Box, Link, Stack } from '@mui/material';
-import { Links } from './FooterLinks';
+import { Links } from './Links';
 import { Typography } from './Typography';
 
 export const BuildYourAppBanner = () => {
   return (
-    <Link href={Links.lightningAI} target={'_blank'}>
+    <Link href={Links.tutorial} target={'_blank'}>
       <Stack
         direction={'row'}
         justifyContent={'center'}
