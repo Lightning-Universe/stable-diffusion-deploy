@@ -10,7 +10,7 @@ from muse.utility.utils import fetch_nsfw_list
 class LightningFlashBuildConfig(BuildConfig):
     def build_commands(self) -> List[str]:
         url_flash = "https://github.com/rohitgr7/lightning-flash.git"
-        return [f"pip install 'git+{url_flash}@rel/pl_18#egg=lightning-flash[image,text]'"]
+        return [f"pip install 'git+{url_flash}@rel/pl_18#egg=lightning-flash[text]'"]
 
 
 class SafetyCheckerEmbedding(LightningWork):
@@ -30,7 +30,8 @@ class SafetyCheckerEmbedding(LightningWork):
             batch_size=4,
         )
 
-        model = TextClassifier(backbone="clip_vitb32", num_classes=2)
+        model = TextClassifier(backbone="clip_vitb32", num_classes=2).cpu().float()
+        torch.cuda.empty_cache()
         embedder = model.as_embedder("adapter.backbone")
 
         trainer = Trainer()

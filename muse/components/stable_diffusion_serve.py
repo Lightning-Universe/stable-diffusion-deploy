@@ -9,7 +9,6 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Optional
 
-import clip as openai_clip
 import lightning as L
 import numpy as np
 import torch
@@ -24,6 +23,8 @@ from muse.utility.utils import Data, DataBatch, TimeoutException
 
 class SafetyChecker:
     def __init__(self, embeddings_path):
+        import clip as openai_clip
+
         self.model, self.preprocess = openai_clip.load("ViT-B/32", device="cpu")
         self.text_embeddings = torch.load(embeddings_path)
 
@@ -80,6 +81,7 @@ class StableDiffusionServe(L.LightningWork):
 
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
+        self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
 
         print("loading model...")
@@ -95,18 +97,13 @@ class StableDiffusionServe(L.LightningWork):
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
             print("model loaded")
-            images = self.predict([Data(dream="cats in hats")] * 4, 5)
-            for i, img in enumerate(images):
-                img.saveg("tmp_images/{i}.png")
+            images = self.predict([Data(dream="cats in hats")] * 4], 5)
         else:
             self._model = None
             print("model set to None")
 
     @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
-        if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
-            raise TimeoutException()
-
         height = width = IMAGE_SIZE
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
@@ -127,9 +124,10 @@ class StableDiffusionServe(L.LightningWork):
         nsfw_content = self._safety_checker(pil_results)
         for i, nsfw in enumerate(nsfw_content):
             if nsfw:
-                pil_results[i] = Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))
+                pil_results[i] = Image.open('assets/nsfw-warning.png')
 
         results = []
+        return pil_results
         for image in pil_results:
             buffered = BytesIO()
             image.save(buffered, format="PNG")
