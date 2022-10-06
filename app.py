@@ -231,5 +231,11 @@ class MuseFlow(L.LightningFlow):
 if __name__ == "__main__":
     app = L.LightningApp(
         MuseFlow(),
-        info=AppInfo(title="Muse app by Lightning AI", meta_tags=['<meta name="theme-color" content="#792EE5" />']),
+        info=AppInfo(
+            title="Muse app by Lightning AI",
+            meta_tags=[
+                '<meta name="theme-color" content="#792EE5" />',
+            ],
+        ),
+        root_path=os.getenv("ROOT_PATH", ""),
     )
