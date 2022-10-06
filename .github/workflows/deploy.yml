@@ -52,7 +52,7 @@ jobs:
           pip list
         shell: bash
 
-      - name: Tests
+      - name: Deploy
         env:
           BOT_TOKEN: ${{secrets.BOT_TOKEN}}
           SLACK_TOKEN: ${{secrets.SLACK_TOKEN}}
