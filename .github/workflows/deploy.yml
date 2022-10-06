@@ -1,12 +1,7 @@
-name: CI testing
+name: Trigger Deployment
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
-on:
-  # Trigger the workflow on push or pull request, but only for the master branch
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+on: workflow_dispatch
 
 jobs:
   pytest:
@@ -14,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-10.15]
+        os: [ubuntu-20.04]
         python-version: [3.8]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -57,17 +52,14 @@ jobs:
           pip list
         shell: bash
 
-      - name: Tests
+      - name: Deploy
         env:
           BOT_TOKEN: ${{secrets.BOT_TOKEN}}
           SLACK_TOKEN: ${{secrets.SLACK_TOKEN}}
           SIGNING_SECRET: ${{secrets.SIGNING_SECRET}}
           SLACK_CLIENT_ID: ${{secrets.SLACK_CLIENT_ID}}
           CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
+          LIGHTNING_USER_ID: ${{secrets.LIGHTNING_USER_ID}}
+          LIGHTNING_API_KEY: ${{secrets.LIGHTNING_API_KEY}}
         run: |
-          coverage run --source muse -m py.test muse tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
-
-      - name: Statistics
-        if: success()
-        run: |
-          coverage report
+          lightning run app app.py --cloud --name "Stable Diffusion" --env LIGHTNING_USER_ID=${{secrets.LIGHTNING_USER_ID}} --env LIGHTNING_API_KEY=${{secrets.LIGHTNING_API_KEY}}

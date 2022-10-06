@@ -76,7 +76,7 @@ class LoadBalancer(L.LightningWork):
                 batch = self._batch[quality][: self.max_batch_size]
                 while batch and (
                     (len(batch) >= self.max_batch_size)
-                    or ((time.time() - self._last_batch_sent) > self.batch_timeout_secs)
+                    or ((time.time() - self._last_batch_sent) > self.batch_timeout_secs)  # noqa: W503
                 ):
                     has_sent = True
 
@@ -106,13 +106,13 @@ class LoadBalancer(L.LightningWork):
                 return result
 
     def run(self, servers: List[str]):
-        self.servers = servers
-        if self._server_ready:
+        if self._server_ready or not servers:
             return
 
+        self.servers = servers
         self.start_fastapi_app()
 
-    def start_fastapi_app(self):
+    def start_fastapi_app(self):  # noqa: C901
 
         import sentry_sdk
         import uvicorn
