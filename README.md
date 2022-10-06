@@ -37,8 +37,7 @@ conda activate muse_app
 
 git clone https://github.com/Lightning-AI/LAI-Stable-Diffusion-App.git
 cd LAI-Stable-Diffusion-App
-pip install -r requirements.txt
-pip install -e .
+pip install .
 
 ## To run the app locally
 python -m lightning run app app.py
