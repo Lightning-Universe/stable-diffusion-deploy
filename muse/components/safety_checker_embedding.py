@@ -9,9 +9,8 @@ from muse.utility.utils import fetch_nsfw_list
 
 class LightningFlashBuildConfig(BuildConfig):
     def build_commands(self) -> List[str]:
-        return [
-            "pip install 'git+https://github.com/PyTorchLightning/lightning-flash.git@master#egg=lightning-flash[image,text]'"
-        ]
+        url_flash = "https://github.com/Lightning-AI/lightning-flash.git"
+        return [f"pip install 'git+{url_flash}@master#egg=lightning-flash[image,text]'"]
 
 
 class SafetyCheckerEmbedding(LightningWork):

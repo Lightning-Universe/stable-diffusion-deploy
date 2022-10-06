@@ -60,7 +60,7 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=5,
+        initial_num_workers=2,
         autoscale_interval=1 * 30,
         max_batch_size=4,
         batch_timeout_secs=10,
@@ -143,7 +143,7 @@ class MuseFlow(L.LightningFlow):
         work = getattr(self, work_attribute)
         return work
 
-    def run(self):
+    def run(self):  # noqa: C901
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 

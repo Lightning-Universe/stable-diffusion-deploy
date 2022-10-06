@@ -1,8 +1,10 @@
 <div align="center">
     <h1>
-        Lightning Muse App
+        <img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/image-21.png">
+        <br>
+        Use AI to inspire your art
+        </br>
     </h1>
-    <img src="https://pl-flash-data.s3.amazonaws.com/assets_lightning/docs/images/logos/lightning-ai.png" width="400px">
 
 <div align="center">
 
@@ -23,9 +25,9 @@
 
 ______________________________________________________________________
 
-# Lightning Muse App
+# Muse
 
-\[TODO\]
+This Lightning App, powered by Stable Diffusion, generates images via text prompts.
 
 ## Getting started
 
@@ -33,8 +35,8 @@ ______________________________________________________________________
 conda create --name muse_app python=3.8
 conda activate muse_app
 
-git clone https://github.com/Lightning-AI/LAI-Muse-App.git
-cd LAI-Muse-App
+git clone https://github.com/Lightning-AI/LAI-Stable-Diffusion-App.git
+cd LAI-Stable-Diffusion-App
 pip install -r requirements.txt
 pip install -e .
 
@@ -47,8 +49,9 @@ python -m lightning run app app.py --cloud
 
 ## About this Lightning App
 
-This Lightning App is powered by Stable Diffusion to generate images via text prompts.
-This application is fairly simple already showcases the following features of Lightning Framework:
+Muse isn’t just another image generator — we think of it like a blueprint. Not just for other image generators, but for all kinds of cloud applications powered by AI. We built Muse to show you what Lightning can do, and, even more importantly, what you can do with Lightning.
+<br><br>
+This simple application showcases the following features of the Lightning Framework:
 
 - Multi-tenant Frontend & Backend application architecture
 - UI written in React
@@ -57,20 +60,27 @@ This application is fairly simple already showcases the following features of Li
 - Load Testing Lightning Component using Locust
 - Environment variables to parametrize execution environment
 
+## Slackbot
+
 <details>
-<summary><b><u>Integrate with Slack Bot</u></b></summary>
+<summary><b><u>How to integrate Muse to a Slack Workspace</u></b></summary>
+<br>
 
-You can integrate this app in your Slack Workspace and send art in slack channels.
+You can integrate this app in your Slack Workspace and send images in Slack channels.
 
-This app uses the [Slack Command Bot Component](https://github.com/Lightning-AI/LAI-slack-command-bot-Component) for to
-interact with Slack command.
+This app uses the [Slack Command Bot Component](https://github.com/Lightning-AI/LAI-slack-command-bot-Component) to
+interact with Slack commands.
 
-[![Watch the video](https://img.youtube.com/vi/KfQcXzWFR9I/default.jpg)](https://youtu.be/KfQcXzWFR9I)
+You can also check out this video tutorial:
+<br>
+<a href="https://www.youtube.com/watch?v=KfQcXzWFR9I">
+<img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/Create-Slackbot.png" width="600px">
+</a>
 
-### Steps to create the Slack Command Bot
+### How to create the Slack Command Bot
 
 **Step 1:**
-Goto https://api.slack.com and create an app.
+Go to https://api.slack.com and create an app.
 
 **Step 2:**
 Copy the following tokens and secrets from the Slack API settings by going to https://api.slack.com/apps. These tokens
@@ -103,7 +113,3 @@ database.
 During the `handle_command(...)` method you will need to fetch `bot_token` based on the received `team_id`.
 
 </details>
-
-## Credits
-
-\[TODO\]
