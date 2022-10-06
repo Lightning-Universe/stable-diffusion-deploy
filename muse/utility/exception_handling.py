@@ -4,7 +4,7 @@ import logging
 import aiohttp.client_exceptions
 from fastapi import HTTPException
 
-from muse.utility.utils import TimeoutException
+from muse.utility.data_io import TimeoutException
 
 
 def raise_granular_exception(exception: Exception):
