@@ -9,7 +9,10 @@ export const BuildYourAppBanner = () => {
         direction={'row'}
         justifyContent={'center'}
         alignItems={'center'}
-        sx={theme => ({ background: theme.palette.primary.main, textAlign: 'center' })}
+        sx={{
+          background: 'linear-gradient(182deg, rgb(121, 46, 229) 16.83%, rgb(62, 171, 179) 144.59%)',
+          textAlign: 'center',
+        }}
         padding={1}>
         <Typography color={'#FFFFFF'} fontSize={'16px'} fontWeight={400}>
           ⚡️ Learn how to build apps like this!&nbsp;

@@ -231,7 +231,7 @@ const FooterWithLicense = (lightningState: LightingState) => {
           'right': 0,
           'bottom': 0,
           '>div': {
-            paddingBottom: { md: 1.5, xs: 7 },
+            paddingBottom: { md: 1.5, xs: 8 },
             paddingTop: { md: 2, xs: 6 },
             boxShadow: {
               xs: 'none',
