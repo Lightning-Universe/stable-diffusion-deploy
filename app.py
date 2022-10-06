@@ -143,7 +143,7 @@ class MuseFlow(L.LightningFlow):
         work = getattr(self, work_attribute)
         return work
 
-    def run(self):
+    def run(self):  # noqa: C901
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
 
