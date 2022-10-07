@@ -74,12 +74,13 @@ function DreamSearch() {
       try {
         const result = await postDream(query, highQuality, lightningState.vars.dream_url);
         setImgResult(result.image);
-      } finally {
-        setLoading(false);
+      } catch {
         enqueueSnackbar({
           title: 'Failed to query please try again',
           severity: 'error',
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
