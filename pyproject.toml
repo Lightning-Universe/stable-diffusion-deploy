@@ -34,5 +34,6 @@ module = [
     "muse.components.safety_checker_embedding",
     "muse.components.muse_slack_bot",
     "muse.components.load_balancer",
+    "muse.models.pipeline",
 ]
 ignore_errors = "True"
