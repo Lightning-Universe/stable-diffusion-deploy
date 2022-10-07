@@ -97,7 +97,7 @@ class StableDiffusionServe(L.LightningWork):
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
             print("model loaded")
-            images = self.predict([Data(dream="cats in hats")] * 4], 5)
+            images = self.predict([Data(dream="cats in hats")] * 4, 5)
         else:
             self._model = None
             print("model set to None")
@@ -124,7 +124,7 @@ class StableDiffusionServe(L.LightningWork):
         nsfw_content = self._safety_checker(pil_results)
         for i, nsfw in enumerate(nsfw_content):
             if nsfw:
-                pil_results[i] = Image.open('assets/nsfw-warning.png')
+                pil_results[i] = Image.open("assets/nsfw-warning.png")
 
         results = []
         return pil_results
