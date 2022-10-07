@@ -97,7 +97,7 @@ class StableDiffusionServe(L.LightningWork):
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
             print("model loaded")
-            images = self.predict([Data(dream="cats in hats")] * 4, 5)
+            _ = self.predict([Data(dream="cats in hats")] * 4, 5)
         else:
             self._model = None
             print("model set to None")
