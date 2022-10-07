@@ -64,10 +64,7 @@ class StableDiffusionModel:
             x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
             x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
 
-            # SAFTY CHECKER GOES HERE
-            x_checked_image = x_samples_ddim
-
-            x_checked_image = (255.0 * x_checked_image).astype(np.uint8)
-            pil_results = [Image.fromarray(x_sample) for x_sample in x_checked_image]
+            x_samples_ddim = (255.0 * x_samples_ddim).astype(np.uint8)
+            pil_results = [Image.fromarray(x_sample) for x_sample in x_samples_ddim]
 
         return pil_results
