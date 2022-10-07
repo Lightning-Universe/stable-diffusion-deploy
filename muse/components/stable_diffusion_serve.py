@@ -94,8 +94,6 @@ class StableDiffusionServe(L.LightningWork):
             )
 
             self._model = StableDiffusionModel(weights_folder / "sd_weights")
-            # TODO: Add this for stable diffusion pipeline
-            # pipe.enable_attention_slicing()
             print("model loaded")
         else:
             self._model = None
