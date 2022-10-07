@@ -8,7 +8,7 @@ slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
 asgiref==3.5.2
-lightning@ git+https://github.com/Lightning-AI/lightning@master
+lightning@ git+https://github.com/pritamsoni-hsr/lightning@pritam/add-path-prefix
 asgi-ratelimit==0.9.0
 sentry-sdk[fastapi]
 starlette-exporter==0.14.0
