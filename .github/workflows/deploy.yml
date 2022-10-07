@@ -48,7 +48,7 @@ jobs:
           python --version
           pip --version
           pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-          pip install --requirement tests/requirements.txt --quiet
+          pip install -e .
           pip list
         shell: bash
 
@@ -63,4 +63,4 @@ jobs:
           LIGHTNING_API_KEY: ${{secrets.LIGHTNING_API_KEY}}
           PACKAGE_LIGHTNING: "1"
         run: |
-          lightning run app app.py --cloud --name "Stable Diffusion" --env LIGHTNING_USER_ID=${{secrets.LIGHTNING_USER_ID}} --env LIGHTNING_API_KEY=${{secrets.LIGHTNING_API_KEY}} --env MUSE_ROOT_PATH="/muse"
+          lightning run app app.py --cloud --name "Stable Diffusion" --env RATE_LIMIT_KEY=${{secrets.RATE_LIMIT_KEY}} --env SHEET_API_URL=${{secrets.SHEET_API_URL}} --env MUSE_ROOT_PATH="/muse"
