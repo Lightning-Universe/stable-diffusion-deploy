@@ -11,7 +11,7 @@ export const DownloadImageButton = (props: { imgResult: string | null }) => {
     if (!props.imgResult) return;
     copyImageToClipboard(props.imgResult);
     enqueueSnackbar({
-      title: 'Image copied to clipboard.',
+      title: 'Image copied to clipboard',
       severity: 'success',
     });
   };
