@@ -37,7 +37,7 @@ class APIUsageFlow(L.LightningFlow):
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
                     "request": {"dream": "cats in hats", "high_quality": "true"},
-                    "response": "Base64 String",
+                    "response": {"image": "data:image/png;base64,<image-actual-content>"},
                 }
             ]
         )

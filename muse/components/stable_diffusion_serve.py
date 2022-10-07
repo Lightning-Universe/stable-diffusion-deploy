@@ -128,7 +128,8 @@ class StableDiffusionServe(L.LightningWork):
             buffered = BytesIO()
             image.save(buffered, format="PNG")
             img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-            results.append(f"data:image/png;base64,{img_str}")
+            # make sure pil_results is a single item array or it'll rewrite image
+            results.append({"image": f"data:image/png;base64,{img_str}"})
 
         return results
 

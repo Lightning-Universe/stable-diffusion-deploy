@@ -72,7 +72,7 @@ function DreamSearch() {
       setLoading(true);
       try {
         const result = await postDream(query, highQuality, lightningState.vars.dream_url);
-        setImgResult(result);
+        setImgResult(result.image);
       } finally {
         setLoading(false);
       }
