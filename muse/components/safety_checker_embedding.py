@@ -42,6 +42,7 @@ class SafetyCheckerEmbedding(LightningWork):
         embeddings = torch.stack(
             [embedding for embedding_batch in embedding_batches for embedding in embedding_batch], dim=0
         )
+        embeddings /= embeddings.norm(dim=-1, keepdim=True)
 
         torch.save(embeddings, self.safety_embeddings_filename)
         self.drive.put(self.safety_embeddings_filename)
