@@ -240,5 +240,5 @@ if __name__ == "__main__":
                 '<meta name="theme-color" content="#792EE5" />',
             ],
         ),
-        root_path=os.getenv("ROOT_PATH", ""),
+        root_path=os.getenv("MUSE_ROOT_PATH", ""),
     )
