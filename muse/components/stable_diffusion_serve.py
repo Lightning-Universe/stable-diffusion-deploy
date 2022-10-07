@@ -6,7 +6,8 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
-from typing import List, Optional, Tuple
+from pathlib import Path
+from typing import List, Optional
 
 import lightning as L
 import numpy as np
@@ -16,12 +17,41 @@ from PIL import Image
 from torch import autocast, nn
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
+from muse.models import StableDiffusionModel
 from muse.utility.data_io import Data, DataBatch, TimeoutException
 
 
+class SafetyChecker:
+    def __init__(self, embeddings_path):
+        import clip as openai_clip
+
+        self.model, self.preprocess = openai_clip.load("ViT-B/32", device="cpu")
+        self.text_embeddings = torch.load(embeddings_path)
+
+    def __call__(self, images):
+        images = torch.stack([self.preprocess(img) for img in images])
+        encoded_images = self.model.encode_image(images)
+        encoded_images /= encoded_images.norm(dim=-1, keepdim=True)
+
+        logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
+        # cosine similarity as logits
+        logit_scale = logit_scale.exp()
+        logits_per_image = logit_scale * encoded_images @ self.text_embeddings.t()
+        probs = torch.from_numpy(logits_per_image.softmax(dim=-1).cpu().detach().numpy())
+        return torch.any(probs > 0.5, dim=1).tolist()
+
+
 @dataclass
-class FastAPIBuildConfig(L.BuildConfig):
+class DiffusionBuildConfig(L.BuildConfig):
     requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
+
+    def build_commands(self):
+        return [
+            "git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion",
+            "pip install -r stable-diffusion/requirements.txt",
+            "pip install -e stable-diffusion",
+            "pip install git+https://github.com/openai/CLIP.git",
+        ]
 
 
 class StableDiffusionServe(L.LightningWork):
@@ -30,16 +60,19 @@ class StableDiffusionServe(L.LightningWork):
     It initializes a model and expose an API to handle incoming requests and generate predictions.
     """
 
-    def __init__(self, safety_embeddings_drive: Optional[Drive] = None, **kwargs):
-        super().__init__(cloud_build_config=FastAPIBuildConfig(), **kwargs)
+    def __init__(
+        self, safety_embeddings_drive: Optional[Drive] = None, safety_embeddings_filename: str = None, **kwargs
+    ):
+        super().__init__(cloud_build_config=DiffusionBuildConfig(), **kwargs)
         self.safety_embeddings_drive = safety_embeddings_drive
-        self.safety_embeddings_filename = "safety_embedding.pt"
+        self.safety_embeddings_filename = safety_embeddings_filename
         self._model = None
 
     @staticmethod
-    def download_weights(url: str, target_folder: str):
-        dest = target_folder + f"/{os.path.basename(url)}"
+    def download_weights(url: str, target_folder: Path):
+        dest = target_folder / f"{os.path.basename(url)}"
         if not os.path.exists(dest):
+            print("Downloading weights...")
             urllib.request.urlretrieve(url, dest)
             file = tarfile.open(dest)
 
@@ -48,45 +81,26 @@ class StableDiffusionServe(L.LightningWork):
 
     def build_model(self):
         """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
-
-        import os
-
-        import torch
-        from diffusers import StableDiffusionPipeline
+        self.safety_embeddings_drive.get(self.safety_embeddings_filename)
+        self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
 
         print("loading model...")
         if torch.cuda.is_available():
-            weights_folder = "resources/stable-diffusion-v1-4"
-            os.makedirs(weights_folder, exist_ok=True)
+            weights_folder = Path("resources/stable_diffusion_weights")
+            weights_folder.mkdir(parents=True, exist_ok=True)
 
-            print("Downloading weights...")
             self.download_weights(
-                "https://lightning-dream-app-assets.s3.amazonaws.com/diffusers.tar.gz", weights_folder
+                "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_weights.tar.gz", weights_folder
             )
 
-            model_name = "models--CompVis--stable-diffusion-v1-4"
-            model_hash = "a304b1ab1b59dd6c3ba9c40705c29c6de4144096"
-            repo_folder = (
-                f"{weights_folder}/Users/pritam/.cache/huggingface/diffusers/{model_name}/snapshots/{model_hash}"
-            )
-            pipe = StableDiffusionPipeline.from_pretrained(
-                repo_folder,
-                revision="fp16",
-                torch_dtype=torch.float16,
-            )
-            pipe = pipe.to("cuda")
-            pipe.enable_attention_slicing()
+            self._model = StableDiffusionModel(weights_folder / "sd_weights")
             print("model loaded")
         else:
-            pipe = None
+            self._model = None
             print("model set to None")
-        return pipe
 
     @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
-        if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
-            raise TimeoutException()
-
         height = width = IMAGE_SIZE
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
@@ -94,19 +108,20 @@ class StableDiffusionServe(L.LightningWork):
         if torch.cuda.is_available():
             with autocast("cuda"):
                 torch.cuda.empty_cache()
-                preds = self._model(
+                pil_results = self._model(
                     prompts,
                     height=height,
                     width=width,
                     num_inference_steps=num_inference_steps,
                 )
-                pil_results = preds.images
-                for i, has_nsfw in enumerate(preds.nsfw_content_detected):
-                    if has_nsfw:
-                        pil_results[i] = Image.open("./assets/nsfw-warning.png")
         else:
             time.sleep(4)
             pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
+
+        nsfw_content = self._safety_checker(pil_results)
+        for i, nsfw in enumerate(nsfw_content):
+            if nsfw:
+                pil_results[i] = Image.open("assets/nsfw-warning.png")
 
         results = []
         for image in pil_results:
@@ -132,7 +147,7 @@ class StableDiffusionServe(L.LightningWork):
             subprocess.run("nvidia-smi", shell=True)
 
         if self._model is None:
-            self._model = self.build_model()
+            self.build_model()
 
         self._fastapi_app = app = FastAPI()
         app.POOL: ThreadPoolExecutor = None
@@ -184,24 +199,3 @@ class StableDiffusionServe(L.LightningWork):
         uvicorn.run(
             app, host=self.host, port=self.port, timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False, loop="uvloop"
         )
-
-
-def nsfw_content_or_not(image_features: torch.Tensor, text_features: torch.Tensor) -> Tuple[torch.Tensor, List[bool]]:
-    """Utility to check if the images have NSFW content or not.
-
-    Args:
-        image_features (torch.Tensor): The image features generated from the user prompts.
-        text_features (torch.Tensor): The text features generated from the NSFW prompts.
-
-    Returns:
-        torch.Tensor: The probability of the image having NSFW content.
-        list[bool]: A list of boolean values indicating whether the image has NSFW content or not.
-    """
-    logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-    # cosine similarity as logits
-    logit_scale = logit_scale.exp()
-    logits_per_image = logit_scale * image_features @ text_features.t()
-
-    probs = torch.from_numpy(logits_per_image.softmax(dim=-1).cpu().detach().numpy())
-
-    return probs, torch.any(probs > 0.5, dim=1).tolist()
