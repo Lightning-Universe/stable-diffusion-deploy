@@ -18,11 +18,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
 import MetaImage from './assets/header.png';
 import LogoIcon from './assets/Logo.svg';
+import { AddYourSlackCredentials } from './components/AddYourSlackCredentials';
 import { BuildYourAppBanner } from './components/BuildYourAppBanner';
-import { AppDetailsFooter } from './components/FooterLinks';
-import { ProgressBar } from './components/Loader';
+import { Footer } from './components/Footer';
 import { OverlayLoader } from './components/OverlayLoader';
-import { AddYourSlackCredentials } from './components/SlackTokensModel';
+import { ProgressBar } from './components/ProgressBar';
 import { Typography } from './components/Typography';
 import { useLightningState } from './hooks/useLightningState';
 import { postDream } from './services/api';
@@ -231,7 +231,7 @@ const FooterWithLicense = (lightningState: LightingState) => {
           'right': 0,
           'bottom': 0,
           '>div': {
-            paddingBottom: { md: 1.5, xs: 7 },
+            paddingBottom: { md: 1.5, xs: 8 },
             paddingTop: { md: 2, xs: 6 },
             boxShadow: {
               xs: 'none',
@@ -241,7 +241,7 @@ const FooterWithLicense = (lightningState: LightingState) => {
         }}>
         <Grid container>
           <Grid item xs={12} sm={12} md={5} lg={4} xl={5} paddingX={2}>
-            <AppDetailsFooter apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
+            <Footer apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
           </Grid>
         </Grid>
       </Box>
