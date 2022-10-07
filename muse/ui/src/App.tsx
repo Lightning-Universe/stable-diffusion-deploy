@@ -106,6 +106,7 @@ function DreamSearch() {
           </Box>
           <Box sx={{ '>img': { md: { width: '100%', height: 'calc(100vh - 40px - 52px )' } } }}>
             <img
+              id={'imgResult'}
               src={imgResult ?? placeHolderImage}
               loading="lazy"
               alt={'bg'}
