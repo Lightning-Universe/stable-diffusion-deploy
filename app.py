@@ -1,7 +1,7 @@
 import os
 import time
 import uuid
-from typing import List
+from typing import List, Optional
 
 import lightning as L
 import requests
@@ -60,15 +60,15 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=2,
-        autoscale_interval=1 * 30,
-        max_batch_size=12,
-        batch_timeout_secs=10,
-        gpu_type="gpu-fast",
-        max_workers: int = 10,
-        autoscale_down_limit: int = None,
-        autoscale_up_limit: int = None,
-        load_testing: bool = False,
+        initial_num_workers: int = 5,
+        autoscale_interval: int = 1 * 30,
+        max_batch_size: int = 12,
+        batch_timeout_secs: int = 10,
+        gpu_type: str = "gpu-fast",
+        max_workers: int = 20,
+        autoscale_down_limit: Optional[int] = None,
+        autoscale_up_limit: Optional[int] = None,
+        load_testing: Optional[bool] = False,
     ):
         super().__init__()
         self.hide_footer_shadow = True
