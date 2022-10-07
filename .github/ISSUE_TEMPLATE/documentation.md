@@ -1,9 +1,9 @@
 ---
 name: Typos and doc fixes
 about: Typos and doc fixes
-title: ""
+title: ''
 labels: documentation
-assignees: ""
+assignees: ''
 ---
 
 ## 📚 Documentation
