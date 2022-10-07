@@ -1,5 +1,7 @@
+import os
 from typing import List, Optional
 
+import lightning as L
 import torch
 from lightning import BuildConfig, LightningWork
 from lightning.app.storage import Drive
@@ -15,7 +17,9 @@ class LightningFlashBuildConfig(BuildConfig):
 
 class SafetyCheckerEmbedding(LightningWork):
     def __init__(self, nsfw_list: Optional[List] = None, drive: Optional[Drive] = None):
-        super().__init__(parallel=False, cloud_build_config=LightningFlashBuildConfig())
+        super().__init__(
+            parallel=False, cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=LightningFlashBuildConfig()
+        )
         self.nsfw_list = nsfw_list or fetch_nsfw_list()
         self.drive = drive
         self.safety_embeddings_filename = "safety_embedding.pt"
@@ -26,8 +30,7 @@ class SafetyCheckerEmbedding(LightningWork):
         from flash.text import TextClassificationData, TextClassifier
 
         datamodule = TextClassificationData.from_lists(
-            predict_data=self.nsfw_list,
-            batch_size=4,
+            predict_data=self.nsfw_list, batch_size=4, num_workers=os.cpu_count()
         )
 
         model = TextClassifier(backbone="clip_vitb32", num_classes=2).cpu().float()

@@ -97,7 +97,6 @@ class StableDiffusionServe(L.LightningWork):
             # TODO: Add this for stable diffusion pipeline
             # pipe.enable_attention_slicing()
             print("model loaded")
-            _ = self.predict([Data(dream="cats in hats")] * 4, 5)
         else:
             self._model = None
             print("model set to None")
@@ -127,7 +126,6 @@ class StableDiffusionServe(L.LightningWork):
                 pil_results[i] = Image.open("assets/nsfw-warning.png")
 
         results = []
-        return pil_results
         for image in pil_results:
             buffered = BytesIO()
             image.save(buffered, format="PNG")
