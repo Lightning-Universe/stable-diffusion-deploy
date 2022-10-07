@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { DownloadImageButton } from 'components/DownloadImageButton';
 import { Switch } from 'components/Switch';
-import { Button, SnackbarProvider, Stack } from 'lightning-ui/src/design-system/components';
+import { Button, SnackbarProvider, Stack, useSnackbar } from 'lightning-ui/src/design-system/components';
 import { theme } from 'lightning-ui/src/design-system/theme';
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -31,31 +31,32 @@ const queryClient = new QueryClient();
 
 type DreamProps = {
   dream: string;
+  loading: boolean;
   image: string | null;
   maxTime?: number;
 };
 
-function Dream({ dream, image, maxTime }: DreamProps) {
-  if (dream && !image) return <ProgressBar maxTime={maxTime} title={'Finding inspiration...'} />;
+function Dream({ loading, dream, image, maxTime }: DreamProps) {
+  if (image) return null;
 
-  if (!image)
-    return (
-      <Typography
-        fontFamily={'Roboto'}
-        textAlign={'center'}
-        sx={{
-          textShadow: '0px 0px 6px rgba(255, 255, 255, 0.75)',
-        }}>
-        Your inspiration will appear here
-      </Typography>
-    );
+  if (dream && loading) return <ProgressBar maxTime={maxTime} title={'Finding inspiration...'} />;
 
-  return null;
+  return (
+    <Typography
+      fontFamily={'Roboto'}
+      textAlign={'center'}
+      sx={{
+        textShadow: '0px 0px 6px rgba(255, 255, 255, 0.75)',
+      }}>
+      Your inspiration will appear here
+    </Typography>
+  );
 }
 
 function DreamSearch() {
   const { lightningState } = useLightningState();
 
+  const { enqueueSnackbar } = useSnackbar();
   const [query, setQuery] = React.useState<string>('Woman painting a large red egg in a dali landscape');
   const [loading, setLoading] = useState(false);
   const [imgResult, setImgResult] = React.useState<string | null>(null);
@@ -75,6 +76,10 @@ function DreamSearch() {
         setImgResult(result.image);
       } finally {
         setLoading(false);
+        enqueueSnackbar({
+          title: 'Failed to query please try again',
+          severity: 'error',
+        });
       }
     }
   };
@@ -101,7 +106,7 @@ function DreamSearch() {
           <DownloadImageButton imgResult={imgResult} />
           <Box
             sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%' }}>
-            <Dream dream={requestedDream} image={imgResult} maxTime={highQuality ? 120 : 60} />
+            <Dream loading={loading} dream={requestedDream} image={imgResult} maxTime={highQuality ? 120 : 60} />
           </Box>
           <Box sx={{ '>img': { md: { width: '100%', height: 'calc(100vh - 40px - 52px )' } } }}>
             <img
