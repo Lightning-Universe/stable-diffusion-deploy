@@ -232,7 +232,8 @@ if __name__ == "__main__":
     app = L.LightningApp(
         MuseFlow(),
         info=AppInfo(
-            title="Muse app by Lightning AI",
+            title="Bring your words to life in seconds.",
+            description="Bring your words to life in seconds - powered by AI.",
             meta_tags=[
                 '<meta name="theme-color" content="#792EE5" />',
             ],

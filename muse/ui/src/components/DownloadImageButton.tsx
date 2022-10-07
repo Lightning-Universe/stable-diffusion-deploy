@@ -11,7 +11,7 @@ export const DownloadImageButton = (props: { imgResult: string | null }) => {
     if (!props.imgResult) return;
     copyImageToClipboard(props.imgResult);
     enqueueSnackbar({
-      title: 'Image copied',
+      title: 'Image copied to clipboard.',
       severity: 'success',
     });
   };
@@ -38,19 +38,26 @@ export const DownloadImageButton = (props: { imgResult: string | null }) => {
 };
 
 const copyImageToClipboard = async (content: string) => {
-  const blobToClipboard = (content: string | Promise<Blob> | Blob) => {
-    try {
-      navigator.clipboard.write([new ClipboardItem({ 'image/png': content })]);
-    } catch (e) {
-      console.warn(e);
-    }
-  };
+  const image = document.getElementById('imgResult') as HTMLImageElement;
 
-  // todo: add better error handler
-  if (content.startsWith('/static')) {
-    const imgContent = await (await fetch(content)).blob();
-    blobToClipboard(imgContent);
-    return;
-  }
-  blobToClipboard(content);
+  if (!image) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  const context = canvas.getContext('2d');
+  context!.drawImage(image, 0, 0);
+
+  canvas.toBlob(blob => {
+    if (!blob) return;
+    navigator.clipboard
+      .write([
+        new ClipboardItem({
+          [blob.type]: blob,
+        }),
+      ])
+      .then(() => {
+        console.log('Copied');
+      });
+  });
 };
