@@ -62,4 +62,4 @@ jobs:
           LIGHTNING_USER_ID: ${{secrets.LIGHTNING_USER_ID}}
           LIGHTNING_API_KEY: ${{secrets.LIGHTNING_API_KEY}}
         run: |
-          lightning run app app.py --cloud --name "Stable Diffusion" --env LIGHTNING_USER_ID=${{secrets.LIGHTNING_USER_ID}} --env LIGHTNING_API_KEY=${{secrets.LIGHTNING_API_KEY}}
+          lightning run app app.py --cloud --name "Stable Diffusion" --env LIGHTNING_USER_ID=${{secrets.LIGHTNING_USER_ID}} --env LIGHTNING_API_KEY=${{secrets.LIGHTNING_API_KEY}} --env MUSE_ROOT_PATH="/muse"
