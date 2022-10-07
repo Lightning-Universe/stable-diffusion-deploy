@@ -106,6 +106,7 @@ function DreamSearch() {
           </Box>
           <Box sx={{ '>img': { md: { width: '100%', height: 'calc(100vh - 40px - 52px )' } } }}>
             <img
+              id={'imgResult'}
               src={imgResult ?? placeHolderImage}
               loading="lazy"
               alt={'bg'}
@@ -232,18 +233,14 @@ const FooterWithLicense = (lightningState: LightingState) => {
           'bottom': 0,
           '>div': {
             paddingBottom: { md: 1.5, xs: 8 },
-            paddingTop: { md: 2, xs: 6 },
+            paddingTop: { md: 2, xs: 4 },
             boxShadow: {
               xs: 'none',
               md: '0px -3px 1px -2px rgb(45 64 86 / 20%);',
             },
           },
         }}>
-        <Grid container>
-          <Grid item xs={12} sm={12} md={5} lg={4} xl={5} paddingX={2}>
-            <Footer apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
-          </Grid>
-        </Grid>
+        <Footer apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
       </Box>
       <Box
         position={{ xs: 'fixed' }}

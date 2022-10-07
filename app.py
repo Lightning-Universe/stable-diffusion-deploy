@@ -1,7 +1,7 @@
 import os
 import time
 import uuid
-from typing import List
+from typing import List, Optional
 
 import lightning as L
 import requests
@@ -60,15 +60,15 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=5,
-        autoscale_interval=1 * 30,
-        max_batch_size=4,
-        batch_timeout_secs=10,
-        gpu_type="gpu-fast",
-        max_workers: int = 10,
-        autoscale_down_limit: int = None,
-        autoscale_up_limit: int = None,
-        load_testing: bool = False,
+        initial_num_workers: int = 5,
+        autoscale_interval: int = 1 * 30,
+        max_batch_size: int = 4,
+        batch_timeout_secs: int = 10,
+        gpu_type: str = "gpu-fast",
+        max_workers: int = 20,
+        autoscale_down_limit: Optional[int] = None,
+        autoscale_up_limit: Optional[int] = None,
+        load_testing: Optional[bool] = False,
     ):
         super().__init__()
         self.hide_footer_shadow = True
@@ -235,7 +235,8 @@ if __name__ == "__main__":
     app = L.LightningApp(
         MuseFlow(),
         info=AppInfo(
-            title="Muse app by Lightning AI",
+            title="Bring your words to life in seconds.",
+            description="Bring your words to life in seconds - powered by AI.",
             meta_tags=[
                 '<meta name="theme-color" content="#792EE5" />',
             ],
