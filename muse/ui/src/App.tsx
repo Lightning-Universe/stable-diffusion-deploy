@@ -240,7 +240,7 @@ const FooterWithLicense = (lightningState: LightingState) => {
             },
           },
         }}>
-          <Footer apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
+        <Footer apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
       </Box>
       <Box
         position={{ xs: 'fixed' }}
