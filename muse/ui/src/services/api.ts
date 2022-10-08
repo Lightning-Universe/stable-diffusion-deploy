@@ -41,3 +41,12 @@ export const setSlackCredentials = (data: { [key in SlackForm]: string }, url: s
       throw new Error(e && e.message);
     });
 };
+
+export const getResponseTime = async (url: string) => {
+  return axios
+    .post(url + '/response-time')
+    .then(({ data }) => data)
+    .catch(e => {
+      throw new Error(e && e.message);
+    });
+};
