@@ -35,7 +35,7 @@ class SafetyChecker:
         encoded_images = F.normalize(encoded_images)
 
         cos = encoded_images @ self.text_embeddings.t()
-        return torch.any(cos < 0.25, dim=1).tolist()
+        return torch.any(cos > 0.75, dim=1).tolist()
 
 
 @dataclass
