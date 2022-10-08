@@ -1,6 +1,7 @@
 import asyncio
 import time
 import uuid
+from collections import deque
 from dataclasses import dataclass
 from itertools import cycle
 from typing import List
@@ -41,6 +42,7 @@ class LoadBalancer(L.LightningWork):
         self.servers = []
         self.max_batch_size = max_batch_size
         self.batch_timeout_secs = batch_timeout_secs
+        self._response_time_queue = deque(maxlen=5)
         self._ITER = None
         self._batch = {"high": [], "low": []}
         self._responses = {}  # {request_id: response}
@@ -147,6 +149,7 @@ class LoadBalancer(L.LightningWork):
             start_time = time.time()
             response = await call_next(request)
             process_time = time.time() - start_time
+            self._response_time_queue.append(process_time)
             app.last_process_time = process_time
             app.num_current_requests -= 1
             return response
@@ -189,6 +192,12 @@ class LoadBalancer(L.LightningWork):
                 num_requests=app.num_current_requests,
                 process_time=app.last_process_time,
             )
+
+        @app.get("/response-time")
+        async def response_time() -> int:
+            if len(self._response_time_queue) == 0:
+                return 60  # default to 60 seconds
+            return sum(self._response_time_queue) // len(self._response_time_queue)
 
         @app.get("/num-requests")
         async def num_requests() -> int:
