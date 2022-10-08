@@ -12,7 +12,6 @@ from typing import List, Optional
 import lightning as L
 import numpy as np
 import torch
-import torch.nn.functional as F
 from lightning.app.storage import Drive
 from PIL import Image
 from torch import autocast
@@ -20,6 +19,12 @@ from torch import autocast
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
 from muse.models import StableDiffusionModel
 from muse.utility.data_io import Data, DataBatch, TimeoutException
+
+
+def cos_sim(x, y):
+    x = torch.nn.functional.normalize(x, p=2, dim=1)
+    y = torch.nn.functional.normalize(y, p=2, dim=1)
+    return torch.mm(x, y.transpose(0, 1))
 
 
 class SafetyChecker:
@@ -32,10 +37,9 @@ class SafetyChecker:
     def __call__(self, images):
         images = torch.stack([self.preprocess(img) for img in images])
         encoded_images = self.model.encode_image(images)
-        encoded_images = F.normalize(encoded_images)
 
-        cos = encoded_images @ self.text_embeddings.t()
-        return torch.any(cos > 0.75, dim=1).tolist()
+        similarity = cos_sim(encoded_images, self.text_embeddings)
+        return torch.any(similarity > 0.8, dim=1).tolist()
 
 
 @dataclass
