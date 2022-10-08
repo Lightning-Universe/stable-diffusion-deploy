@@ -79,6 +79,9 @@ repos:
       - id: prettier
         exclude: |
           (?x)(
+              ^.github/ISSUE_TEMPLATE/bug_report.md|
+              ^.github/ISSUE_TEMPLATE/feature_request.md|
+              ^.github/ISSUE_TEMPLATE/documentation.md|
               ^muse/ui/build|
               ^README.md
           )
