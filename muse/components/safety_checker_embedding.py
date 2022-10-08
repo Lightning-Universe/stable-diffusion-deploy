@@ -3,6 +3,7 @@ from typing import List, Optional
 
 import lightning as L
 import torch
+import torch.nn.functional as F
 from lightning import BuildConfig, LightningWork
 from lightning.app.storage import Drive
 
@@ -42,7 +43,7 @@ class SafetyCheckerEmbedding(LightningWork):
         embeddings = torch.stack(
             [embedding for embedding_batch in embedding_batches for embedding in embedding_batch], dim=0
         )
-        embeddings /= embeddings.norm(dim=-1, keepdim=True)
+        embeddings = F.normalize(embeddings)
 
         torch.save(embeddings, self.safety_embeddings_filename)
         self.drive.put(self.safety_embeddings_filename)

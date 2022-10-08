@@ -12,9 +12,10 @@ from typing import List, Optional
 import lightning as L
 import numpy as np
 import torch
+import torch.nn.functional as F
 from lightning.app.storage import Drive
 from PIL import Image
-from torch import autocast, nn
+from torch import autocast
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
 from muse.models import StableDiffusionModel
@@ -31,14 +32,10 @@ class SafetyChecker:
     def __call__(self, images):
         images = torch.stack([self.preprocess(img) for img in images])
         encoded_images = self.model.encode_image(images)
-        encoded_images /= encoded_images.norm(dim=-1, keepdim=True)
+        encoded_images = F.normalize(encoded_images)
 
-        logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-        # cosine similarity as logits
-        logit_scale = logit_scale.exp()
-        logits_per_image = logit_scale * encoded_images @ self.text_embeddings.t()
-        probs = torch.from_numpy(logits_per_image.softmax(dim=-1).cpu().detach().numpy())
-        return torch.any(probs > 0.5, dim=1).tolist()
+        cos = encoded_images @ self.text_embeddings.t()
+        return torch.any(cos < 0.25, dim=1).tolist()
 
 
 @dataclass
