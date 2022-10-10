@@ -39,7 +39,7 @@ class SafetyChecker:
         encoded_images = self.model.encode_image(images)
 
         similarity = cos_sim(encoded_images, self.text_embeddings)
-        return torch.any(similarity > 0.25, dim=1).tolist()
+        return torch.any(similarity > 0.24, dim=1).tolist()
 
 
 @dataclass
