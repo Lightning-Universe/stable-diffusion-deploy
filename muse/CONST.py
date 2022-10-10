@@ -23,7 +23,7 @@ NSFW_PROMPTS = [
     "racist",
     "homophobic",
     "sexist",
-    "swastika",
+    "swastika",  # Nazi Symbol
     "penis",
     "anus",
     "buttocks",
