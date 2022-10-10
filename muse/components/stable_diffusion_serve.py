@@ -21,12 +21,6 @@ from muse.models import StableDiffusionModel
 from muse.utility.data_io import Data, DataBatch, TimeoutException
 
 
-def cos_sim(x, y):
-    x = torch.nn.functional.normalize(x, p=2, dim=1)
-    y = torch.nn.functional.normalize(y, p=2, dim=1)
-    return torch.mm(x, y.transpose(0, 1))
-
-
 class SafetyChecker:
     def __init__(self, embeddings_path):
         import clip as openai_clip
@@ -38,7 +32,8 @@ class SafetyChecker:
         images = torch.stack([self.preprocess(img) for img in images])
         encoded_images = self.model.encode_image(images)
 
-        similarity = cos_sim(encoded_images, self.text_embeddings)
+        encoded_images = torch.nn.functional.normalize(encoded_images, p=2, dim=1)
+        similarity = torch.mm(encoded_images, self.text_embeddings.transpose(0, 1))
         return torch.any(similarity > 0.24, dim=1).tolist()
 
 
