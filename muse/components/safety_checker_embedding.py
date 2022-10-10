@@ -5,14 +5,26 @@ import lightning as L
 import torch
 from lightning import BuildConfig, LightningWork
 from lightning.app.storage import Drive
+from torch.utils.data import DataLoader, Dataset
 
 from muse.CONST import NSFW_PROMPTS
 
 
+class TextPromptDataset(Dataset):
+    def __init__(self, prompts):
+        super().__init__()
+        self.prompts = prompts
+
+    def __getitem__(self, ix):
+        return self.prompts[ix]
+
+    def __len__(self):
+        return len(self.prompts)
+
+
 class LightningFlashBuildConfig(BuildConfig):
     def build_commands(self) -> List[str]:
-        url_flash = "https://github.com/rohitgr7/lightning-flash.git"
-        return [f"pip install 'git+{url_flash}@rel/pl_18#egg=lightning-flash[text]'"]
+        return ["pip install git+https://github.com/openai/CLIP.git"]
 
 
 class SafetyCheckerEmbedding(LightningWork):
@@ -20,27 +32,24 @@ class SafetyCheckerEmbedding(LightningWork):
         super().__init__(
             parallel=False, cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=LightningFlashBuildConfig()
         )
+
         self.drive = drive
         self.safety_embeddings_filename = "safety_embedding.pt"
 
     def run(self):
+        import clip as openai_clip
 
-        from flash import Trainer
-        from flash.text import TextClassificationData, TextClassifier
+        model, _ = openai_clip.load("ViT-B/32", device="cpu")
+        ds = TextPromptDataset(NSFW_PROMPTS)
+        dl = DataLoader(ds, shuffle=False, batch_size=4, num_workers=os.cpu_count())
 
-        datamodule = TextClassificationData.from_lists(
-            predict_data=NSFW_PROMPTS, batch_size=4, num_workers=os.cpu_count()
-        )
+        encoded_text = []
+        for batch in dl:
+            text_features = model.encode_text(openai_clip.tokenize(batch))
+            encoded_text.append(text_features)
 
-        model = TextClassifier(backbone="clip_vitb32", num_classes=2).cpu().float()
-        torch.cuda.empty_cache()
-        embedder = model.as_embedder("adapter.backbone")
-
-        trainer = Trainer()
-        embedding_batches = trainer.predict(embedder, datamodule)
-        embeddings = torch.stack(
-            [embedding for embedding_batch in embedding_batches for embedding in embedding_batch], dim=0
-        )
-
-        torch.save(embeddings, self.safety_embeddings_filename)
+        encoded_text = torch.vstack(encoded_text)
+        encoded_text = torch.nn.functional.normalize(encoded_text, p=2, dim=1)
+        print(encoded_text.shape)
+        torch.save(encoded_text, self.safety_embeddings_filename)
         self.drive.put(self.safety_embeddings_filename)
