@@ -50,6 +50,5 @@ class SafetyCheckerEmbedding(LightningWork):
 
         encoded_text = torch.vstack(encoded_text)
         encoded_text = torch.nn.functional.normalize(encoded_text, p=2, dim=1)
-        print(encoded_text.shape)
         torch.save(encoded_text, self.safety_embeddings_filename)
         self.drive.put(self.safety_embeddings_filename)
