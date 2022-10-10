@@ -22,7 +22,7 @@ class TextPromptDataset(Dataset):
         return len(self.prompts)
 
 
-class LightningFlashBuildConfig(BuildConfig):
+class SafetyCheckerBuildConfig(BuildConfig):
     def build_commands(self) -> List[str]:
         return ["pip install git+https://github.com/openai/CLIP.git"]
 
@@ -30,7 +30,7 @@ class LightningFlashBuildConfig(BuildConfig):
 class SafetyCheckerEmbedding(LightningWork):
     def __init__(self, nsfw_list: Optional[List] = None, drive: Optional[Drive] = None):
         super().__init__(
-            parallel=False, cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=LightningFlashBuildConfig()
+            parallel=False, cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=SafetyCheckerBuildConfig()
         )
 
         self.drive = drive
