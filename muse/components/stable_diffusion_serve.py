@@ -39,7 +39,7 @@ class SafetyChecker:
         encoded_images = self.model.encode_image(images)
 
         similarity = cos_sim(encoded_images, self.text_embeddings)
-        return torch.any(similarity > 0.8, dim=1).tolist()
+        return torch.any(similarity > 0.25, dim=1).tolist()
 
 
 @dataclass
@@ -102,6 +102,9 @@ class StableDiffusionServe(L.LightningWork):
 
     @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
+        if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
+            raise TimeoutException()
+
         height = width = IMAGE_SIZE
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
