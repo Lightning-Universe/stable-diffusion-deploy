@@ -1,6 +1,6 @@
 locust
 fastapi==0.78.0
 uvicorn==0.17.6
-flash@ git+https://github.com/rohitgr7/lightning-flash.git@rel/pl_18#egg=lightning-flash[text]
 latent-diffusion@ git+https://github.com/rohitgr7/stable-diffusion.git@rel/pl_18
 clip@ git+https://github.com/openai/CLIP.git@main
+lightning-flash@ git+https://github.com/rohitgr7/lightning-flash.git@rel/pl_18#egg=lightning-flash[text]
