@@ -44,7 +44,7 @@ export const setSlackCredentials = (data: { [key in SlackForm]: string }, url: s
 
 export const getResponseTime = async (url: string) => {
   return axios
-    .post(url + '/response-time')
+    .get(url + '/response-time')
     .then(({ data }) => data)
     .catch(e => {
       throw new Error(e && e.message);
