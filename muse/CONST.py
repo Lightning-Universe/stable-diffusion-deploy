@@ -23,4 +23,5 @@ NSFW_PROMPTS = [
     "racist",
     "homophobic",
     "sexist",
+    "swastika",
 ]
