@@ -193,12 +193,6 @@ class LoadBalancer(L.LightningWork):
                 process_time=app.last_process_time,
             )
 
-        @app.get("/response-time")
-        async def response_time() -> int:
-            if len(self._response_time_queue) == 0:
-                return 60  # default to 60 seconds
-            return sum(self._response_time_queue) // len(self._response_time_queue)
-
         @app.get("/num-requests")
         async def num_requests() -> int:
             return app.num_current_requests
