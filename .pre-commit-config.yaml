@@ -21,10 +21,11 @@ repos:
       - id: check-toml
       - id: check-json
       - id: check-added-large-files
-        args: ['--maxkb=450', '--enforce-all']
+        args: ["--maxkb=450", "--enforce-all"]
         exclude: |
           (?x)(
-              ^muse/ui/build
+              ^muse/ui/build|
+              muse/ui/yarn.lock
           )
       - id: check-docstring-first
       - id: detect-private-key
