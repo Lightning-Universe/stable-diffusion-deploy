@@ -169,8 +169,30 @@ def validate_app_functionalities(app_page: "Page") -> None:
     """
     app_page: The UI page of the app to be validated.
     """
+    while True:
+        try:
+            app_page.reload()
+            sleep(5)
+            prompt_input_label = app_page.frame_locator("iframe").locator("text=Use AI to inspire your art")
 
-    pass
+            prompt_input_label.wait_for(timeout=30 * 1000)
+            break
+        except (
+            playwright._impl._api_types.Error,
+            playwright._impl._api_types.TimeoutError,
+        ):
+            pass
+
+    prompt_input_field = app_page.frame_locator("iframe").locator("text-area")
+    prompt_input_field.wait_for(timeout=1000)
+
+    prompt_input_field.fill("Woman painting a large red egg in a dali landscape")
+    prompt_input_field.press("Enter")
+    search_results_container = app_page.frame_locator("iframe").locator(".MuiGrid-container")
+    search_results_container.wait_for(timeout=180 * 1000)
+    sleep(5)
+    search_results = app_page.frame_locator("iframe").locator(".MuiGrid-item")
+    assert search_results.count() == 1
 
 
 @pytest.mark.skipif(not os.getenv("TEST_APP_NAME", None), reason="requires TEST_APP_NAME env var")
