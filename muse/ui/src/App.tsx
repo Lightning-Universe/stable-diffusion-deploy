@@ -18,6 +18,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
 import MetaImage from './assets/header.png';
 import LogoIcon from './assets/Logo.svg';
+import { AddYourSlackCredentials } from './components/AddYourSlackCredentials';
 import { BuildYourAppBanner } from './components/BuildYourAppBanner';
 import { Footer } from './components/Footer';
 import { OverlayLoader } from './components/OverlayLoader';
@@ -177,6 +178,7 @@ function DreamSearch() {
                 </Box>
               </Row>
               <Box height={8} />
+              {lightningState && <AddYourSlackCredentials {...lightningState} />}
             </Container>
           </Box>
         </Grid>
