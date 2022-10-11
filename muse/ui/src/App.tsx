@@ -163,7 +163,7 @@ function DreamSearch() {
                     <Switch checked={!highQuality} onChange={() => setHighQuality(x => !x)} disabled={loading} />
                   </Box>
                   <Typography colorI={'primary'} fontFamily={'Roboto'} variant={'body2'}>
-                    {highQuality ? 'More creative (slower)' : 'Fast'}
+                    {highQuality ? 'High quality (slower)' : 'Fast'}
                   </Typography>
                 </Row>
 

@@ -235,8 +235,8 @@ if __name__ == "__main__":
     app = L.LightningApp(
         MuseFlow(),
         info=AppInfo(
-            title="Bring your words to life in seconds.",
-            description="Bring your words to life in seconds - powered by AI.",
+            title="Use AI to inspire your art.",
+            description="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.",
             image="https://storage.googleapis.com/grid-static/header.png",
             meta_tags=[
                 '<meta name="theme-color" content="#792EE5" />',
