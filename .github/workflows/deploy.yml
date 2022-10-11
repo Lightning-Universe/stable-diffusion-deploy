@@ -38,5 +38,4 @@ jobs:
             --name "Stable Diffusion" \
             --env RATE_LIMIT_KEY=${{secrets.RATE_LIMIT_KEY}} \
             --env SHEET_API_URL=${{secrets.SHEET_API_URL}} \
-            --env MUSE_ROOT_PATH="/muse"
         shell: bash
