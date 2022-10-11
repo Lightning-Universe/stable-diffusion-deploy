@@ -52,9 +52,9 @@ jobs:
         run: |
           python --version
           pip --version
-          pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-          pip install --requirement tests/requirements.txt --quiet
-          git clone https://github.com/CompVis/stable-diffusion && pip install -e stable-diffusion
+          pip install . --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+          pip install -r tests/requirements.txt --quiet
+          pip install git+https://github.com/CompVis/stable-diffusion.git
           pip list
         shell: bash
 

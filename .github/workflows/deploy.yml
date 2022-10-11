@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip --version
-          pip install -e . --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+          pip install . --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
           pip list
         shell: bash
 
