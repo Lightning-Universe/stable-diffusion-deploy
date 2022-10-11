@@ -4,7 +4,7 @@ name: Trigger Deployment
 on: workflow_dispatch
 
 jobs:
-  pytest:
+  deploy:
     runs-on: ubuntu-20.04
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 35
@@ -38,4 +38,5 @@ jobs:
             --name "Stable Diffusion" \
             --env RATE_LIMIT_KEY=${{secrets.RATE_LIMIT_KEY}} \
             --env SHEET_API_URL=${{secrets.SHEET_API_URL}} \
+            --env MUSE_ROOT_PATH="/muse"
         shell: bash
