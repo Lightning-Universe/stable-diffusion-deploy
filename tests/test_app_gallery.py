@@ -78,7 +78,6 @@ def launch_from_gallery_app_page(gallery_page) -> Generator:
 @requires("playwright")
 @contextmanager
 def clone_and_run_from_gallery_app_page(app_gallery_page) -> Generator:
-
     with app_gallery_page.expect_navigation():
         app_gallery_page.locator("text=Clone & Run").click()
 
@@ -173,6 +172,7 @@ def validate_app_functionalities(app_page: "Page") -> None:
     """
     app_page: The UI page of the app to be validated.
     """
+
     def search_image(app_page):
         image = app_page.frame_locator("iframe").locator("#imgResult")
         image.wait_for(timeout=1000)
@@ -182,7 +182,7 @@ def validate_app_functionalities(app_page: "Page") -> None:
 
         opacity = -1.0
         for each_style in split_style:
-            if 'opacity' in each_style:
+            if "opacity" in each_style:
                 opacity = each_style.split(":")[-1]
                 break
         assert float(opacity) == 1.0
@@ -202,9 +202,7 @@ def validate_app_functionalities(app_page: "Page") -> None:
             pass
 
     # For Fast
-    input_field = app_page.frame_locator("iframe").locator(
-        '[placeholder="Type in anything you can imagine"]'
-    )
+    input_field = app_page.frame_locator("iframe").locator('[placeholder="Type in anything you can imagine"]')
     input_field.wait_for(timeout=10000)
     input_field.fill("Researcher writing a paper")
     input_field.press("Enter")
@@ -213,9 +211,7 @@ def validate_app_functionalities(app_page: "Page") -> None:
     search_image(app_page)
 
     # For high quality
-    toggle_quality = app_page.frame_locator("iframe").locator(
-        ".MuiSwitch-input"
-    )
+    toggle_quality = app_page.frame_locator("iframe").locator(".MuiSwitch-input")
     toggle_quality.wait_for(timeout=1000)
     toggle_quality.click()
     input_field.fill("Researcher reading a paper")
