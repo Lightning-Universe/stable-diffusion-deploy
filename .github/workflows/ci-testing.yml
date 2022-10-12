@@ -49,12 +49,13 @@ jobs:
             ${{ runner.os }}-py${{ matrix.python-version }}-
 
       - name: Install dependencies
+        env:
+          TORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
         run: |
           python --version
           pip --version
-          pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-          pip install --requirement tests/requirements.txt --quiet
-          git clone https://github.com/CompVis/stable-diffusion && pip install -e stable-diffusion
+          pip install . -r tests/requirements.txt --upgrade --quiet --find-links $TORCH_URL
+          pip install git+https://github.com/CompVis/stable-diffusion.git
           pip list
         shell: bash
 
@@ -66,8 +67,7 @@ jobs:
           SLACK_CLIENT_ID: ${{secrets.SLACK_CLIENT_ID}}
           CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
         run: |
-          coverage run --source muse -m py.test muse tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
-
+          coverage run --source muse -m py.test muse tests -v
       - name: Statistics
         if: success()
         run: |
