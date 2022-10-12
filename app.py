@@ -17,6 +17,7 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
+from muse.CONST import MUSE_GPU_TYPE, MUSE_MIN_WORKERS
 
 
 class ReactUI(L.LightningFlow):
@@ -60,11 +61,11 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers: int = 5,
+        initial_num_workers: int = MUSE_MIN_WORKERS,
         autoscale_interval: int = 1 * 30,
         max_batch_size: int = 4,
         batch_timeout_secs: int = 10,
-        gpu_type: str = "gpu-fast",
+        gpu_type: str = MUSE_GPU_TYPE,
         max_workers: int = 20,
         autoscale_down_limit: Optional[int] = None,
         autoscale_up_limit: Optional[int] = None,

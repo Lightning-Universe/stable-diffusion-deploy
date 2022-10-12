@@ -2,6 +2,8 @@ import os
 import uuid
 
 MUSE_LOAD_TESTING = os.environ.get("MUSE_LOAD_TESTING", False)
+MUSE_MIN_WORKERS = int(os.environ.get("MUSE_MIN_WORKERS", 1))
+MUSE_GPU_TYPE = int(os.environ.get("MUSE_GPU_TYPE", "gpu"))
 INFERENCE_REQUEST_TIMEOUT = os.environ.get("INFERENCE_REQUEST_TIMEOUT", 160)
 KEEP_ALIVE_TIMEOUT = os.environ.get("KEEP_ALIVE_TIMEOUT", 160)
 RATE_LIMIT_KEY = os.environ.get("RATE_LIMIT_KEY", str(uuid.uuid4().hex))

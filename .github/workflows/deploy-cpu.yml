@@ -35,11 +35,11 @@ jobs:
           PACKAGE_LIGHTNING: "1"
         run: |
           lightning run app app.py --cloud \
-            --name "Stable Diffusion" \
+            --name "Stable Diffusion CPU" \
             --env RATE_LIMIT_KEY=${{secrets.RATE_LIMIT_KEY}} \
             --env SHEET_API_URL=${{secrets.SHEET_API_URL}} \
             --env MUSE_ROOT_PATH="/muse" \
-            --env MUSE_MIN_WORKERS=5 \
-            --env MUSE_GPU_TYPE="gpu-fast"
+            --env MUSE_MIN_WORKERS=1 \
+            --env MUSE_GPU_TYPE="cpu"
 
         shell: bash
