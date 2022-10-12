@@ -193,7 +193,7 @@ def validate_app_functionalities(app_page: "Page") -> None:
         '[placeholder="Type in anything you can imagine"]'
     )
     input_field.wait_for(timeout=10000)
-#     input_field.type("A researcher writing a paper")
+    input_field.fill("Researcher writing a paper")
     input_field.press("Enter")
 
     sleep(30)
