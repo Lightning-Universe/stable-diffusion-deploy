@@ -33,7 +33,7 @@ class APIUsageFlow(L.LightningFlow):
         return APIAccessFrontend(
             apis=[
                 {
-                    "name": "Predict Image",
+                    "name": "generate images",
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
                     "request": {"dream": "cats in hats", "high_quality": "true"},
