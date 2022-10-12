@@ -1,4 +1,4 @@
-# noqa E501
+# flake8: noqa E501
 import os
 import time
 import uuid
@@ -285,7 +285,24 @@ window['_fs_namespace'] = 'FS';
     g._v="1.3.0";
 })(window,document,window['_fs_namespace'],'script','user');
 </script>""",
+                """
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KXQD8HK');</script>
+<!-- End Google Tag Manager -->
+""",
+                """
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KXQD8HK"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+""",
             ],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
     )
+
+# Google Analytics ID: 317494248
