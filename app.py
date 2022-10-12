@@ -33,7 +33,7 @@ class APIUsageFlow(L.LightningFlow):
         return APIAccessFrontend(
             apis=[
                 {
-                    "name": "Generate Image",
+                    "name": "generate images",
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
                     "request": {"dream": "cats in hats", "high_quality": "true"},
@@ -240,6 +240,23 @@ if __name__ == "__main__":
             image="https://storage.googleapis.com/grid-static/header.png",
             meta_tags=[
                 '<meta name="theme-color" content="#792EE5" />',
+                '<meta name="image" content="https://storage.googleapis.com/grid-static/header.png">'
+                '<meta itemprop="name" content="Use AI to inspire your art.">'
+                '<meta itemprop="description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta itemprop="image" content="https://storage.googleapis.com/grid-static/header.png">'
+                # <!-- Twitter -->
+                '<meta name="twitter:card" content="summary">'
+                '<meta name="twitter:title" content="Use AI to inspire your art.">'
+                '<meta name="twitter:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta name="twitter:site" content="https://lightning.ai/muse">'
+                '<meta name="twitter:domain" content="https://lightning.ai/muse">'
+                '<meta name="twitter:creator" content="lightningAI">'
+                '<meta name="twitter:image:src" content="https://storage.googleapis.com/grid-static/header.png">'
+                # <!-- Open Graph general (Facebook, Pinterest & Google+) -->
+                '<meta name="og:title" content="Use AI to inspire your art.">'
+                '<meta name="og:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta name="og:url" content="https://lightning.ai/muse">'
+                '<meta name="og:type" content="website">',
             ],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
