@@ -236,12 +236,14 @@ def test_launch_app_from_gallery():
             validate_app_functionalities(app_page)
 
 
-@pytest.mark.skipif(not os.getenv("TEST_APP_NAME", None), reason="requires TEST_APP_NAME env var")
-def test_clone_and_run_app_from_gallery():
-    app_name = os.getenv("TEST_APP_NAME", None)
-    if app_name is None:
-        raise ValueError("TEST_APP_NAME environment variable is not set")
+# NOTE: Disabled for now as it might end up burning too much credits
+# Keeping it here in case anyone wants to add them back
+# @pytest.mark.skipif(not os.getenv("TEST_APP_NAME", None), reason="requires TEST_APP_NAME env var")
+# def test_clone_and_run_app_from_gallery():
+#     app_name = os.getenv("TEST_APP_NAME", None)
+#     if app_name is None:
+#         raise ValueError("TEST_APP_NAME environment variable is not set")
 
-    with get_gallery_app_page(app_name) as gallery_page:
-        with clone_and_run_from_gallery_app_page(gallery_page) as (_, app_page, _):
-            validate_app_functionalities(app_page)
+#     with get_gallery_app_page(app_name) as gallery_page:
+#         with clone_and_run_from_gallery_app_page(gallery_page) as (_, app_page, _):
+#             validate_app_functionalities(app_page)
