@@ -118,14 +118,13 @@ class StableDiffusionServe(L.LightningWork):
                     width=width,
                     num_inference_steps=num_inference_steps,
                 )
+            nsfw_content = self._safety_checker(pil_results)
+            for i, nsfw in enumerate(nsfw_content):
+                if nsfw:
+                    pil_results[i] = Image.open("assets/nsfw-warning.png")
         else:
-            time.sleep(4)
+            time.sleep(3)
             pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
-
-        nsfw_content = self._safety_checker(pil_results)
-        for i, nsfw in enumerate(nsfw_content):
-            if nsfw:
-                pil_results[i] = Image.open("assets/nsfw-warning.png")
 
         results = []
         for image in pil_results:
