@@ -4,7 +4,7 @@ name: Trigger Deployment
 on: workflow_dispatch
 
 jobs:
-  deploy:
+  deploy-cpu:
     runs-on: ubuntu-20.04
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 35
