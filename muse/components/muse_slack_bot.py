@@ -59,7 +59,7 @@ class MuseSlackCommandBot(SlackCommandBot):
         client = slack.WebClient(token=bot_token)
         th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
         th.start()
-        msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. (This public version of the app may run slow. Follow this tutorial to run your own faster version of the app in your workspace https://youtu.be/KfQcXzWFR9I"  # noqa: E501
+        msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. (This public version of the app may run slow. Clone and run the app on your own Lightning AI account to enable the creation of your own Slackbot with customizable performance)"  # noqa: E501
         return msg, 200
 
     def save_new_workspace(self, team_id, bot_token):
