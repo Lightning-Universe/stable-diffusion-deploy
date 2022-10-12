@@ -173,12 +173,24 @@ def validate_app_functionalities(app_page: "Page") -> None:
     """
     app_page: The UI page of the app to be validated.
     """
+    def search_image(app_page):
+        image = app_page.frame_locator("iframe").locator("#imgResult")
+        image.wait_for(timeout=1000)
+
+        style = image.get_attribute("style")
+        split_style = style.split(";")
+
+        opacity = -1.0
+        for each_style in split_style:
+            if 'opacity' in each_style:
+                opacity = each_style.split(":")[-1]
+                break
+        assert float(opacity) == 1.0
 
     while True:
         try:
             app_page.reload()
             sleep(5)
-            # prompt_label = app_page.frame_locator("iframe").locator("MuiTypography-root MuiTypography-subtitle1 css-1118st", has_text=f"Use AI to inspire your art")
             prompt_label = app_page.frame_locator("iframe").locator("text=Your inspiration will appear here")
             prompt_label.wait_for(timeout=30 * 1000)
             break
@@ -189,6 +201,7 @@ def validate_app_functionalities(app_page: "Page") -> None:
             print(e)
             pass
 
+    # For Fast
     input_field = app_page.frame_locator("iframe").locator(
         '[placeholder="Type in anything you can imagine"]'
     )
@@ -197,21 +210,19 @@ def validate_app_functionalities(app_page: "Page") -> None:
     input_field.press("Enter")
 
     sleep(120)
-    image_container = app_page.frame_locator("iframe").locator(".MuiGrid-container")
-    image_container.wait_for(timeout=1000)
+    search_image(app_page)
 
-    image = app_page.frame_locator("iframe").locator("#imgResult")
-    image.wait_for(timeout=1000)
+    # For high quality
+    toggle_quality = app_page.frame_locator("iframe").locator(
+        ".MuiSwitch-input"
+    )
+    toggle_quality.wait_for(timeout=1000)
+    toggle_quality.click()
+    input_field.fill("Researcher reading a paper")
+    input_field.press("Enter")
 
-    style = image.get_attribute("style")
-    split_style = style.split(";")
-
-    opacity = -1.0
-    for each_style in split_style:
-        if 'opacity' in each_style:
-            opacity = each_style.split(":")[-1]
-            break
-    assert float(opacity) == 1.0
+    sleep(30)
+    search_image(app_page)
 
 
 @pytest.mark.skipif(not os.getenv("TEST_APP_NAME", None), reason="requires TEST_APP_NAME env var")
