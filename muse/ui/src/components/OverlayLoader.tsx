@@ -5,9 +5,9 @@ import { Typography } from './Typography';
 export const OverlayLoader = () => {
   return (
     <Dialog open={true}>
-      <DialogTitle>Setting up servers to handle your requests</DialogTitle>
+      <DialogTitle>Setting up servers to handle multiple requests</DialogTitle>
       <DialogContent>
-        <Typography colorI="primary">This allows Muse to generate images at scale</Typography>
+        <Typography colorI="primary">This allows Muse to generate many images at the same time</Typography>
         <ProgressBar maxTime={10 * 60} />
       </DialogContent>
     </Dialog>
