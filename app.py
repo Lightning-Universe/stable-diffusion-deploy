@@ -1,4 +1,3 @@
-# flake8: noqa E501
 import os
 import time
 import uuid
@@ -17,6 +16,7 @@ from muse import (
     MuseSlackCommandBot,
     SafetyCheckerEmbedding,
     StableDiffusionServe,
+    trackers,
 )
 
 
@@ -262,45 +262,10 @@ if __name__ == "__main__":
                 '<meta property="og:image:type" content="image/png" />',
                 '<meta property="og:image:height" content="1114" />'
                 '<meta property="og:image:width" content="1112" />',
-                """<script>
-window['_fs_host'] = 'fullstory.com';
-window['_fs_script'] = 'edge.fullstory.com/s/fs.js';
-window['_fs_org'] = 'o-1A6KRB-na1';
-window['_fs_namespace'] = 'FS';
-(function(m,n,e,t,l,o,g,y){
-    if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
-    g=m[e]=function(a,b,s){g.q?g.q.push([a,b,s]):g._api(a,b,s);};g.q=[];
-    o=n.createElement(t);o.async=1;o.crossOrigin='anonymous';o.src='https://'+_fs_script;
-    y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
-    g.identify=function(i,v,s){g(l,{uid:i},s);if(v)g(l,v,s)};g.setUserVars=function(v,s){g(l,v,s)};g.event=function(i,v,s){g('event',{n:i,p:v},s)};
-    g.anonymize=function(){g.identify(!!0)};
-    g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
-    g.log = function(a,b){g("log",[a,b])};
-    g.consent=function(a){g("consent",!arguments.length||a)};
-    g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
-    g.clearUserCookie=function(){};
-    g.setVars=function(n, p){g('setVars',[n,p]);};
-    g._w={};y='XMLHttpRequest';g._w[y]=m[y];y='fetch';g._w[y]=m[y];
-    if(m[y])m[y]=function(){return g._w[y].apply(this,arguments)};
-    g._v="1.3.0";
-})(window,document,window['_fs_namespace'],'script','user');
-</script>""",
-                """
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-KXQD8HK');</script>
-<!-- End Google Tag Manager -->
-""",
-                """
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KXQD8HK"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-""",
-            ],
+            ]
+            + trackers  # noqa
+            if os.getenv("ENABLE_TRACKERS")
+            else [],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
     )
