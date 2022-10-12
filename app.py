@@ -251,14 +251,14 @@ if __name__ == "__main__":
                 '<meta name="twitter:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
                 '<meta name="twitter:site" content="https://lightning.ai/muse">'
                 '<meta name="twitter:domain" content="https://lightning.ai/muse">'
-                '<meta name="twitter:creator" content="LightningAI">'
+                '<meta name="twitter:creator" content="@LightningAI">'
                 '<meta name="twitter:image:src" content="https://storage.googleapis.com/grid-static/header.png">'
                 # <!-- Open Graph general (Facebook, Pinterest & Google+) -->
                 '<meta name="og:title" content="Use AI to inspire your art.">'
                 '<meta name="og:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
                 '<meta name="og:url" content="https://lightning.ai/muse">'
                 '<meta property="og:image" content="https://storage.googleapis.com/grid-static/header.png" />',
-                '<meta property="og:image:type" content="image/jpeg" />',
+                '<meta property="og:image:type" content="image/png" />',
                 '<meta property="og:image:height" content="1114" />'
                 '<meta property="og:image:width" content="1112" />',
             ],
