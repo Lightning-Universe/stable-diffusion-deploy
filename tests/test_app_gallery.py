@@ -196,7 +196,7 @@ def validate_app_functionalities(app_page: "Page") -> None:
     input_field.fill("Researcher writing a paper")
     input_field.press("Enter")
 
-    sleep(30)
+    sleep(120)
     image_container = app_page.frame_locator("iframe").locator(".MuiGrid-container")
     image_container.wait_for(timeout=1000)
 
