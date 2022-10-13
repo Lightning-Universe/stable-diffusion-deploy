@@ -5,11 +5,11 @@ on:
   workflow_dispatch:
     inputs:
       min_workers:
-        description: "Minimum number of workers"
-        default: "5"
+        description: 'Minimum number of workers'
+        default: '5'
       gpu_type:
-        description: "GPU type for the servers"
-        default: "gpu-fast"
+        description: 'GPU type for the servers'
+        default: 'gpu-fast'
 
 jobs:
   deploy:
