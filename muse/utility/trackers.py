@@ -1,5 +1,6 @@
 # flake8: noqa E501
 # tracking scripts for GA and full story.
+# Google Analytics ID: 317494248
 trackers = [
     """<script>
 window['_fs_host'] = 'fullstory.com';

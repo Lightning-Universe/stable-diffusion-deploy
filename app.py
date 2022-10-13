@@ -268,5 +268,3 @@ if __name__ == "__main__":
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
     )
-
-# Google Analytics ID: 317494248
