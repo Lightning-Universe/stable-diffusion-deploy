@@ -11,9 +11,9 @@ import lightning as L
 import requests
 from fastapi import HTTPException
 from fastapi.requests import Request
+from lightning.app.storage import Drive
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
-from lightning.app.storage import Drive
 
 from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
 from muse.utility.data_io import Data, SysInfo, TimeoutException, random_prompt
