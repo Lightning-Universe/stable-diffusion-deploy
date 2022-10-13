@@ -5,6 +5,7 @@ from muse.components import (
     MuseSlackCommandBot,
     SafetyCheckerEmbedding,
     StableDiffusionServe,
+    trackers
 )
 
-__all__ = ["MuseSlackCommandBot", "StableDiffusionServe", "LoadBalancer", "Locust", "SafetyCheckerEmbedding"]
+__all__ = ["MuseSlackCommandBot", "StableDiffusionServe", "LoadBalancer", "Locust", "SafetyCheckerEmbedding", "trackers"]
