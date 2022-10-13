@@ -166,9 +166,9 @@ class MuseFlow(L.LightningFlow):
         for model_serve in self.model_servers:
             model_serve.run()
 
-        if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
-            # run the load balancer when all the model server is ready
-            self.load_balancer.run([serve.url for serve in self.model_servers])
+        if any(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
+            # run the load balancer when one of the model servers is ready
+            self.load_balancer.run([serve.url for serve in self.model_servers if serve.url])
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
