@@ -8,6 +8,7 @@ import tempfile
 import threading
 import typing
 
+import lightning as L
 import requests
 import slack
 import uvicorn
@@ -21,6 +22,7 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from ..CONST import RATE_LIMIT_KEY
 from ..utility.data_io import get_item, save_item
+from ..utility.requirements import file_to_list
 
 
 class MuseSlackCommandBot(SlackCommandBot):
@@ -30,7 +32,9 @@ class MuseSlackCommandBot(SlackCommandBot):
         self,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__(
+            cloud_build_config=L.BuildConfig(requirements=file_to_list("requirements/slackbot.txt")), **kwargs
+        )
         self.inference_url = None
         self.has_credentials = False
         self._slack_token: str = None
