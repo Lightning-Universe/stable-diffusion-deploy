@@ -17,6 +17,8 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
+from muse.CONST import ENABLE_TRACKERS
+from muse.utility.trackers import trackers
 
 
 class ReactUI(L.LightningFlow):
@@ -261,6 +263,7 @@ if __name__ == "__main__":
                 '<meta property="og:image:type" content="image/png" />',
                 '<meta property="og:image:height" content="1114" />'
                 '<meta property="og:image:width" content="1112" />',
+                *(trackers if ENABLE_TRACKERS else []),
             ],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
