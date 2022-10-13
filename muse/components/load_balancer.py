@@ -36,6 +36,11 @@ class LoadBalancer(L.LightningWork):
     r"""The LoadBalancer is a LightningWork component that collects the requests and sends it to the prediciton API
     asynchronously using RoundRobin scheduling. It also performs auto batching of the incoming requests.
 
+    The LoadBalancer exposes system endpoints with a basic HTTP authentication, in order to activate the authentication
+    you need to provide a system password from environment variable
+    `lightning run app app.py --env MUSE_SYSTEM_PASSWORD=PASSWORD`.
+    After enabling you will require to send username and password from the request header for the private endpoints.
+
     Args:
         max_batch_size: Number of requests processed at once.
         batch_timeout_secs: Number of seconds to wait before sending the requests to process.
@@ -255,5 +260,7 @@ class LoadBalancer(L.LightningWork):
         servers = self.servers
         headers = {
             "accept": "application/json",
+            "username": "lightning",
+            "password": MUSE_SYSTEM_PASSWORD,
         }
         requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)
