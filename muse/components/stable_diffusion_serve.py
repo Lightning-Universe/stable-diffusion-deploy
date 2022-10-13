@@ -101,12 +101,12 @@ class StableDiffusionServe(L.LightningWork):
             print("model set to None")
 
     @torch.inference_mode()
-    def predict(self, prompts: List[Data], entry_time: int):
+    def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
             raise TimeoutException()
 
         height = width = IMAGE_SIZE
-        num_inference_steps = 50 if prompts[0].high_quality else 25
+        num_inference_steps = 50 if dreams[0].high_quality else 25
 
         prompts = [dream.prompt for dream in dreams]
         if torch.cuda.is_available():
