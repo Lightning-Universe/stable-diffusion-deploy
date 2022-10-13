@@ -89,7 +89,7 @@ class LimitBacklogException(HTTPException):
 
 
 class Data(BaseModel):
-    dream: str
+    prompt: str
     high_quality: bool = False
 
 

@@ -7,7 +7,7 @@ from locust import HttpUser, task
 class MuseUser(HttpUser):
     @task
     def predict(self):
-        data = {"dream": "A purple cloud with Lightning", "high_quality": False}
+        data = {"prompt": "A purple cloud with Lightning", "high_quality": False}
         URL = f"{self.host}/api/predict"
         print(self.host)
         data = json.dumps(data)
