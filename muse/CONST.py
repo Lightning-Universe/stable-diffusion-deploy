@@ -1,6 +1,7 @@
 import os
 import uuid
 
+ENABLE_TRACKERS = os.environ.get("MUSE_ENABLE_TRACKERS", False)
 MUSE_LOAD_TESTING = os.environ.get("MUSE_LOAD_TESTING", False)
 MUSE_MIN_WORKERS = int(os.environ.get("MUSE_MIN_WORKERS", 1))
 MUSE_GPU_TYPE = os.environ.get("MUSE_GPU_TYPE", "gpu")

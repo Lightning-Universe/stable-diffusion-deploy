@@ -17,7 +17,8 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
-from muse.CONST import MUSE_GPU_TYPE, MUSE_MIN_WORKERS
+from muse.CONST import MUSE_GPU_TYPE, MUSE_MIN_WORKERS, ENABLE_TRACKERS
+from muse.utility.trackers import trackers
 
 
 class ReactUI(L.LightningFlow):
@@ -165,9 +166,9 @@ class MuseFlow(L.LightningFlow):
         for model_serve in self.model_servers:
             model_serve.run()
 
-        if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
-            # run the load balancer when all the model server is ready
-            self.load_balancer.run([serve.url for serve in self.model_servers])
+        if any(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
+            # run the load balancer when one of the model servers is ready
+            self.load_balancer.run([serve.url for serve in self.model_servers if serve.url])
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
@@ -262,6 +263,7 @@ if __name__ == "__main__":
                 '<meta property="og:image:type" content="image/png" />',
                 '<meta property="og:image:height" content="1114" />'
                 '<meta property="og:image:width" content="1112" />',
+                *(trackers if ENABLE_TRACKERS else []),
             ],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
