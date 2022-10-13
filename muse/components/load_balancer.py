@@ -135,6 +135,7 @@ class LoadBalancer(L.LightningWork):
                 traces_sample_rate=1.0,
             )
 
+        app.global_request_count = 0
         app.num_current_requests = 0
         app.last_process_time = 0
         app.SEND_TASK = None
@@ -143,6 +144,7 @@ class LoadBalancer(L.LightningWork):
         async def current_request_counter(request: Request, call_next):
             if not request.scope["path"] == "/api/predict":
                 return await call_next(request)
+            app.global_request_count += 1
             app.num_current_requests += 1
             start_time = time.time()
             response = await call_next(request)
@@ -188,6 +190,7 @@ class LoadBalancer(L.LightningWork):
                 servers=self.servers,
                 num_requests=app.num_current_requests,
                 process_time=app.last_process_time,
+                global_request_count=app.global_request_count,
             )
 
         @app.get("/num-requests")
