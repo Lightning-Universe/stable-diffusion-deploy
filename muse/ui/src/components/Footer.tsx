@@ -4,14 +4,10 @@ import { Links } from './Links';
 import { Typography } from './Typography';
 
 export const Footer = ({ apiLink }: { apiLink?: string }) => (
-  <Stack
-    direction={{ xs: 'column', md: 'row' }}
-    alignItems={'center'}
-    justifyContent={'center'}
-    rowGap={{ xs: 2, md: 0 }}>
+  <Stack direction={{ xs: 'column', md: 'row' }} alignItems={'center'} justifyContent={'center'}>
     <Stack direction={'row'} alignItems={'center'} justifyContent={'center'}>
       <Typography fontSize={'14px'} fontFamily={'Roboto'}>
-        <Link href={Links.license} target={'_blank'}>
+        <Link href={Links.usage} target={'_blank'}>
           Usage
         </Link>
       </Typography>

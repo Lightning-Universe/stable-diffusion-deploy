@@ -31,7 +31,7 @@ async def auth_function(scope) -> Tuple[str, str]:
 
 
 RULES: List[Rule] = [
-    Rule(second=1, group="default"),  # global unique users
+    Rule(second=10, group="default"),  # global unique users
     Rule(minute=10, group="localhost"),  # 127.0.0.1
     Rule(minute=400, group="internal"),  # Slack Bot
     Rule(group="load_test"),  # No limit when load testing

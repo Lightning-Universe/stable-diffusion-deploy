@@ -1,7 +1,7 @@
 import os
 import time
 import uuid
-from typing import List
+from typing import List, Optional
 
 import lightning as L
 import requests
@@ -17,6 +17,8 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
+from muse.CONST import ENABLE_TRACKERS
+from muse.utility.trackers import trackers
 
 
 class ReactUI(L.LightningFlow):
@@ -33,11 +35,11 @@ class APIUsageFlow(L.LightningFlow):
         return APIAccessFrontend(
             apis=[
                 {
-                    "name": "Predict Method",
+                    "name": "Generate Image",
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
                     "request": {"dream": "cats in hats", "high_quality": "true"},
-                    "response": "Base64 String",
+                    "response": {"image": "data:image/png;base64,<image-actual-content>"},
                 }
             ]
         )
@@ -60,15 +62,15 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers=2,
-        autoscale_interval=1 * 30,
-        max_batch_size=12,
-        batch_timeout_secs=10,
-        gpu_type="gpu-fast",
-        max_workers: int = 10,
-        autoscale_down_limit: int = None,
-        autoscale_up_limit: int = None,
-        load_testing: bool = False,
+        initial_num_workers: int = 5,
+        autoscale_interval: int = 1 * 30,
+        max_batch_size: int = 4,
+        batch_timeout_secs: int = 10,
+        gpu_type: str = "gpu-fast",
+        max_workers: int = 20,
+        autoscale_down_limit: Optional[int] = None,
+        autoscale_up_limit: Optional[int] = None,
+        load_testing: Optional[bool] = False,
     ):
         super().__init__()
         self.hide_footer_shadow = True
@@ -97,7 +99,8 @@ class MuseFlow(L.LightningFlow):
         for i in range(initial_num_workers):
             work = StableDiffusionServe(
                 safety_embeddings_drive=self.safety_embeddings_drive,
-                cloud_compute=L.CloudCompute(gpu_type),
+                safety_embeddings_filename=self.safety_checker_embedding_work.safety_embeddings_filename,
+                cloud_compute=L.CloudCompute(gpu_type, disk_size=30),
                 cache_calls=True,
                 parallel=True,
             )
@@ -153,19 +156,19 @@ class MuseFlow(L.LightningFlow):
         if not self.slack_bot.is_running:
             self.slack_bot.run("")
 
-        if False:
-            if not self.safety_embeddings_ready:
-                self.safety_checker_embedding_work.run()
+        if not self.safety_embeddings_ready:
+            self.safety_checker_embedding_work.run()
 
-            if not self.safety_embeddings_ready and self.safety_checker_embedding_work.has_succeeded:
-                self.safety_embeddings_ready = True
-                self.safety_checker_embedding_work.stop()
+        if not self.safety_embeddings_ready and self.safety_checker_embedding_work.has_succeeded:
+            self.safety_embeddings_ready = True
+            self.safety_checker_embedding_work.stop()
 
         for model_serve in self.model_servers:
             model_serve.run()
-        if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
-            # run the load balancer when all the model server is ready
-            self.load_balancer.run([serve.url for serve in self.model_servers])
+
+        if any(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
+            # run the load balancer when one of the model servers is ready
+            self.load_balancer.run([serve.url for serve in self.model_servers if serve.url])
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
@@ -209,7 +212,9 @@ class MuseFlow(L.LightningFlow):
             idx = self._num_workers
             print(f"Upscale to {self._num_workers + 1}")
             work = StableDiffusionServe(
-                cloud_compute=L.CloudCompute(self.gpu_type),
+                safety_embeddings_drive=self.safety_embeddings_drive,
+                safety_embeddings_filename=self.safety_checker_embedding_work.safety_embeddings_filename,
+                cloud_compute=L.CloudCompute(self.gpu_type, disk_size=30),
                 cache_calls=True,
                 parallel=True,
             )
@@ -232,10 +237,34 @@ if __name__ == "__main__":
     app = L.LightningApp(
         MuseFlow(),
         info=AppInfo(
-            title="Muse app by Lightning AI",
+            title="Use AI to inspire your art.",
+            favicon="https://storage.googleapis.com/grid-static/muse/favicon.ico",
+            description="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.",
+            image="https://storage.googleapis.com/grid-static/header.png",
             meta_tags=[
                 '<meta name="theme-color" content="#792EE5" />',
+                '<meta name="image" content="https://storage.googleapis.com/grid-static/header.png">'
+                '<meta itemprop="name" content="Use AI to inspire your art.">'
+                '<meta itemprop="description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta itemprop="image" content="https://storage.googleapis.com/grid-static/header.png">'
+                # <!-- Twitter -->
+                '<meta name="twitter:card" content="summary">'
+                '<meta name="twitter:title" content="Use AI to inspire your art.">'
+                '<meta name="twitter:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta name="twitter:site" content="https://lightning.ai/muse">'
+                '<meta name="twitter:domain" content="https://lightning.ai/muse">'
+                '<meta name="twitter:creator" content="@LightningAI">'
+                '<meta name="twitter:image:src" content="https://storage.googleapis.com/grid-static/header.png">'
+                # <!-- Open Graph general (Facebook, Pinterest & Google+) -->
+                '<meta name="og:title" content="Use AI to inspire your art.">'
+                '<meta name="og:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta name="og:url" content="https://lightning.ai/muse">'
+                '<meta property="og:image" content="https://storage.googleapis.com/grid-static/header.png" />',
+                '<meta property="og:image:type" content="image/png" />',
+                '<meta property="og:image:height" content="1114" />'
+                '<meta property="og:image:width" content="1112" />',
+                *(trackers if ENABLE_TRACKERS else []),
             ],
         ),
-        root_path=os.getenv("ROOT_PATH", ""),
+        root_path=os.getenv("MUSE_ROOT_PATH", ""),
     )

@@ -11,6 +11,8 @@ import lightning as L
 import requests
 from fastapi import HTTPException
 from fastapi.requests import Request
+from ratelimit import RateLimitMiddleware
+from ratelimit.backends.simple import MemoryBackend
 from lightning.app.storage import Drive
 
 from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
@@ -215,7 +217,7 @@ class LoadBalancer(L.LightningWork):
 
         @app.post("/api/surprise-me")
         async def surprise_me():
-            data = Data(dream=random_prompt())
+            data = Data(prompt=random_prompt())
             return await self.process_request(data)
 
         @app.post("/api/predict")
@@ -223,14 +225,14 @@ class LoadBalancer(L.LightningWork):
             with Session(engine) as session:
                 start_time = time.perf_counter()
 
-                if data.dream.lower() == "surprise me":
-                    data.dream = random_prompt()
+                if data.prompt.lower() == "surprise me":
+                    data.prompt = random_prompt()
                 result = await self.process_request(data)
 
                 process_time = time.perf_counter() - start_time
                 app.request_count += 1
                 request_monitor = RequestMonitor(
-                    prompt=data.dream,
+                    prompt=data.prompt,
                     request_count=app.request_count,
                     model_server_process_time=-1,  # TODO: fetch worker server time
                     load_balancer_process_time=process_time,

@@ -35,8 +35,8 @@ This Lightning App, powered by Stable Diffusion, generates images via text promp
 conda create --name muse_app python=3.8
 conda activate muse_app
 
-git clone https://github.com/Lightning-AI/LAI-Stable-Diffusion-App.git
-cd LAI-Stable-Diffusion-App
+git clone https://github.com/Lightning-AI/stable-diffusion-deploy.git
+cd stable-diffusion-deploy
 pip install .
 
 ## To run the app locally

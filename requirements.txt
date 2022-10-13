@@ -1,7 +1,5 @@
 slack_command_bot@ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Component@main
 lightning_api_access@ git+https://github.com/Lightning-AI/LAI-API-Access-UI-Component@main
-diffusers==0.3.0
-transformers==4.21.3
 ftfy==6.1.1
 scipy
 slack_bolt==1.14.3
@@ -10,8 +8,9 @@ slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
 asgiref==3.5.2
-lightning@ git+https://github.com/pritamsoni-hsr/lightning@pritam/add-path-prefix
+lightning
 asgi-ratelimit==0.9.0
 sentry-sdk[fastapi]
 starlette-exporter==0.14.0
 sqlmodel==0.0.8
+Pillow==9.2.0

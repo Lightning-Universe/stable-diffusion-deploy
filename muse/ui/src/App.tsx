@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { DownloadImageButton } from 'components/DownloadImageButton';
 import { Switch } from 'components/Switch';
-import { Button, SnackbarProvider, Stack } from 'lightning-ui/src/design-system/components';
+import { Button, SnackbarProvider, Stack, useSnackbar } from 'lightning-ui/src/design-system/components';
 import { theme } from 'lightning-ui/src/design-system/theme';
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -18,7 +18,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { ReactComponent as FlashesIcon } from './assets/Flashes.svg';
 import MetaImage from './assets/header.png';
 import LogoIcon from './assets/Logo.svg';
-import { AddYourSlackCredentials } from './components/AddYourSlackCredentials';
 import { BuildYourAppBanner } from './components/BuildYourAppBanner';
 import { Footer } from './components/Footer';
 import { OverlayLoader } from './components/OverlayLoader';
@@ -32,31 +31,32 @@ const queryClient = new QueryClient();
 
 type DreamProps = {
   dream: string;
+  loading: boolean;
   image: string | null;
   maxTime?: number;
 };
 
-function Dream({ dream, image, maxTime }: DreamProps) {
-  if (dream && !image) return <ProgressBar maxTime={maxTime} title={'Finding inspiration...'} />;
+function Dream({ loading, dream, image, maxTime }: DreamProps) {
+  if (image) return null;
 
-  if (!image)
-    return (
-      <Typography
-        fontFamily={'Roboto'}
-        textAlign={'center'}
-        sx={{
-          textShadow: '0px 0px 6px rgba(255, 255, 255, 0.75)',
-        }}>
-        Your inspiration will appear here
-      </Typography>
-    );
+  if (dream && loading) return <ProgressBar maxTime={maxTime} title={'Finding inspiration...'} />;
 
-  return null;
+  return (
+    <Typography
+      fontFamily={'Roboto'}
+      textAlign={'center'}
+      sx={{
+        textShadow: '0px 0px 6px rgba(255, 255, 255, 0.75)',
+      }}>
+      Your inspiration will appear here
+    </Typography>
+  );
 }
 
 function DreamSearch() {
   const { lightningState } = useLightningState();
 
+  const { enqueueSnackbar } = useSnackbar();
   const [query, setQuery] = React.useState<string>('Woman painting a large red egg in a dali landscape');
   const [loading, setLoading] = useState(false);
   const [imgResult, setImgResult] = React.useState<string | null>(null);
@@ -73,7 +73,12 @@ function DreamSearch() {
       setLoading(true);
       try {
         const result = await postDream(query, highQuality, lightningState.vars.dream_url);
-        setImgResult(result);
+        setImgResult(result.image);
+      } catch {
+        enqueueSnackbar({
+          title: 'Failed to query please try again',
+          severity: 'error',
+        });
       } finally {
         setLoading(false);
       }
@@ -82,7 +87,7 @@ function DreamSearch() {
 
   return (
     <div>
-      {!lightningState?.vars.dream_url && <OverlayLoader />}
+      {!lightningState?.vars?.dream_url && <OverlayLoader />}
 
       <Box sx={{ position: 'sticky', left: 0, right: 0, top: 0, zIndex: 10 }}>
         <BuildYourAppBanner />
@@ -98,18 +103,30 @@ function DreamSearch() {
         </Grid>
 
         {/* image generation */}
-        <Grid item xs={12} md={'auto'} position={'relative'}>
-          <DownloadImageButton imgResult={imgResult} />
+        <Grid item xs={12} md={'auto'} position={'relative'} maxWidth={'100% !important'}>
+          <DownloadImageButton imgResult={imgResult} query={query} />
           <Box
             sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%' }}>
-            <Dream dream={requestedDream} image={imgResult} maxTime={highQuality ? 120 : 60} />
+            <Dream loading={loading} dream={requestedDream} image={imgResult} maxTime={highQuality ? 120 : 60} />
           </Box>
-          <Box sx={{ '>img': { md: { width: '100%', height: 'calc(100vh - 40px - 52px )' } } }}>
+          <Box
+            sx={{
+              '>img': {
+                xs: { width: '100% !important' },
+                md: { width: 'auto !important', height: 'calc(100vh - 40px - 52px )' },
+              },
+            }}>
             <img
+              id={'imgResult'}
               src={imgResult ?? placeHolderImage}
               loading="lazy"
               alt={'bg'}
-              style={{ width: '100%', opacity: imgResult ? 1 : 0.25, filter: imgResult ? 'none' : 'saturate(0)' }}
+              style={{
+                maxWidth: '100%',
+                aspectRatio: '1 / 1',
+                opacity: imgResult ? 1 : 0.25,
+                filter: imgResult ? 'none' : 'saturate(0)',
+              }}
             />
           </Box>
         </Grid>
@@ -145,7 +162,7 @@ function DreamSearch() {
                     <Switch checked={!highQuality} onChange={() => setHighQuality(x => !x)} disabled={loading} />
                   </Box>
                   <Typography colorI={'primary'} fontFamily={'Roboto'} variant={'body2'}>
-                    {highQuality ? 'More creative (slower)' : 'Fast'}
+                    {highQuality ? 'High quality (slower)' : 'Fast'}
                   </Typography>
                 </Row>
 
@@ -160,7 +177,6 @@ function DreamSearch() {
                 </Box>
               </Row>
               <Box height={8} />
-              {lightningState && <AddYourSlackCredentials {...lightningState} />}
             </Container>
           </Box>
         </Grid>
@@ -232,18 +248,14 @@ const FooterWithLicense = (lightningState: LightingState) => {
           'bottom': 0,
           '>div': {
             paddingBottom: { md: 1.5, xs: 8 },
-            paddingTop: { md: 2, xs: 6 },
+            paddingTop: { md: 2, xs: 4 },
             boxShadow: {
               xs: 'none',
               md: '0px -3px 1px -2px rgb(45 64 86 / 20%);',
             },
           },
         }}>
-        <Grid container>
-          <Grid item xs={12} sm={12} md={5} lg={4} xl={5} paddingX={2}>
-            <Footer apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
-          </Grid>
-        </Grid>
+        <Footer apiLink={(lightningState?.flows?.api_component?.vars?._layout as any)?.target} />
       </Box>
       <Box
         position={{ xs: 'fixed' }}
