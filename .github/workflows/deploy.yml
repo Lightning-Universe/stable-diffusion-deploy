@@ -48,6 +48,6 @@ jobs:
             --env SHEET_API_URL=${{secrets.SHEET_API_URL}} \
             --env MUSE_ROOT_PATH="/muse" \
             --env MUSE_MIN_WORKERS=${{ github.event.inputs.min_workers }} \
-            --env MUSE_GPU_TYPE=${{ github.event.inputs.gpu_type }}
-
+            --env MUSE_GPU_TYPE=${{ github.event.inputs.gpu_type }} \
+            --env MUSE_ENABLE_TRACKERS=1
         shell: bash
