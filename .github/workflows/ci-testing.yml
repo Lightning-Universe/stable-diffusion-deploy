@@ -67,7 +67,8 @@ jobs:
           SLACK_CLIENT_ID: ${{secrets.SLACK_CLIENT_ID}}
           CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
         run: |
-          coverage run --source muse -m py.test muse tests -v
+          coverage run --source muse -m py.test muse tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+
       - name: Statistics
         if: success()
         run: |
