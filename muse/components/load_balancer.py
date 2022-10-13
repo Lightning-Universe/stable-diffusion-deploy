@@ -225,7 +225,7 @@ class LoadBalancer(L.LightningWork):
             return app.num_current_requests
 
         @app.put("/system/update-servers")
-        async def update_servers(servers: List[str]):
+        async def update_servers(servers: List[str], authenticated: bool = Depends(authenticate_private_endpoint)):
             self.servers = servers
             self._ITER = cycle(self.servers)
 
