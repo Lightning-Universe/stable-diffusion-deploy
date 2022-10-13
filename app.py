@@ -17,7 +17,7 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
-from muse.CONST import MUSE_GPU_TYPE, MUSE_MIN_WORKERS, ENABLE_TRACKERS
+from muse.CONST import ENABLE_TRACKERS, MUSE_GPU_TYPE, MUSE_MIN_WORKERS
 from muse.utility.trackers import trackers
 
 
