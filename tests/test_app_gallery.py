@@ -52,18 +52,15 @@ def get_gallery_app_page(app_name) -> Generator:
             [Config.id, Config.key, token],
         )
 
-        retry_count = 0
-        MAX_RETRY_COUNT = 5
-        while True:
+        for retry_count in range(MAX_RETRY_COUNT):
             try:
                 gallery_page.goto(f"{Config.url}/apps")
-            except playwright._impl._api_types.TimeoutError as e:
-                if retry_count >= MAX_RETRY_COUNT:
-                    raise e
-                retry_count += 1
-                continue
-            else:
-                break
+            except playwright._impl._api_types.TimeoutError as ex:
+                try_ex = ex
+            try_ex = None
+            break
+        if try_ex:
+            raise try_ex
 
         # Find the app in the gallery
         gallery_page.locator(f"text='{app_name}'").first.click()
