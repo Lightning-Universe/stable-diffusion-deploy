@@ -51,7 +51,17 @@ def get_gallery_app_page(app_name) -> Generator:
         """,
             [Config.id, Config.key, token],
         )
-        gallery_page.goto(f"{Config.url}/apps")
+
+        for retry_count in range(5):
+            try:
+                gallery_page.goto(f"{Config.url}/apps")
+            except playwright._impl._api_types.TimeoutError as ex:
+                try_ex = ex
+            else:
+                try_ex = None
+                break
+        if try_ex:
+            raise try_ex
 
         # Find the app in the gallery
         gallery_page.locator(f"text='{app_name}'").first.click()
