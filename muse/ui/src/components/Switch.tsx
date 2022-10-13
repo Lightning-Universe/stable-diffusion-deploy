@@ -4,6 +4,9 @@ import MuiSwitch from '@mui/material/Switch';
 const SIZE = 16;
 
 export const Switch = styled(MuiSwitch)(({ theme, disabled }) => ({
+  [theme.breakpoints.down('sm')]: {
+    transform: 'scale(1.2)',
+  },
   'opacity': disabled ? 0.5 : 1,
   'width': SIZE * 2 + 4,
   'height': SIZE + 4,
