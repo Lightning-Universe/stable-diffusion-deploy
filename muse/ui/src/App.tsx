@@ -139,6 +139,7 @@ function DreamSearch() {
             <Container maxWidth={'sm'} disableGutters>
               <OutlinedInput
                 multiline
+                className={'fs-unmask'}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={'Type in anything you can imagine'}
