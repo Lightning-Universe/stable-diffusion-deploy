@@ -3,6 +3,7 @@
 # Google Analytics ID: 317494248
 trackers = [
     """<script>
+window['_fs_run_in_iframe'] = true;
 window['_fs_host'] = 'fullstory.com';
 window['_fs_script'] = 'edge.fullstory.com/s/fs.js';
 window['_fs_org'] = 'o-1A6KRB-na1';

@@ -12,6 +12,7 @@ if (/^https:\/\/lightning.ai/.test(parentUrl)) {
   // If we are deploying the app under https://lightning.ai/muse, enable FullStory the second time within the iframe
   FullStory.init({
     orgId: 'o-1A6KRB-na1',
+    recordCrossDomainIFrames: true,
   });
 }
 
