@@ -6,7 +6,7 @@ import App from './App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 
-const parentUrl = (window.location != window.parent.location) ? document.referrer : document.location.href;
+const parentUrl = window.location != window.parent.location ? document.referrer : document.location.href;
 
 if (/^https:\/\/lightning.ai/.test(parentUrl)) {
   // If we are deploying the app under https://lightning.ai/muse, enable FullStory the second time within the iframe
