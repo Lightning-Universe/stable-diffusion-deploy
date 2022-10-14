@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.d1c23a77.css",
-    "main.js": "/static/js/main.22cf50b4.js",
+    "main.js": "/static/js/main.ab469a09.js",
     "static/js/787.8c33e357.chunk.js": "/static/js/787.8c33e357.chunk.js",
     "static/media/header.png": "/static/media/header.1b3e67ecc5706f94a19d.png",
     "static/media/UCity-Regular.otf": "/static/media/UCity-Regular.e28f5006c1976d08baaa.otf",
@@ -12,11 +12,11 @@
     "index.html": "/index.html",
     "static/media/Flashes.svg": "/static/media/Flashes.b681a57ea3fef62885ceced1b6630438.svg",
     "main.d1c23a77.css.map": "/static/css/main.d1c23a77.css.map",
-    "main.22cf50b4.js.map": "/static/js/main.22cf50b4.js.map",
+    "main.ab469a09.js.map": "/static/js/main.ab469a09.js.map",
     "787.8c33e357.chunk.js.map": "/static/js/787.8c33e357.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.d1c23a77.css",
-    "static/js/main.22cf50b4.js"
+    "static/js/main.ab469a09.js"
   ]
 }
