@@ -144,7 +144,7 @@ You can also check out this video tutorial:
 ### How to use the Muse slack bot
 
 **Step 1:**
-Add *Muse* slack bot to your workspace.
+Add/Install the *Muse* slack bot to your workspace.
 
 **Step 2:**
 In your workspace, invite the *Muse* slack bot to the channel by tagging it `@Muse` in a message.
