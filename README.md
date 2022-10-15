@@ -147,7 +147,7 @@ You can also check out this video tutorial:
 Add *Muse* slack bot to your workspace.
 
 **Step 2:**
-Invite the *Muse* slack bot to the channel by tagging it `@Muse`.
+In your workspace, invite the *Muse* slack bot to the channel by tagging it `@Muse` in a message.
 
 **Step 3:**
 Now enjoy muse app `/muse Woman painting a large red egg in a dali landscape`.
