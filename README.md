@@ -27,7 +27,7 @@
 ______________________________________________________________________
 
 # Muse
-Opensource stable-diffusion production server to show how to deploy diffusion models in a real production environment with: load-balancing, gpu-inference, performance-testing, micro-services orchestration and more.
+Open source, stable-diffusion production server to show how to deploy diffusion models in a real production environment with: load-balancing, gpu-inference, performance-testing, micro-services orchestration and more. All handled easily with the [Lightning Apps framework](https://lightning.ai/lightning-docs/).
 
 [The app is live here](https://lightning.ai/muse).
 
@@ -92,7 +92,7 @@ Here's a small snippet showing our [model server](https://github.com/Lightning-A
 To run this app locally, follow these steps:
 
 ```bash
-conda create --name muse_app python=3.8
+conda create --name muse_app python=3.9 --yes
 conda activate muse_app
 
 git clone https://github.com/Lightning-AI/stable-diffusion-deploy.git
