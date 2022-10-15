@@ -109,7 +109,9 @@ python -m lightning run app app.py
 python -m lightning run app app.py --cloud
 ```
 
-If you see `Too many open files` error while running the app, please increase your ulimit by using the following command
+If you see the following error while running the app
+```console
+OSError: [Errno 24] Too many open files
 
 ```shell
 ulimit -Sn 4096
