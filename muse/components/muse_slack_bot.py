@@ -188,7 +188,7 @@ def post_dream(inference_url: str, client: "slack.WebClient", data: dict):
         "Content-Type": "application/json",
     }
     payload = {
-        "dream": prompt,  # represents text of 'Enter the text prompt' Textbox component
+        "prompt": prompt,  # represents text of 'Enter the text prompt' Textbox component
         "high_quality": True,
     }
     payload = json.dumps(payload)

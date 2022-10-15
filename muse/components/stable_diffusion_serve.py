@@ -108,7 +108,7 @@ class StableDiffusionServe(L.LightningWork):
         height = width = IMAGE_SIZE
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
-        prompts = [dream.dream for dream in dreams]
+        prompts = [dream.prompt for dream in dreams]
         if torch.cuda.is_available():
             with autocast("cuda"):
                 torch.cuda.empty_cache()

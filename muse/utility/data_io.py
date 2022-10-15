@@ -89,7 +89,7 @@ class LimitBacklogException(HTTPException):
 
 
 class Data(BaseModel):
-    dream: str
+    prompt: str
     high_quality: bool = False
 
 
@@ -102,6 +102,7 @@ class SysInfo(BaseModel):
     servers: List[str]
     num_requests: int
     process_time: int
+    global_request_count: int
 
 
 def random_prompt() -> str:
