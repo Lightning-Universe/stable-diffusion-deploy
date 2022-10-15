@@ -22,7 +22,7 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from ..CONST import RATE_LIMIT_KEY
 from ..utility.data_io import get_item, save_item
-from ..utility.requirements import file_to_list
+from ..utility.dependencies import load_requirements
 
 
 class MuseSlackCommandBot(SlackCommandBot):
@@ -33,7 +33,7 @@ class MuseSlackCommandBot(SlackCommandBot):
         **kwargs,
     ):
         super().__init__(
-            cloud_build_config=L.BuildConfig(requirements=file_to_list("requirements/slackbot.txt")), **kwargs
+            cloud_build_config=L.BuildConfig(requirements=load_requirements("requirements/slackbot.txt")), **kwargs
         )
         self.inference_url = None
         self.has_credentials = False

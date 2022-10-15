@@ -19,7 +19,7 @@ from torch import autocast
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
 from muse.models import StableDiffusionModel
 from muse.utility.data_io import Data, DataBatch, TimeoutException
-from muse.utility.requirements import file_to_list
+from muse.utility.dependencies import load_requirements
 
 
 def cos_sim(x, y):
@@ -53,7 +53,7 @@ class DiffusionBuildConfig(L.BuildConfig):
             "pip install -r stable-diffusion/requirements.txt",
             "pip install -e stable-diffusion",
             "pip install git+https://github.com/openai/CLIP.git",
-        ] + file_to_list("requirements/modelserver.txt")
+        ] + load_requirements("requirements/modelserver.txt")
 
 
 class StableDiffusionServe(L.LightningWork):

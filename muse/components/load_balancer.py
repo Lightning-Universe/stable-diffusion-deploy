@@ -18,12 +18,12 @@ from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API
 from muse.utility.data_io import Data, SysInfo, TimeoutException, random_prompt
 from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
-from muse.utility.requirements import file_to_list
+from muse.utility.dependencies import load_requirements
 
 
 @dataclass
 class FastAPIBuildConfig(L.BuildConfig):
-    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"] + file_to_list("requirements/loadbalancer.txt")
+    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"] + load_requirements("requirements/loadbalancer.txt")
 
 
 class LoadBalancer(L.LightningWork):
