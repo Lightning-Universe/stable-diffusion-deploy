@@ -101,7 +101,6 @@ cd stable-diffusion-deploy
 ## [Install PyTorch](https://pytorch.org) that suits your system configuration (CUDA version preferable)
 pip install torch --extra-index-url https://download.pytorch.org/whl/cu116
 bash dev_install.sh
-pip install .
 
 ## To run the app locally
 python -m lightning run app app.py
