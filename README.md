@@ -8,12 +8,13 @@
 
 <div align="center">
 
-<p align="center" style="color:grey">Powered by <a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion</a></p>
+<p align="center" style="color:grey"><a href="https://lightning.ai/muse">Muse is live here</a></p>
 
 <p align="center">
-  <a href="#getting-started">Getting Started</a> •
+  <a href="#run-your-own">Run your own</a> •
   <a href="https://www.lightning.ai/">Lightning AI</a> •
-  <a href="https://lightning.ai/apps">Lightning Apps Gallery</a>
+  <a href="https://www.lightning.ai/muse">Use Muse Live</a> •
+  <a href="https://lightning.ai/pages/community/tutorial/deploy-diffusion-models/">Full Tutorial</a>
 </p>
 
 [![ReadTheDocs](https://readthedocs.org/projects/pytorch-lightning/badge/?version=stable)](https://lightning.ai/lightning-docs/)
@@ -26,13 +27,72 @@
 ______________________________________________________________________
 
 # Muse
+Open source, stable-diffusion production server to show how to deploy diffusion models in a real production environment with: load-balancing, gpu-inference, performance-testing, micro-services orchestration and more. All handled easily with the [Lightning Apps framework](https://lightning.ai/lightning-docs/).
 
-This Lightning App, powered by Stable Diffusion, generates images via text prompts.
+[The app is live here](https://lightning.ai/muse).
 
-## Getting started
+[Full tutorial on how to build this app](https://lightning.ai/pages/community/tutorial/deploy-diffusion-models/).
+
+<img width="1246" alt="image" src="https://user-images.githubusercontent.com/3640001/195984024-788255e7-d01b-4522-9655-2a3ba56e80aa.png">
+
+
+## Model
+Muse uses the opensource Stable Diffusion model made available by [stability AI](https://stability.ai/blog/stable-diffusion-public-release). 
+We apply a few fancy tricks to make the inference super fast.
+
+Here's a small snippet showing our [model server](https://github.com/Lightning-AI/stable-diffusion-deploy/blob/main/muse/components/stable_diffusion_serve.py#L103-L137)
+
+```python
+    @torch.inference_mode()
+    def predict(self, dreams: List[Data], entry_time: int):
+        # handle timeout
+        if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
+            raise TimeoutException()
+        
+        # sets up the inference settings
+        height = width = IMAGE_SIZE
+        num_inference_steps = 50 if dreams[0].high_quality else 25
+
+        prompts = [dream.prompt for dream in dreams]
+        
+        # GPU inference
+        if torch.cuda.is_available():
+            with autocast("cuda"):
+                torch.cuda.empty_cache()
+                pil_results = self._model(
+                    prompts,
+                    height=height,
+                    width=width,
+                    num_inference_steps=num_inference_steps,
+                )
+            # apply filter
+            nsfw_content = self._safety_checker(pil_results)
+            for i, nsfw in enumerate(nsfw_content):
+                if nsfw:
+                    pil_results[i] = Image.open("assets/nsfw-warning.png")
+        else:
+            time.sleep(3)
+            pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
+
+        # return the model
+        results = []
+        for image in pil_results:
+            buffered = BytesIO()
+            image.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+            # make sure pil_results is a single item array or it'll rewrite image
+            results.append({"image": f"data:image/png;base64,{img_str}"})
+
+        return results
+```
+
+
+
+## Run your own
+To run this app locally, follow these steps:
 
 ```bash
-conda create --name muse_app python=3.8
+conda create --name muse_app python=3.9 --yes
 conda activate muse_app
 
 git clone https://github.com/Lightning-AI/stable-diffusion-deploy.git
@@ -47,15 +107,16 @@ python -m lightning run app app.py --cloud
 ```
 
 ## About this Lightning App
-
-Muse isn’t just another image generator — we think of it like a blueprint. Not just for other image generators, but for all kinds of cloud applications powered by AI. We built Muse to show you what Lightning can do, and, even more importantly, what you can do with Lightning.
+Muse is a blueprint for building diffusion-based production systems with Lightning AI. This app shows you how to:
 <br><br>
-This simple application showcases the following features of the Lightning Framework:
 
-- Multi-tenant Frontend & Backend application architecture
-- UI written in React
-- Backend serving REST API (with FastAPI)
-- Load Balancer to handle requests and serve them across multiple Lightning Works
+- Host a multi-tenant Frontend & Backend application architecture
+- Full React.js UI
+- Micro-services orchestration
+- Cloud infrastructure pre-provisioning
+- Serves a gpu-powered diffusion model via a REST API
+- Dynamic GPU batching for inference requests
+- Load balancer that autoscales infrastructure with load-changes
 - Load Testing Lightning Component using Locust
 - Environment variables to parametrize execution environment
 
