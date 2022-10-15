@@ -115,7 +115,7 @@ If you see the following error while running the app:
 OSError: [Errno 24] Too many open files
 ```
 
-run the following command:
+run the following command (Unix only):
 
 ```shell
 ulimit -Sn 4096
