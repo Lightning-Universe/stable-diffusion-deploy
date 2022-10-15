@@ -45,7 +45,7 @@ class SafetyChecker:
 
 @dataclass
 class DiffusionBuildConfig(L.BuildConfig):
-    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
+    requirements = load_requirements("requirements/modelserver.txt")
 
     def build_commands(self):
         return [
@@ -53,7 +53,7 @@ class DiffusionBuildConfig(L.BuildConfig):
             "pip install -r stable-diffusion/requirements.txt",
             "pip install -e stable-diffusion",
             "pip install git+https://github.com/openai/CLIP.git",
-        ] + load_requirements("requirements/modelserver.txt")
+        ]
 
 
 class StableDiffusionServe(L.LightningWork):

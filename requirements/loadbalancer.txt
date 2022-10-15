@@ -1,3 +1,3 @@
 asgi-ratelimit==0.9.0
-sentry-sdk[fastapi]
+sentry-sdk[fastapi]==1.9.9
 starlette-exporter==0.14.0

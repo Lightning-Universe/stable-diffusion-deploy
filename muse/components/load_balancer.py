@@ -23,7 +23,7 @@ from muse.utility.rate_limiter import RULES, auth_function
 
 @dataclass
 class FastAPIBuildConfig(L.BuildConfig):
-    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"] + load_requirements("requirements/loadbalancer.txt")
+    requirements = load_requirements("requirements/loadbalancer.txt")
 
 
 class LoadBalancer(L.LightningWork):

@@ -1,3 +1,5 @@
+fastapi[standard]==0.85.1
+uvicorn==0.18.3
 slack_command_bot @ https://github.com/Lightning-AI/LAI-slack-command-bot-Component/archive/refs/heads/main.zip
 lightning_api_access @ https://github.com/Lightning-AI/LAI-API-Access-UI-Component/archive/refs/heads/main.zip
 lightning
