@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import secrets
 import time
 import uuid
 from dataclasses import dataclass
@@ -14,7 +16,12 @@ from fastapi.requests import Request
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
 
-from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
+from muse.CONST import (
+    INFERENCE_REQUEST_TIMEOUT,
+    KEEP_ALIVE_TIMEOUT,
+    MUSE_SYSTEM_PASSWORD,
+    SENTRY_API_KEY,
+)
 from muse.utility.data_io import Data, SysInfo, TimeoutException, random_prompt
 from muse.utility.dependencies import load_requirements
 from muse.utility.exception_handling import raise_granular_exception
@@ -29,6 +36,11 @@ class FastAPIBuildConfig(L.BuildConfig):
 class LoadBalancer(L.LightningWork):
     r"""The LoadBalancer is a LightningWork component that collects the requests and sends it to the prediciton API
     asynchronously using RoundRobin scheduling. It also performs auto batching of the incoming requests.
+
+    The LoadBalancer exposes system endpoints with a basic HTTP authentication, in order to activate the authentication
+    you need to provide a system password from environment variable
+    `lightning run app app.py --env MUSE_SYSTEM_PASSWORD=PASSWORD`.
+    After enabling you will require to send username and password from the request header for the private endpoints.
 
     Args:
         max_batch_size: Number of requests processed at once.
@@ -115,8 +127,9 @@ class LoadBalancer(L.LightningWork):
     def start_fastapi_app(self):  # noqa: C901
 
         import uvicorn
-        from fastapi import FastAPI, Header
+        from fastapi import Depends, FastAPI, Header
         from fastapi.middleware.cors import CORSMiddleware
+        from fastapi.security import HTTPBasic, HTTPBasicCredentials
         from starlette_exporter import PrometheusMiddleware, handle_metrics
 
         print(self.servers)
@@ -125,6 +138,7 @@ class LoadBalancer(L.LightningWork):
         self._last_batch_sent = time.time()
 
         app = FastAPI()
+        security = HTTPBasic()
 
         if SENTRY_API_KEY:
             print("enabled sentry monitoring")
@@ -136,6 +150,7 @@ class LoadBalancer(L.LightningWork):
                 traces_sample_rate=1.0,
             )
 
+        app.global_request_count = 0
         app.num_current_requests = 0
         app.last_process_time = 0
         app.SEND_TASK = None
@@ -144,6 +159,7 @@ class LoadBalancer(L.LightningWork):
         async def current_request_counter(request: Request, call_next):
             if not request.scope["path"] == "/api/predict":
                 return await call_next(request)
+            app.global_request_count += 1
             app.num_current_requests += 1
             start_time = time.time()
             response = await call_next(request)
@@ -182,13 +198,27 @@ class LoadBalancer(L.LightningWork):
             app.SEND_TASK.cancel()
             self._server_ready = False
 
+        def authenticate_private_endpoint(credentials: HTTPBasicCredentials = Depends(security)):
+            if len(MUSE_SYSTEM_PASSWORD) == 0:
+                logging.warning("You have not set password for private endpoints!")
+            current_password_bytes = credentials.password.encode("utf8")
+            is_correct_password = secrets.compare_digest(current_password_bytes, MUSE_SYSTEM_PASSWORD)
+            if not is_correct_password:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Incorrect password",
+                    headers={"WWW-Authenticate": "Basic"},
+                )
+            return True
+
         @app.get("/system/info", response_model=SysInfo)
-        async def sys_info():
+        async def sys_info(authenticated: bool = Depends(authenticate_private_endpoint)):
             return SysInfo(
                 num_workers=len(self.servers),
                 servers=self.servers,
                 num_requests=app.num_current_requests,
                 process_time=app.last_process_time,
+                global_request_count=app.global_request_count,
             )
 
         @app.get("/num-requests")
@@ -196,7 +226,7 @@ class LoadBalancer(L.LightningWork):
             return app.num_current_requests
 
         @app.put("/system/update-servers")
-        async def update_servers(servers: List[str]):
+        async def update_servers(servers: List[str], authenticated: bool = Depends(authenticate_private_endpoint)):
             self.servers = servers
             self._ITER = cycle(self.servers)
 
@@ -231,5 +261,7 @@ class LoadBalancer(L.LightningWork):
         servers = self.servers
         headers = {
             "accept": "application/json",
+            "username": "lightning",
+            "password": MUSE_SYSTEM_PASSWORD,
         }
         requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)

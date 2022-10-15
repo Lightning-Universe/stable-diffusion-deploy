@@ -6,11 +6,15 @@ import App from './App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 
-FullStory.init({
-  orgId: 'o-1A6KRB-na1',
-  // Enable FullStory only in the beta env
-  devMode: process.env.REACT_APP_ENV !== 'beta',
-});
+const parentUrl = window.location != window.parent.location ? document.referrer : document.location.href;
+
+if (/^https:\/\/lightning.ai/.test(parentUrl)) {
+  // If we are deploying the app under https://lightning.ai/muse, enable FullStory the second time within the iframe
+  FullStory.init({
+    orgId: 'o-1A6KRB-na1',
+    recordCrossDomainIFrames: true,
+  });
+}
 
 // Make sure Roboto Mono is loaded before rendering the app as it is used within a canvas element
 // The rest of the fonts don't need to be loaded before the render as they will be applied
