@@ -109,6 +109,12 @@ python -m lightning run app app.py
 python -m lightning run app app.py --cloud
 ```
 
+If you see `Too many open files` error while running the app, please increase your ulimit by using the following command
+
+```shell
+ulimit -Sn 4096
+```
+
 ## About this Lightning App
 
 Muse is a blueprint for building diffusion-based production systems with Lightning AI. This app shows you how to:
