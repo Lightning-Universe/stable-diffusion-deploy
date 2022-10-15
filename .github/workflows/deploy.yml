@@ -1,14 +1,17 @@
 name: Trigger Deployment
 
-# see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:
   workflow_dispatch:
     inputs:
       min_workers:
         description: "Minimum number of workers"
+        type: string
+        required: true
         default: "5"
       gpu_type:
         description: "GPU type for the servers"
+        type: string
+        required: true
         default: "gpu-fast"
 
 jobs:
