@@ -87,7 +87,7 @@ function DreamSearch() {
 
   return (
     <div>
-      {!lightningState?.vars.dream_url && <OverlayLoader />}
+      {!lightningState?.vars?.dream_url && <OverlayLoader />}
 
       <Box sx={{ position: 'sticky', left: 0, right: 0, top: 0, zIndex: 10 }}>
         <BuildYourAppBanner />
@@ -103,19 +103,30 @@ function DreamSearch() {
         </Grid>
 
         {/* image generation */}
-        <Grid item xs={12} md={'auto'} position={'relative'}>
-          <DownloadImageButton imgResult={imgResult} />
+        <Grid item xs={12} md={'auto'} position={'relative'} maxWidth={'100% !important'}>
+          <DownloadImageButton imgResult={imgResult} query={query} />
           <Box
             sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%' }}>
             <Dream loading={loading} dream={requestedDream} image={imgResult} maxTime={highQuality ? 120 : 60} />
           </Box>
-          <Box sx={{ '>img': { md: { width: '100%', height: 'calc(100vh - 40px - 52px )' } } }}>
+          <Box
+            sx={{
+              '>img': {
+                xs: { width: '100% !important' },
+                md: { width: 'auto !important', height: 'calc(100vh - 40px - 52px )' },
+              },
+            }}>
             <img
               id={'imgResult'}
               src={imgResult ?? placeHolderImage}
               loading="lazy"
               alt={'bg'}
-              style={{ width: '100%', opacity: imgResult ? 1 : 0.25, filter: imgResult ? 'none' : 'saturate(0)' }}
+              style={{
+                maxWidth: '100%',
+                aspectRatio: '1 / 1',
+                opacity: imgResult ? 1 : 0.25,
+                filter: imgResult ? 'none' : 'saturate(0)',
+              }}
             />
           </Box>
         </Grid>
@@ -151,7 +162,7 @@ function DreamSearch() {
                     <Switch checked={!highQuality} onChange={() => setHighQuality(x => !x)} disabled={loading} />
                   </Box>
                   <Typography colorI={'primary'} fontFamily={'Roboto'} variant={'body2'}>
-                    {highQuality ? 'More creative (slower)' : 'Fast'}
+                    {highQuality ? 'High quality (slower)' : 'Fast'}
                   </Typography>
                 </Row>
 

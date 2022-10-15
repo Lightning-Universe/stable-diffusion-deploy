@@ -17,6 +17,8 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
+from muse.CONST import ENABLE_TRACKERS
+from muse.utility.trackers import trackers
 
 
 class ReactUI(L.LightningFlow):
@@ -33,7 +35,7 @@ class APIUsageFlow(L.LightningFlow):
         return APIAccessFrontend(
             apis=[
                 {
-                    "name": "Predict Method",
+                    "name": "Generate Image",
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
                     "request": {"dream": "cats in hats", "high_quality": "true"},
@@ -164,9 +166,9 @@ class MuseFlow(L.LightningFlow):
         for model_serve in self.model_servers:
             model_serve.run()
 
-        if all(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
-            # run the load balancer when all the model server is ready
-            self.load_balancer.run([serve.url for serve in self.model_servers])
+        if any(model_serve.url for model_serve in self.model_servers) and not self.load_balancer_started:
+            # run the load balancer when one of the model servers is ready
+            self.load_balancer.run([serve.url for serve in self.model_servers if serve.url])
             self.load_balancer_started = True
 
         if self.load_balancer.url:  # hack for getting the work url
@@ -235,11 +237,33 @@ if __name__ == "__main__":
     app = L.LightningApp(
         MuseFlow(),
         info=AppInfo(
-            title="Bring your words to life in seconds.",
-            description="Bring your words to life in seconds - powered by AI.",
+            title="Use AI to inspire your art.",
+            favicon="https://storage.googleapis.com/grid-static/muse/favicon.ico",
+            description="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.",
             image="https://storage.googleapis.com/grid-static/header.png",
             meta_tags=[
                 '<meta name="theme-color" content="#792EE5" />',
+                '<meta name="image" content="https://storage.googleapis.com/grid-static/header.png">'
+                '<meta itemprop="name" content="Use AI to inspire your art.">'
+                '<meta itemprop="description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta itemprop="image" content="https://storage.googleapis.com/grid-static/header.png">'
+                # <!-- Twitter -->
+                '<meta name="twitter:card" content="summary">'
+                '<meta name="twitter:title" content="Use AI to inspire your art.">'
+                '<meta name="twitter:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta name="twitter:site" content="https://lightning.ai/muse">'
+                '<meta name="twitter:domain" content="https://lightning.ai/muse">'
+                '<meta name="twitter:creator" content="@LightningAI">'
+                '<meta name="twitter:image:src" content="https://storage.googleapis.com/grid-static/header.png">'
+                # <!-- Open Graph general (Facebook, Pinterest & Google+) -->
+                '<meta name="og:title" content="Use AI to inspire your art.">'
+                '<meta name="og:description" content="Bring your words to life in seconds - powered by Lightning AI and Stable Diffusion.">'  # noqa
+                '<meta name="og:url" content="https://lightning.ai/muse">'
+                '<meta property="og:image" content="https://storage.googleapis.com/grid-static/header.png" />',
+                '<meta property="og:image:type" content="image/png" />',
+                '<meta property="og:image:height" content="1114" />'
+                '<meta property="og:image:width" content="1112" />',
+                *(trackers if ENABLE_TRACKERS else []),
             ],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
