@@ -33,6 +33,9 @@ Opensource stable-diffusion production server to show how to deploy diffusion mo
 
 [Full tutorial on how to build this app](https://lightning.ai/pages/community/tutorial/deploy-diffusion-models/).
 
+<img width="1246" alt="image" src="https://user-images.githubusercontent.com/3640001/195984024-788255e7-d01b-4522-9655-2a3ba56e80aa.png">
+
+
 ## Model
 Muse uses the opensource Stable Diffusion model made available by [stability AI](https://stability.ai/blog/stable-diffusion-public-release). 
 We apply a few fancy tricks to make the inference super fast.
