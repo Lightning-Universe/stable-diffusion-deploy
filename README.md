@@ -78,13 +78,13 @@ You can also check out this video tutorial:
 
 ### How to use the Muse slack bot
 
-**Step 1**
+**Step 1:**
 Add *Muse* slack bot to your workspace.
 
-**Step 2**
+**Step 2:**
 Invite the *Muse* slack bot to the channel by tagging it `@Muse`.
 
-**Step 3**
+**Step 3:**
 Now enjoy muse app `/muse Woman painting a large red egg in a dali landscape`.
 
 ### How to create the Slack Command Bot
