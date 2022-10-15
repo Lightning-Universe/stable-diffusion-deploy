@@ -54,7 +54,7 @@ jobs:
         run: |
           python --version
           pip --version
-          pip install -r requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+          pip install -r requirements.txt --upgrade --quiet --find-links $TORCH_URL
           bash dev_install.sh
           pip install -r requirements/test.txt --quiet
           pip list
