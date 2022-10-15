@@ -14,11 +14,17 @@ import numpy as np
 import torch
 from lightning.app.storage import Drive
 from PIL import Image
-from torch import autocast, nn
+from torch import autocast
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
 from muse.models import StableDiffusionModel
 from muse.utility.data_io import Data, DataBatch, TimeoutException
+
+
+def cos_sim(x, y):
+    x = torch.nn.functional.normalize(x, p=2, dim=1)
+    y = torch.nn.functional.normalize(y, p=2, dim=1)
+    return torch.mm(x, y.transpose(0, 1))
 
 
 class SafetyChecker:
@@ -31,14 +37,9 @@ class SafetyChecker:
     def __call__(self, images):
         images = torch.stack([self.preprocess(img) for img in images])
         encoded_images = self.model.encode_image(images)
-        encoded_images /= encoded_images.norm(dim=-1, keepdim=True)
 
-        logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-        # cosine similarity as logits
-        logit_scale = logit_scale.exp()
-        logits_per_image = logit_scale * encoded_images @ self.text_embeddings.t()
-        probs = torch.from_numpy(logits_per_image.softmax(dim=-1).cpu().detach().numpy())
-        return torch.any(probs > 0.5, dim=1).tolist()
+        similarity = cos_sim(encoded_images, self.text_embeddings)
+        return torch.any(similarity > 0.24, dim=1).tolist()
 
 
 @dataclass
@@ -101,10 +102,13 @@ class StableDiffusionServe(L.LightningWork):
 
     @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
+        if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
+            raise TimeoutException()
+
         height = width = IMAGE_SIZE
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
-        prompts = [dream.dream for dream in dreams]
+        prompts = [dream.prompt for dream in dreams]
         if torch.cuda.is_available():
             with autocast("cuda"):
                 torch.cuda.empty_cache()
@@ -114,14 +118,13 @@ class StableDiffusionServe(L.LightningWork):
                     width=width,
                     num_inference_steps=num_inference_steps,
                 )
+            nsfw_content = self._safety_checker(pil_results)
+            for i, nsfw in enumerate(nsfw_content):
+                if nsfw:
+                    pil_results[i] = Image.open("assets/nsfw-warning.png")
         else:
-            time.sleep(4)
+            time.sleep(3)
             pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
-
-        nsfw_content = self._safety_checker(pil_results)
-        for i, nsfw in enumerate(nsfw_content):
-            if nsfw:
-                pil_results[i] = Image.open("assets/nsfw-warning.png")
 
         results = []
         for image in pil_results:

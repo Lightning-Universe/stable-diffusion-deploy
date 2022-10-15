@@ -6,7 +6,7 @@ import torch
 from lightning import BuildConfig, LightningWork
 from lightning.app.storage import Drive
 
-from muse.utility.data_io import fetch_nsfw_list
+from muse.CONST import NSFW_PROMPTS
 
 
 class LightningFlashBuildConfig(BuildConfig):
@@ -20,7 +20,6 @@ class SafetyCheckerEmbedding(LightningWork):
         super().__init__(
             parallel=False, cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=LightningFlashBuildConfig()
         )
-        self.nsfw_list = nsfw_list or fetch_nsfw_list()
         self.drive = drive
         self.safety_embeddings_filename = "safety_embedding.pt"
 
@@ -30,7 +29,7 @@ class SafetyCheckerEmbedding(LightningWork):
         from flash.text import TextClassificationData, TextClassifier
 
         datamodule = TextClassificationData.from_lists(
-            predict_data=self.nsfw_list, batch_size=4, num_workers=os.cpu_count()
+            predict_data=NSFW_PROMPTS, batch_size=4, num_workers=os.cpu_count()
         )
 
         model = TextClassifier(backbone="clip_vitb32", num_classes=2).cpu().float()
@@ -42,7 +41,6 @@ class SafetyCheckerEmbedding(LightningWork):
         embeddings = torch.stack(
             [embedding for embedding_batch in embedding_batches for embedding in embedding_batch], dim=0
         )
-        embeddings /= embeddings.norm(dim=-1, keepdim=True)
 
         torch.save(embeddings, self.safety_embeddings_filename)
         self.drive.put(self.safety_embeddings_filename)
