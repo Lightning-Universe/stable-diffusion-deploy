@@ -59,9 +59,11 @@ class MuseSlackCommandBot(SlackCommandBot):
         client = slack.WebClient(token=bot_token)
         th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
         th.start()
-        suggestion = "If you experience any complication or slow performance with this public bot," \
-                     " please visit: https://github.com/Lightning-AI/stable-diffusion-deploy#slackbot"
-        msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. ({suggestion})"  # noqa: E501
+        suggestion = (
+            "If you experience any complication or slow performance with this public bot,"
+            " please visit: https://github.com/Lightning-AI/stable-diffusion-deploy#slackbot"
+        )
+        msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. ({suggestion})"
         return msg, 200
 
     def save_new_workspace(self, team_id, bot_token):
