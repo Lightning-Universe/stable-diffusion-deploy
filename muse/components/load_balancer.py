@@ -16,9 +16,9 @@ from ratelimit.backends.simple import MemoryBackend
 
 from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, SENTRY_API_KEY
 from muse.utility.data_io import Data, SysInfo, TimeoutException, random_prompt
+from muse.utility.dependencies import load_requirements
 from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
-from muse.utility.dependencies import load_requirements
 
 
 @dataclass
