@@ -44,7 +44,9 @@ class MuseSlackCommandBot(SlackCommandBot):
 
         bot_token = self.get_bot_token_by_team_id(team_id)
         if bot_token is None:
-            return Response(f"Bot Token not found for for team={team_id}", status=401)
+            msg = f"Bot Token not found for for team={team_id}"
+            print(msg)
+            return Response(msg, status=401)
 
         client = slack.WebClient(token=bot_token)
         th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
