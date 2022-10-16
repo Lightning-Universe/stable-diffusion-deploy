@@ -68,6 +68,10 @@ class MuseSlackCommandBot(SlackCommandBot):
         response = requests.post(self._SHEET_API_URL, data=data)
         response.raise_for_status()
 
+    def on_exit(self):
+        client = slack.WebClient(token=self.bot_token)
+        client.chat_postMessage(channel="#muse-test", text="Terminating Muse!")
+
     def run(self, inference_url) -> None:
         if not inference_url:
             return
