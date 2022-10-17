@@ -115,7 +115,7 @@ class MuseFlow(L.LightningFlow):
         self.ui = ReactUI()
         self.api_component = APIUsageFlow()
 
-        self.safety_embeddings_ready = False
+        self.safety_embeddings_ready = True
 
     @property
     def model_servers(self) -> List[StableDiffusionServe]:

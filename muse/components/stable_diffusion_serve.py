@@ -98,11 +98,12 @@ class StableDiffusionServe(L.LightningWork):
         self._model = StableDiffusionModel(weights_folder / "sd_weights")
         print("model loaded")
 
-        self._trainer = Trainer(accelerator="auto", devices=1, precision=16, enable_progress_bar=False)
+        precision = 16 if torch.cuda.is_available() else 32
+        self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
         print(f"Accelerator: {self._trainer.accelerator}")
         prompts = ["cats in hats"] * 4
         img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
-        self._model.predict_step = partial(self._model.predict_step, height=512, width=512, num_inference_steps=50)
+        self._model.predict_step = partial(self._model.predict_step, height=512, width=512, num_inference_steps=2)
         self._trainer.predict(self._model, dataloaders=img_dl)[0]
 
     @torch.inference_mode()
