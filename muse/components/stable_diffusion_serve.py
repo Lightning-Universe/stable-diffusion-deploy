@@ -104,13 +104,6 @@ class StableDiffusionServe(L.LightningWork):
         )
         print("model loaded")
 
-        print(f"Accelerator: {self._trainer.accelerator}")
-        prompts = ["cats in hats"] * 4
-        img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
-        self._model.predict_step = partial(self._model.predict_step, height=512, width=512, num_inference_steps=2)
-        self._trainer.predict(self._model, dataloaders=img_dl)[0]
-
-    @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
             raise TimeoutException()
