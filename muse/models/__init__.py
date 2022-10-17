@@ -1,3 +1,4 @@
-from .pipeline import StableDiffusionModel
+from .data import ImageDataset
+from .model import StableDiffusionModel
 
-__all__ = ["StableDiffusionModel"]
+__all__ = ["ImageDataset", "StableDiffusionModel"]

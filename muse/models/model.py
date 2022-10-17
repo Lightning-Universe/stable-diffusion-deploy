@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from PIL import Image
-from torch import autocast
+from pytorch_lightning import LightningModule
 
 
 def load_model_from_config(config, ckpt, verbose=False):
@@ -21,12 +21,10 @@ def load_model_from_config(config, ckpt, verbose=False):
         print("unexpected keys:")
         print(u)
 
-    model.cuda()
-    model.eval()
     return model
 
 
-class StableDiffusionModel:
+class StableDiffusionModel(LightningModule):
     def __init__(self, model_path):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
@@ -36,15 +34,11 @@ class StableDiffusionModel:
         config = OmegaConf.load(f"{config_path}")
         self.model = load_model_from_config(config, f"{weights_path}")
         self.sampler = DDIMSampler(self.model)
-        self.device = torch.device("cuda")
-        self.model = self.model.to(self.device)
-        torch.cuda.empty_cache()
 
-    def __call__(self, prompts, height, width, num_inference_steps):
+    def predict_step(self, prompts, height, width, num_inference_steps):
         batch_size = len(prompts)
 
-        with torch.inference_mode(), autocast("cuda"), self.model.ema_scope():
-            torch.cuda.empty_cache()
+        with self.model.ema_scope():
             uc = self.model.get_learned_conditioning(batch_size * [""])
             c = self.model.get_learned_conditioning(prompts)
             shape = [4, height // 8, width // 8]
