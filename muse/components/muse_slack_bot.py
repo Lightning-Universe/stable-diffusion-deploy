@@ -37,36 +37,22 @@ class MuseSlackCommandBot(SlackCommandBot):
         self._secrets_drive: Drive = None
         self._server: uvicorn.Server = None
 
-        self._SHEET_API_URL = os.environ.get("SHEET_API_URL")
-
-    def _get_bot_token(self, team_id):
-        if self._SHEET_API_URL:
-            response = requests.get(f"{self._SHEET_API_URL}?search=" + json.dumps({"team_id": team_id}))
-            bot_token = response.json()[0]["bot_token"]
-        else:
-            bot_token = self.bot_token
-        return bot_token
-
     def handle_command(self):
         data: dict = request.form
         prompt = data.get("text")
         team_id = data.get("team_id")
-        try:
-            bot_token = self._get_bot_token(team_id)
-        except IndexError:
-            return Response(f"Bot Token not found for for team={team_id}", status=401)
+
+        bot_token = self.get_bot_token_by_team_id(team_id)
+        if bot_token is None:
+            msg = f"Bot Token not found for for team={team_id}"
+            print(msg)
+            return Response(msg, status=401)
 
         client = slack.WebClient(token=bot_token)
         th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
         th.start()
         msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. (This public version of the app may run slow. Clone and run the app on your own Lightning AI account to enable the creation of your own Slackbot with customizable performance)"  # noqa: E501
         return msg, 200
-
-    def save_new_workspace(self, team_id, bot_token):
-        data = [{"team_id": team_id, "bot_token": bot_token}]
-        data = json.dumps(data)
-        response = requests.post(self._SHEET_API_URL, data=data)
-        response.raise_for_status()
 
     def run(self, inference_url) -> None:
         if not inference_url:
