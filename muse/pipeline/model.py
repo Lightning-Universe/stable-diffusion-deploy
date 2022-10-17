@@ -25,7 +25,7 @@ def load_model_from_config(config, ckpt, verbose=False):
 
 
 class StableDiffusionModel(LightningModule):
-    def __init__(self, model_path):
+    def __init__(self, model_path, device):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
 
@@ -34,6 +34,7 @@ class StableDiffusionModel(LightningModule):
         config_path = model_path / "v1-inference.yml"
         weights_path = model_path / "sd-v1-4.ckpt"
         config = OmegaConf.load(f"{config_path}")
+        config.model.params.cond_stage_config["params"] = {"device": device}
         self.model = load_model_from_config(config, f"{weights_path}")
         self.sampler = DDIMSampler(self.model)
 

@@ -84,6 +84,10 @@ class StableDiffusionServe(L.LightningWork):
 
     def build_pipeline(self):
         """The `build_pipeline(...)` method builds a model and trainer."""
+        precision = 16 if torch.cuda.is_available() else 32
+        self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
+        print(self._trainer.strategy.root_device)
+
         self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
 
@@ -95,11 +99,11 @@ class StableDiffusionServe(L.LightningWork):
             "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_weights.tar.gz", weights_folder
         )
 
-        self._model = StableDiffusionModel(weights_folder / "sd_weights")
+        self._model = StableDiffusionModel(
+            weights_folder / "sd_weights", device=self._trainer.strategy.root_device.type
+        )
         print("model loaded")
 
-        precision = 16 if torch.cuda.is_available() else 32
-        self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
         print(f"Accelerator: {self._trainer.accelerator}")
         prompts = ["cats in hats"] * 4
         img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
