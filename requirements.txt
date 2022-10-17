@@ -1,4 +1,4 @@
-slack_command_bot@ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Component@v0.1.0
+slack_command_bot@ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Component@main
 lightning_api_access@ git+https://github.com/Lightning-AI/LAI-API-Access-UI-Component@main
 ftfy==6.1.1
 scipy
