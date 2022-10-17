@@ -29,13 +29,15 @@ class StableDiffusionModel(LightningModule):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
 
+        super().__init__()
+
         config_path = model_path / "v1-inference.yml"
         weights_path = model_path / "sd-v1-4.ckpt"
         config = OmegaConf.load(f"{config_path}")
         self.model = load_model_from_config(config, f"{weights_path}")
         self.sampler = DDIMSampler(self.model)
 
-    def predict_step(self, prompts, height, width, num_inference_steps):
+    def predict_step(self, prompts, batch_idx, height, width, num_inference_steps):
         batch_size = len(prompts)
 
         with self.model.ema_scope():

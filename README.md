@@ -141,6 +141,17 @@ You can also check out this video tutorial:
 <img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/Create-Slackbot.png" width="600px">
 </a>
 
+### How to use the Muse slack bot
+
+**Step 1**
+Add *Muse* slack bot to your workspace.
+
+**Step 2**
+Invite the *Muse* slack bot to the channel by tagging it `@Muse`.
+
+**Step 3**
+Now try you `/muse Woman painting a large red egg in a dali landscape`.
+
 ### How to create the Slack Command Bot
 
 **Step 1:**
