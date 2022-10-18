@@ -1,7 +1,7 @@
 import os
 import uuid
 
-ENABLE_TRACKERS = bool(int(os.environ.get("MUSE_ENABLE_TRACKERS", 0)))
+ENABLE_ANALYTICS = bool(int(os.environ.get("MUSE_ENABLE_ANALYTICS", 0)))
 MUSE_LOAD_TESTING = os.environ.get("MUSE_LOAD_TESTING", False)
 INFERENCE_REQUEST_TIMEOUT = os.environ.get("INFERENCE_REQUEST_TIMEOUT", 160)
 KEEP_ALIVE_TIMEOUT = os.environ.get("KEEP_ALIVE_TIMEOUT", 160)
