@@ -1,4 +1,3 @@
-# flake8: noqa E501
 # Google Analytics script 317494248
 analytics_headers = [
     """
