@@ -38,7 +38,7 @@ class APIUsageFlow(L.LightningFlow):
                     "name": "Generate Image",
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
-                    "request": {"dream": "cats in hats", "high_quality": "true"},
+                    "request": {"prompt": "cats in hats", "high_quality": "true"},
                     "response": {"image": "data:image/png;base64,<image-actual-content>"},
                 }
             ]
