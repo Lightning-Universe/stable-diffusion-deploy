@@ -40,5 +40,6 @@ jobs:
             --env SHEET_API_URL=${{secrets.SHEET_API_URL}} \
             --env MUSE_ROOT_PATH="/muse" \
             --env MUSE_ENABLE_ANALYTICS=1 \
-            --env MUSE_SYSTEM_PASSWORD="${{secrets.MUSE_SYSTEM_PASSWORD}}"
+            --env MUSE_SYSTEM_PASSWORD="${{secrets.MUSE_SYSTEM_PASSWORD}}" \
+            --no-cache
         shell: bash
