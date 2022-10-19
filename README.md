@@ -97,7 +97,10 @@ conda activate muse_app
 
 git clone https://github.com/Lightning-AI/stable-diffusion-deploy.git
 cd stable-diffusion-deploy
-pip install .
+
+## [Install PyTorch](https://pytorch.org) that suits your system configuration (CUDA version preferable)
+pip install torch --extra-index-url https://download.pytorch.org/whl/cu116
+bash dev_install.sh
 
 ## To run the app locally
 python -m lightning run app app.py
