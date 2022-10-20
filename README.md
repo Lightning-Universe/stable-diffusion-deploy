@@ -188,7 +188,7 @@ You can use the API component to hit the server directly to generate results.
 Run the app.
 
 ```bash
-lightning run app app.py
+python -m lightning run app app.py --cloud
 ```
 
 Alternatively you can use the URL of the public app. You can find that one on lightning.ai/muse (Check step 2).
