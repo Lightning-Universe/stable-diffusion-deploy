@@ -177,3 +177,45 @@ database.
 During the `handle_command(...)` method you will need to fetch `bot_token` based on the received `team_id`.
 
 </details>
+
+## API Component
+
+You can use the API component to hit the server directly to generate results.
+
+### How to use the API
+
+**Step 1:**
+Run the app.
+
+```bash
+lightning run app app.py
+```
+
+Alternatively you can use the URL of the public app. You can find that one on lightning.ai/muse (Check step 2).
+
+**Step 2:**
+Retrieve the URL from the bottom of the app page.
+<br>
+<img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/Screenshot-2022-10-20-at-11.39.25-PM.png" width="600px">
+
+**Step 3:**
+Generate results.
+
+```python
+import requests
+import base64
+
+
+response = requests.post(
+    "https://ulhcn-01gd3c9epmk5xj2y9a9jrrvgt8.litng-ai-03.litng.ai/api/predict",
+    json={"prompt": "cats in hats", "high_quality": "true"},
+)
+
+base64_image = response.json()["image"]
+
+encoded_data = bytes(base64_image, "utf-8")
+encoded_data = encoded_data.replace(b"data:image/png;base64,", b"")
+decoded_data = base64.b64decode(encoded_data)
+with open("foo.png", "wb") as f:
+    f.write(decoded_data)
+```
