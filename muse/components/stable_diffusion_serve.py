@@ -105,12 +105,12 @@ class StableDiffusionServe(L.LightningWork):
         torch.cuda.empty_cache()
         print("model loaded")
 
-        for batch_size in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
+        for batch_size in range(10, 100):
             try:
                 prompts = ["cats in hats"] * batch_size
                 img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
                 self._model.predict_step = partial(
-                    self._model.predict_step, height=256, width=256, num_inference_steps=50
+                    self._model.predict_step, height=512, width=512, num_inference_steps=50
                 )
                 pil_results = self._trainer.predict(self._model, dataloaders=img_dl)[0]
             except BaseException as e:
