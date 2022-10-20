@@ -182,7 +182,9 @@ During the `handle_command(...)` method you will need to fetch `bot_token` based
 
 You can use the API component to hit the server directly to generate results.
 
-### How to use the API
+<details>
+<summary><b><u>How to use the API</u></b></summary>
+<br>
 
 **Step 1:**
 Run the app.
@@ -219,3 +221,5 @@ decoded_data = base64.b64decode(encoded_data)
 with open("foo.png", "wb") as f:
     f.write(decoded_data)
 ```
+
+</details>
