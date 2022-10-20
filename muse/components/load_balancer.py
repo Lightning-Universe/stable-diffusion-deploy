@@ -259,7 +259,9 @@ class LoadBalancer(L.LightningWork):
         if deleted_servers:
             print("deleted servers:", deleted_servers)
 
-        servers = self.servers
+        self.send_request_to_update_servers(self.servers)
+        
+    def send_request_to_update_servers(self, servers: List[str]):
         AUTHORIZATION_TYPE = "Basic"
         try:
             param = f"lightning:{MUSE_SYSTEM_PASSWORD}".encode()
