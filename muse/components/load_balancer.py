@@ -3,6 +3,7 @@ import logging
 import secrets
 import time
 import uuid
+from base64 import b64encode
 from dataclasses import dataclass
 from itertools import cycle
 from typing import List
@@ -15,6 +16,7 @@ from fastapi import HTTPException
 from fastapi.requests import Request
 from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from muse.CONST import (
     INFERENCE_REQUEST_TIMEOUT,
@@ -201,7 +203,7 @@ class LoadBalancer(L.LightningWork):
             if len(MUSE_SYSTEM_PASSWORD) == 0:
                 logging.warning("You have not set password for private endpoints!")
             current_password_bytes = credentials.password.encode("utf8")
-            is_correct_password = secrets.compare_digest(current_password_bytes, MUSE_SYSTEM_PASSWORD)
+            is_correct_password = secrets.compare_digest(current_password_bytes, MUSE_SYSTEM_PASSWORD.encode("utf8"))
             if not is_correct_password:
                 raise HTTPException(
                     status_code=401,
@@ -258,9 +260,20 @@ class LoadBalancer(L.LightningWork):
             print("deleted servers:", deleted_servers)
 
         servers = self.servers
+        AUTHORIZATION_TYPE = "Basic"
+        try:
+            param = f"lightning:{MUSE_SYSTEM_PASSWORD}".encode()
+            data = b64encode(param).decode("utf-8")
+        except (ValueError, UnicodeDecodeError):
+            raise HTTPException(
+                status_code=HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Basic"},
+            )
         headers = {
             "accept": "application/json",
             "username": "lightning",
-            "password": MUSE_SYSTEM_PASSWORD,
+            "Authorization": AUTHORIZATION_TYPE + " " + data,
         }
-        requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)
+        response = requests.put(f"{self.url}/system/update-servers", json=servers, headers=headers, timeout=10)
+        response.raise_for_status()
