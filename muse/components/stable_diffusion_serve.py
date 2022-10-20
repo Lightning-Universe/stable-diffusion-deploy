@@ -49,7 +49,7 @@ class DiffusionBuildConfig(L.BuildConfig):
 
     def build_commands(self):
         return [
-            "git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion",
+            "git clone -b ref/attn_slicing https://github.com/rohitgr7/stable-diffusion",
             "pip install -r stable-diffusion/requirements.txt",
             "pip install -e stable-diffusion",
             "pip install git+https://github.com/openai/CLIP.git",
@@ -86,7 +86,6 @@ class StableDiffusionServe(L.LightningWork):
         """The `build_pipeline(...)` method builds a model and trainer."""
         precision = 16 if torch.cuda.is_available() else 32
         self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
-        print(self._trainer.strategy.root_device)
 
         self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
@@ -102,7 +101,22 @@ class StableDiffusionServe(L.LightningWork):
         self._model = StableDiffusionModel(
             weights_folder / "sd_weights", device=self._trainer.strategy.root_device.type
         )
+        self._model = self._model.to(torch.float16)
+        torch.cuda.empty_cache()
         print("model loaded")
+
+        for batch_size in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
+            try:
+                prompts = ["cats in hats"] * batch_size
+                img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
+                self._model.predict_step = partial(
+                    self._model.predict_step, height=256, width=256, num_inference_steps=50
+                )
+                pil_results = self._trainer.predict(self._model, dataloaders=img_dl)[0]
+            except BaseException as e:
+                print(f"With {batch_size=}, error:{e=}")
+
+            torch.cuda.empty_cache()
 
     def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
