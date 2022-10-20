@@ -185,6 +185,7 @@ We have the mechanism to check how much traffic your app can handle. For that we
 ### How to enable load testing
 
 **Step 1:**
+
 Launch the app with the following env variable.
 
 ```bash
@@ -192,9 +193,11 @@ python -m lightning run app app.py --cloud --env MUSE_LOAD_TESTING=True
 ```
 
 **Step 2:**
+
 Open the app UI once ready.
 
 **Step 3:**
+
 Check the admin page for Locust and once it's ready, Go to the **LOCUST** tab and add number of requests you want to spawn and hit **Start Spawning**.
 
 <img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/Screenshot-2022-10-21-at-12.37.56-AM.png" width="600px">
