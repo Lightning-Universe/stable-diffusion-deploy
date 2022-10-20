@@ -184,6 +184,7 @@ We have the mechanism to check how much traffic your app can handle. For that we
 
 <details>
 <summary><b><u>How to enable load testing</u></b></summary>
+<br>
 
 **Step 1:**
 
