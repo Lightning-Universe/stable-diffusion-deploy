@@ -195,6 +195,7 @@ Alternatively you can use the URL of the public app. You can find that one on li
 
 **Step 2:**
 Retrieve the URL from the bottom of the app page.
+
 <br>
 <img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/Screenshot-2022-10-20-at-11.39.25-PM.png" width="600px">
 
