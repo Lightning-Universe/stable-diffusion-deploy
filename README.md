@@ -200,8 +200,6 @@ Retrieve the URL from the bottom of the app page.
 
 <img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/Screenshot-2022-10-20-at-11.39.25-PM.png" width="600px">
 
-<br>
-
 **Step 3:**
 Generate results.
 
