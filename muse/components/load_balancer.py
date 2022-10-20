@@ -260,7 +260,7 @@ class LoadBalancer(L.LightningWork):
             print("deleted servers:", deleted_servers)
 
         self.send_request_to_update_servers(self.servers)
-        
+
     def send_request_to_update_servers(self, servers: List[str]):
         AUTHORIZATION_TYPE = "Basic"
         try:
