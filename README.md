@@ -182,7 +182,8 @@ During the `handle_command(...)` method you will need to fetch `bot_token` based
 
 We have the mechanism to check how much traffic your app can handle. For that we are using [locust](https://locust.io) and there's a built-in component for that. All you need to do is enable it and spawn the requests.
 
-### How to enable load testing
+<details>
+<summary><b><u>How to enable load testing</u></b></summary>
 
 **Step 1:**
 
@@ -205,3 +206,5 @@ Check the admin page for Locust and once it's ready, Go to the **LOCUST** tab an
 Now go to **Charts** to monitor the results.
 
 <img src="https://lightningaidev.wpengine.com/wp-content/uploads/2022/10/Screenshot-2022-10-21-at-12.38.15-AM.png" width="600px">
+
+</details>
