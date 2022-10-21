@@ -77,6 +77,9 @@ class MuseSlackCommandBot(SlackCommandBot):
                 return Response("Slack app is not authorized for this workspace")
             print(r)  # log this error
             return Response("Internal error occurred. Please reach out to Lightning AI.")
+        except BaseException as e:
+            print(e)  # log this error
+            return Response(content="Muse can only be used in public or private channels.")
 
     def save_new_workspace(self, team_id, bot_token):
         data = [{"team_id": team_id, "bot_token": bot_token}]
