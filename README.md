@@ -180,7 +180,7 @@ During the `handle_command(...)` method you will need to fetch `bot_token` based
 
 ## API Component
 
-You can use the API component to hit the server directly to generate results.
+The [API component](https://github.com/Lightning-AI/LAI-API-Access-UI-Component) provides you with an API which you can use to hit the server directly to generate results.
 
 <details>
 <summary><b><u>How to use the API</u></b></summary>
