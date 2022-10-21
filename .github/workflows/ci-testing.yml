@@ -54,8 +54,9 @@ jobs:
         run: |
           python --version
           pip --version
-          pip install . -r tests/requirements.txt --upgrade --quiet --find-links $TORCH_URL
-          pip install git+https://github.com/CompVis/stable-diffusion.git
+          pip install -r requirements.txt --upgrade --quiet --find-links $TORCH_URL
+          bash dev_install.sh
+          pip install -r requirements/test.txt --quiet
           pip list
         shell: bash
 

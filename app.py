@@ -17,8 +17,8 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
-from muse.CONST import ENABLE_TRACKERS, MUSE_GPU_TYPE, MUSE_MIN_WORKERS
-from muse.utility.trackers import trackers
+from muse.CONST import ENABLE_ANALYTICS, MUSE_GPU_TYPE, MUSE_MIN_WORKERS
+from muse.utility.analytics import analytics_headers
 
 
 class ReactUI(L.LightningFlow):
@@ -38,7 +38,7 @@ class APIUsageFlow(L.LightningFlow):
                     "name": "Generate Image",
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
-                    "request": {"dream": "cats in hats", "high_quality": "true"},
+                    "request": {"prompt": "cats in hats", "high_quality": "true"},
                     "response": {"image": "data:image/png;base64,<image-actual-content>"},
                 }
             ]
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                 '<meta property="og:image:type" content="image/png" />',
                 '<meta property="og:image:height" content="1114" />'
                 '<meta property="og:image:width" content="1112" />',
-                *(trackers if ENABLE_TRACKERS else []),
+                *(analytics_headers if ENABLE_ANALYTICS else []),
             ],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),

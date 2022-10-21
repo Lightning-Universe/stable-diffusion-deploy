@@ -1,0 +1,4 @@
+locust
+fastapi==0.78.0
+uvicorn==0.17.6
+clip@ git+https://github.com/openai/CLIP.git@main
