@@ -17,8 +17,8 @@ from muse import (
     SafetyCheckerEmbedding,
     StableDiffusionServe,
 )
-from muse.CONST import ENABLE_TRACKERS
-from muse.utility.trackers import trackers
+from muse.CONST import ENABLE_ANALYTICS, MUSE_GPU_TYPE, MUSE_MIN_WORKERS
+from muse.utility.analytics import analytics_headers
 
 
 class ReactUI(L.LightningFlow):
@@ -38,7 +38,7 @@ class APIUsageFlow(L.LightningFlow):
                     "name": "Generate Image",
                     "url": f"{self.api_url}/api/predict",
                     "method": "POST",
-                    "request": {"dream": "cats in hats", "high_quality": "true"},
+                    "request": {"prompt": "cats in hats", "high_quality": "true"},
                     "response": {"image": "data:image/png;base64,<image-actual-content>"},
                 }
             ]
@@ -62,11 +62,11 @@ class MuseFlow(L.LightningFlow):
 
     def __init__(
         self,
-        initial_num_workers: int = 5,
+        initial_num_workers: int = MUSE_MIN_WORKERS,
         autoscale_interval: int = 1 * 30,
         max_batch_size: int = 4,
         batch_timeout_secs: int = 10,
-        gpu_type: str = "gpu-fast",
+        gpu_type: str = MUSE_GPU_TYPE,
         max_workers: int = 20,
         autoscale_down_limit: Optional[int] = None,
         autoscale_up_limit: Optional[int] = None,
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                 '<meta property="og:image:type" content="image/png" />',
                 '<meta property="og:image:height" content="1114" />'
                 '<meta property="og:image:width" content="1112" />',
-                *(trackers if ENABLE_TRACKERS else []),
+                *(analytics_headers if ENABLE_ANALYTICS else []),
             ],
         ),
         root_path=os.getenv("MUSE_ROOT_PATH", ""),
