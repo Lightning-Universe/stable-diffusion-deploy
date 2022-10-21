@@ -10,6 +10,7 @@ import typing
 
 import requests
 import slack
+import slack.errors as errors
 import uvicorn
 from asgiref.typing import ASGIApplication
 from asgiref.wsgi import WsgiToAsgi
@@ -21,15 +22,13 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from ..CONST import RATE_LIMIT_KEY
 from ..utility.data_io import get_item, save_item
+from .slack_api_errors import SlackApiErrors
 
 
 class MuseSlackCommandBot(SlackCommandBot):
     """The MuseSlackCommandBot."""
 
-    def __init__(
-        self,
-        **kwargs,
-    ):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.inference_url = None
         self.has_credentials = False
@@ -51,16 +50,36 @@ class MuseSlackCommandBot(SlackCommandBot):
         data: dict = request.form
         prompt = data.get("text")
         team_id = data.get("team_id")
+        channel_id = data.get("channel_id")
         try:
             bot_token = self._get_bot_token(team_id)
         except IndexError:
             return Response(f"Bot Token not found for for team={team_id}", status=401)
 
         client = slack.WebClient(token=bot_token)
-        th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
-        th.start()
-        msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. (This public version of the app may run slow. Clone and run the app on your own Lightning AI account to enable the creation of your own Slackbot with customizable performance)"  # noqa: E501
-        return msg, 200
+        invitation_message = "Unable to generate image. You'll need to invite @Muse to this channel.\n`/invite @Muse`"
+        try:
+            is_member = client.conversations_info(channel=channel_id).data["channel"]["is_member"]
+            if not is_member:
+                return Response(invitation_message)
+            # start the thread.
+            th = threading.Thread(target=post_dream, args=[self.inference_url, client, data], daemon=True)
+            th.start()
+            msg = f":zap: Generating image for prompt: _{prompt}_ :zap:. (This public version of the app may run slow. Clone and run the app on your own Lightning AI account to enable the creation of your own Slackbot with customizable performance)"  # noqa: E501
+            return msg, 200
+        except errors.SlackApiError as r:
+            code = r.response.data.get("error")
+            if code == SlackApiErrors.channel_not_found:
+                return Response(invitation_message)
+            elif code == SlackApiErrors.not_in_channel:
+                return Response(invitation_message)
+            elif code == SlackApiErrors.not_authed:
+                return Response("Slack app is not authorized for this workspace")
+            print(r)  # log this error
+            return Response("Internal error occurred. Please reach out to Lightning AI.")
+        except BaseException as e:
+            print(e)  # log this error
+            return Response("Muse can only be used in public or private channels.")
 
     def save_new_workspace(self, team_id, bot_token):
         data = [{"team_id": team_id, "bot_token": bot_token}]
