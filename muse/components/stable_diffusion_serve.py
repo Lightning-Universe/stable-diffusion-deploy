@@ -93,7 +93,6 @@ class StableDiffusionServe(L.LightningWork):
         """The `build_pipeline(...)` method builds a model and trainer."""
         precision = 16 if torch.cuda.is_available() else 32
         self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
-        print(self._trainer.strategy.root_device)
 
         self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
@@ -109,6 +108,8 @@ class StableDiffusionServe(L.LightningWork):
         self._model = StableDiffusionModel(
             weights_folder / "sd_weights", device=self._trainer.strategy.root_device.type
         )
+        self._model = self._model.to(torch.float16)
+        torch.cuda.empty_cache()
         print("model loaded")
 
     def predict(self, dreams: List[Data], entry_time: int):
