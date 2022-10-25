@@ -178,7 +178,7 @@ During the `handle_command(...)` method you will need to fetch `bot_token` based
 
 </details>
 
-## API Component
+## Generate Image using API
 
 The [API component](https://github.com/Lightning-AI/LAI-API-Access-UI-Component) provides you with an API which you can use to hit the server directly to generate results.
 
