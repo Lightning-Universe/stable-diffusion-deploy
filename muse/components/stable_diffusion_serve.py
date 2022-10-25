@@ -1,4 +1,5 @@
 import base64
+import os
 import os.path
 import tarfile
 import time
@@ -10,16 +11,22 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Optional
 
-import lightning as L
-import torch
-from lightning.app.storage import Drive
-from PIL import Image
-from pytorch_lightning import Trainer
-from torch.utils.data import DataLoader
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
-from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
-from muse.pipeline import ImageDataset, StableDiffusionModel
-from muse.utility.data_io import Data, DataBatch, TimeoutException
+import lightning as L  # noqa: E402
+import torch  # noqa: E402
+from lightning.app.storage import Drive  # noqa: E402
+from PIL import Image  # noqa: E402
+from pytorch_lightning import Trainer  # noqa: E402
+from torch.utils.data import DataLoader  # noqa: E402
+
+from muse.CONST import (  # noqa: E402
+    IMAGE_SIZE,
+    INFERENCE_REQUEST_TIMEOUT,
+    KEEP_ALIVE_TIMEOUT,
+)
+from muse.pipeline import ImageDataset, StableDiffusionModel  # noqa: E402
+from muse.utility.data_io import Data, DataBatch, TimeoutException  # noqa: E402
 
 
 def cos_sim(x, y):
