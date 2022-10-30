@@ -109,6 +109,18 @@ python -m lightning run app app.py
 python -m lightning run app app.py --cloud
 ```
 
+If you see the following error while running the app:
+
+```console
+OSError: [Errno 24] Too many open files
+```
+
+run the following command (Unix only):
+
+```shell
+ulimit -Sn 4096
+```
+
 ## About this Lightning App
 
 Muse is a blueprint for building diffusion-based production systems with Lightning AI. This app shows you how to:
