@@ -8,7 +8,7 @@ slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
 asgiref==3.5.2
-lightning==2022.10.7
+lightning
 asgi-ratelimit==0.9.0
 sentry-sdk[fastapi]
 starlette-exporter==0.14.0
