@@ -54,5 +54,6 @@ jobs:
             --env MUSE_GPU_TYPE=${{ github.event.inputs.gpu_type }} \
             --env MUSE_ENABLE_ANALYTICS=1 \
             --env MUSE_SYSTEM_PASSWORD="${{secrets.MUSE_SYSTEM_PASSWORD}}" \
+            --env SENTRY_API_KEY="${{secrets.SENTRY_API_KEY}}" \
             --no-cache
         shell: bash
