@@ -8,7 +8,7 @@ import requests
 from lightning.app.frontend import StaticWebFrontend
 from lightning.app.storage import Drive
 from lightning_api_access import APIAccessFrontend
-from lightning_app.utilities.frontend import AppInfo
+from lightning.app.utilities.frontend import AppInfo
 
 from muse import (
     LoadBalancer,
