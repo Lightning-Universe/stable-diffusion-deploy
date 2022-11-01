@@ -7,8 +7,8 @@ from typing import Generator
 import pytest
 import requests
 from lightning.app.testing.config import _Config
-from lightning.app.utilities.imports import _is_playwright_available, requires
 from lightning.app.utilities.cloud import _get_project
+from lightning.app.utilities.imports import _is_playwright_available, requires
 from lightning.app.utilities.network import LightningClient
 from lightning_cloud.openapi.rest import ApiException
 
