@@ -16,7 +16,7 @@ from asgiref.typing import ASGIApplication
 from asgiref.wsgi import WsgiToAsgi
 from flask import Flask, Response, request
 from flask_cors import CORS
-from lightning_app.storage.drive import Drive
+from lightning.app.storage.drive import Drive
 from slack_command_bot import SlackCommandBot
 from uvicorn.supervisors import ChangeReload, Multiprocess
 

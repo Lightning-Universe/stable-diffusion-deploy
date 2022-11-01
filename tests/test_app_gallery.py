@@ -6,10 +6,10 @@ from typing import Generator
 
 import pytest
 import requests
-from lightning.app.testing.config import Config
+from lightning.app.testing.config import _Config
+from lightning.app.utilities.cloud import _get_project
 from lightning.app.utilities.imports import _is_playwright_available, requires
-from lightning_app.utilities.cloud import _get_project
-from lightning_app.utilities.network import LightningClient
+from lightning.app.utilities.network import LightningClient
 from lightning_cloud.openapi.rest import ApiException
 
 if _is_playwright_available():
@@ -24,8 +24,8 @@ def get_gallery_app_page(app_name) -> Generator:
     with sync_playwright() as p:
         browser = p.chromium.launch(timeout=5000, headless=bool(int(os.getenv("HEADLESS", "0"))))
         payload = {
-            "apiKey": Config.api_key,
-            "username": Config.username,
+            "apiKey": _Config.api_key,
+            "username": _Config.username,
             "duration": "120000",
         }
         context = browser.new_context(
@@ -35,13 +35,13 @@ def get_gallery_app_page(app_name) -> Generator:
                     "password": os.getenv("LAI_PASS", ""),
                 }
             ),
-            record_video_dir=os.path.join(Config.video_location, app_name),
-            record_har_path=Config.har_location,
+            record_video_dir=os.path.join(_Config.video_location, app_name),
+            record_har_path=_Config.har_location,
         )
         gallery_page = context.new_page()
-        res = requests.post(Config.url + "/v1/auth/login", data=json.dumps(payload))
+        res = requests.post(_Config.url + "/v1/auth/login", data=json.dumps(payload))
         token = res.json()["token"]
-        gallery_page.goto(Config.url)
+        gallery_page.goto(_Config.url)
         gallery_page.evaluate(
             """data => {
             window.localStorage.setItem('gridUserId', data[0]);
@@ -49,12 +49,12 @@ def get_gallery_app_page(app_name) -> Generator:
             window.localStorage.setItem('gridUserToken', data[2]);
         }
         """,
-            [Config.id, Config.key, token],
+            [_Config.id, _Config.key, token],
         )
 
         for retry_count in range(5):
             try:
-                gallery_page.goto(f"{Config.url}/apps")
+                gallery_page.goto(f"{_Config.url}/apps")
             except playwright._impl._api_types.TimeoutError as ex:
                 try_ex = ex
             else:

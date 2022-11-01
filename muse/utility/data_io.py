@@ -7,7 +7,7 @@ from typing import Any, List, Optional
 
 import numpy as np
 from fastapi import HTTPException
-from lightning_app.storage.drive import Drive
+from lightning.app.storage.drive import Drive
 from pydantic import BaseModel
 
 OPEN_PROMPTS = None
