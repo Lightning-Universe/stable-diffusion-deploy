@@ -136,7 +136,7 @@ Muse is a blueprint for building diffusion-based production systems with Lightni
 - Load Testing Lightning Component using Locust
 - Environment variables to parametrize execution environment
 
-Architecture Diagram of Muse
+**Architecture Diagram of Muse -**
 
 ![arch diagram](./assets/muse-arch.png)
 
