@@ -1,3 +1,4 @@
+import typing
 from pathlib import Path
 from typing import Any, List
 
@@ -41,6 +42,7 @@ class StableDiffusionModel(LightningModule):
         self.model = load_model_from_config(config, f"{weights_path}")
         self.sampler = DDIMSampler(self.model)
 
+    @typing.no_type_check
     def predict_step(
         self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
     ) -> Any:
