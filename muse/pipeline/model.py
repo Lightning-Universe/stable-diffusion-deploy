@@ -1,10 +1,14 @@
+import typing
+from pathlib import Path
+from typing import Any, List
+
 import numpy as np
 import torch
 from PIL import Image
 from pytorch_lightning import LightningModule
 
 
-def load_model_from_config(config, ckpt, verbose=False):
+def load_model_from_config(config: Any, ckpt: str, verbose: bool = False) -> torch.nn.Module:
     from ldm.util import instantiate_from_config
 
     print(f"Loading model from {ckpt}")
@@ -25,7 +29,7 @@ def load_model_from_config(config, ckpt, verbose=False):
 
 
 class StableDiffusionModel(LightningModule):
-    def __init__(self, model_path, device):
+    def __init__(self, model_path: Path, device: torch.device):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
 
@@ -38,7 +42,10 @@ class StableDiffusionModel(LightningModule):
         self.model = load_model_from_config(config, f"{weights_path}")
         self.sampler = DDIMSampler(self.model)
 
-    def predict_step(self, prompts, batch_idx, height, width, num_inference_steps):
+    @typing.no_type_check
+    def predict_step(
+        self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
+    ) -> Any:
         batch_size = len(prompts)
 
         with self.model.ema_scope():
