@@ -17,7 +17,6 @@ import lightning as L  # noqa: E402
 import torch  # noqa: E402
 from lightning.app.storage import Drive  # noqa: E402
 from PIL import Image  # noqa: E402
-from pytorch_lightning import Trainer  # noqa: E402
 from torch.utils.data import DataLoader  # noqa: E402
 
 from muse.CONST import (  # noqa: E402
@@ -91,6 +90,8 @@ class StableDiffusionServe(L.LightningWork):
 
     def build_pipeline(self):
         """The `build_pipeline(...)` method builds a model and trainer."""
+        from pytorch_lightning import Trainer
+
         precision = 16 if torch.cuda.is_available() else 32
         self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
 
