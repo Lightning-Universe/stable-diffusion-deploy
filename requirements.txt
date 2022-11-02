@@ -9,6 +9,7 @@ slackclient==2.9.4
 flask-cors
 asgiref==3.5.2
 lightning==1.8.*
+pytorch-lightning>=1.8.0
 asgi-ratelimit==0.9.0
 sentry-sdk[fastapi]
 starlette-exporter==0.14.0
