@@ -11,5 +11,5 @@ class ImageDataset(Dataset):
     def __len__(self) -> int:
         return len(self.images)
 
-    def __getitem__(self, ix) -> str:
+    def __getitem__(self, ix: int) -> str:
         return self.images[ix]

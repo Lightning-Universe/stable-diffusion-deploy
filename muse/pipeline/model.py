@@ -7,7 +7,7 @@ from PIL import Image
 from pytorch_lightning import LightningModule
 
 
-def load_model_from_config(config: Any, ckpt: str, verbose=False):
+def load_model_from_config(config: Any, ckpt: str, verbose: bool = False) -> torch.nn.Module:
     from ldm.util import instantiate_from_config
 
     print(f"Loading model from {ckpt}")
@@ -43,7 +43,7 @@ class StableDiffusionModel(LightningModule):
 
     def predict_step(
         self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
-    ) -> List[Image.Image]:
+    ) -> Any:
         batch_size = len(prompts)
 
         with self.model.ema_scope():
