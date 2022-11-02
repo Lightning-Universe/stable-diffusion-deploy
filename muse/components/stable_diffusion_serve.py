@@ -1,24 +1,31 @@
 import base64
+import os
 import os.path
 import tarfile
 import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
+from functools import partial
 from io import BytesIO
 from pathlib import Path
 from typing import List, Optional
 
-import lightning as L
-import numpy as np
-import torch
-from lightning.app.storage import Drive
-from PIL import Image
-from torch import autocast
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
-from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT
-from muse.models import StableDiffusionModel
-from muse.utility.data_io import Data, DataBatch, TimeoutException
+import lightning as L  # noqa: E402
+import torch  # noqa: E402
+from lightning.app.storage import Drive  # noqa: E402
+from PIL import Image  # noqa: E402
+from torch.utils.data import DataLoader  # noqa: E402
+
+from muse.CONST import (  # noqa: E402
+    IMAGE_SIZE,
+    INFERENCE_REQUEST_TIMEOUT,
+    KEEP_ALIVE_TIMEOUT,
+)
+from muse.pipeline import ImageDataset, StableDiffusionModel  # noqa: E402
+from muse.utility.data_io import Data, DataBatch, TimeoutException  # noqa: E402
 
 
 def cos_sim(x, y):
@@ -68,6 +75,7 @@ class StableDiffusionServe(L.LightningWork):
         self.safety_embeddings_drive = safety_embeddings_drive
         self.safety_embeddings_filename = safety_embeddings_filename
         self._model = None
+        self._trainer = None
 
     @staticmethod
     def download_weights(url: str, target_folder: Path):
@@ -80,27 +88,31 @@ class StableDiffusionServe(L.LightningWork):
             # extracting file
             file.extractall(target_folder)
 
-    def build_model(self):
-        """The `build_model(...)` method returns a model and the returned model is set to `self._model` state."""
+    def build_pipeline(self):
+        """The `build_pipeline(...)` method builds a model and trainer."""
+        from pytorch_lightning import Trainer
+
+        precision = 16 if torch.cuda.is_available() else 32
+        self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
+
         self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
 
         print("loading model...")
-        if torch.cuda.is_available():
-            weights_folder = Path("resources/stable_diffusion_weights")
-            weights_folder.mkdir(parents=True, exist_ok=True)
+        weights_folder = Path("resources/stable_diffusion_weights")
+        weights_folder.mkdir(parents=True, exist_ok=True)
 
-            self.download_weights(
-                "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_weights.tar.gz", weights_folder
-            )
+        self.download_weights(
+            "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_weights.tar.gz", weights_folder
+        )
 
-            self._model = StableDiffusionModel(weights_folder / "sd_weights")
-            print("model loaded")
-        else:
-            self._model = None
-            print("model set to None")
+        self._model = StableDiffusionModel(
+            weights_folder / "sd_weights", device=self._trainer.strategy.root_device.type
+        )
+        self._model = self._model.to(torch.float16)
+        torch.cuda.empty_cache()
+        print("model loaded")
 
-    @torch.inference_mode()
     def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
             raise TimeoutException()
@@ -109,22 +121,16 @@ class StableDiffusionServe(L.LightningWork):
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
         prompts = [dream.prompt for dream in dreams]
-        if torch.cuda.is_available():
-            with autocast("cuda"):
-                torch.cuda.empty_cache()
-                pil_results = self._model(
-                    prompts,
-                    height=height,
-                    width=width,
-                    num_inference_steps=num_inference_steps,
-                )
-            nsfw_content = self._safety_checker(pil_results)
-            for i, nsfw in enumerate(nsfw_content):
-                if nsfw:
-                    pil_results[i] = Image.open("assets/nsfw-warning.png")
-        else:
-            time.sleep(3)
-            pil_results = [Image.fromarray(np.random.randint(0, 255, (height, width, 3), dtype="uint8"))] * len(prompts)
+        img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
+        self._model.predict_step = partial(
+            self._model.predict_step, height=height, width=width, num_inference_steps=num_inference_steps
+        )
+        pil_results = self._trainer.predict(self._model, dataloaders=img_dl)[0]
+
+        nsfw_content = self._safety_checker(pil_results)
+        for i, nsfw in enumerate(nsfw_content):
+            if nsfw:
+                pil_results[i] = Image.open("assets/nsfw-warning.png")
 
         results = []
         for image in pil_results:
@@ -151,7 +157,7 @@ class StableDiffusionServe(L.LightningWork):
             subprocess.run("nvidia-smi", shell=True)
 
         if self._model is None:
-            self.build_model()
+            self.build_pipeline()
 
         self._fastapi_app = app = FastAPI()
         app.POOL: ThreadPoolExecutor = None
