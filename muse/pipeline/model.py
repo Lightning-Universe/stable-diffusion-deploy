@@ -43,7 +43,7 @@ class StableDiffusionModel(LightningModule):
 
     def predict_step(
         self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
-    ) -> List[Image]:
+    ) -> List[Image.Image]:
         batch_size = len(prompts)
 
         with self.model.ema_scope():
