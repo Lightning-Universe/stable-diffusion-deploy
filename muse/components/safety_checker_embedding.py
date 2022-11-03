@@ -24,7 +24,7 @@ class TextPromptDataset(Dataset):
 
 class SafetyCheckerBuildConfig(BuildConfig):
     def build_commands(self) -> List[str]:
-        return ["pip install git+https://github.com/openai/CLIP.git"]
+        return ["python -m pip install git+https://github.com/openai/CLIP.git"]
 
 
 class SafetyCheckerEmbedding(LightningWork):
