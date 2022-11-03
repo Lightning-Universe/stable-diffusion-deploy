@@ -1,6 +1,8 @@
 import base64
 import os
 import os.path
+import subprocess
+import sys
 import tarfile
 import time
 import urllib.request
@@ -137,7 +139,23 @@ class StableDiffusionServe(L.LightningWork):
 
         return results
 
+    def install_packages(self):
+        def install(package):
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+        requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
+
+        for requirement in requirements:
+            install(requirement)
+        
+        os.system("git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "stable-diffusion/requirements.txt"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "stable-diffusion"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "git+https://github.com/openai/CLIP.git"])
+
     def run(self):
+
+        self.install_packages()
 
         if False and self.safety_embeddings_filename not in self.safety_embeddings_drive.list("."):
             return
