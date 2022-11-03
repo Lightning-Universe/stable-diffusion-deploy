@@ -147,7 +147,7 @@ class StableDiffusionServe(L.LightningWork):
 
         for requirement in requirements:
             install(requirement)
-        
+
         os.system("git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "stable-diffusion/requirements.txt"])
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "stable-diffusion"])
