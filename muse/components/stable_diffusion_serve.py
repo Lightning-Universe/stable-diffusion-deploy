@@ -104,8 +104,9 @@ class StableDiffusionServe(L.LightningWork):
         self._model = StableDiffusionModel(
             weights_folder / "sd_weights", device=self._trainer.strategy.root_device.type
         )
-        self._model = self._model.to(torch.float16)
-        torch.cuda.empty_cache()
+        if torch.cuda.is_available():
+            self._model = self._model.to(torch.float16)
+            torch.cuda.empty_cache()
         print("model loaded")
 
     def predict(self, dreams: List[Data], entry_time: int):
