@@ -23,6 +23,7 @@ from muse.CONST import (  # noqa: E402
     IMAGE_SIZE,
     INFERENCE_REQUEST_TIMEOUT,
     KEEP_ALIVE_TIMEOUT,
+    MUSE_ENABLE_AI_TEMPLATE,
 )
 from muse.pipeline import ImageDataset, StableDiffusionModel  # noqa: E402
 from muse.utility.data_io import Data, DataBatch, TimeoutException  # noqa: E402
@@ -57,6 +58,19 @@ class DiffusionBuildConfig(L.BuildConfig):
         ]
 
 
+@dataclass
+class AITDiffusionBuildConfig(L.BuildConfig):
+    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
+
+    def build_commands(self):
+        return [
+            "git clone --recursive https://github.com/facebookincubator/AITemplate",
+            "cd python",
+            "python setup.py bdist_wheel",
+            "pip install dist/*.whl --force-reinstall",
+        ]
+
+
 class StableDiffusionServe(L.LightningWork):
     """The StableDiffusionServer handles the prediction.
 
@@ -66,7 +80,9 @@ class StableDiffusionServe(L.LightningWork):
     def __init__(
         self, safety_embeddings_drive: Optional[Drive] = None, safety_embeddings_filename: str = None, **kwargs
     ):
-        super().__init__(cloud_build_config=DiffusionBuildConfig(), **kwargs)
+        self.enable_aitemplate = MUSE_ENABLE_AI_TEMPLATE
+        cloud_build_config = AITDiffusionBuildConfig if self.enable_aitemplate else DiffusionBuildConfig
+        super().__init__(cloud_build_config=cloud_build_config(), **kwargs)
         self.safety_embeddings_drive = safety_embeddings_drive
         self.safety_embeddings_filename = safety_embeddings_filename
         self._model = None
