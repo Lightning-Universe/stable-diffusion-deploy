@@ -103,6 +103,7 @@ class MuseFlow(L.LightningFlow):
                 cloud_compute=L.CloudCompute(gpu_type, disk_size=30),
                 cache_calls=True,
                 parallel=True,
+                start_with_flow=False,
             )
             self.add_work(work)
 
