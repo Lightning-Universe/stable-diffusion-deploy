@@ -29,10 +29,10 @@ def load_model_from_config(config: Any, ckpt: str, verbose: bool = False) -> tor
 
 class StableDiffusionModel(LightningModule):
     def __init__(
-            self,
-            device: torch.device,
-            config_path="v1-inference.yml",
-            weights_path="sd-v1-4.ckpt",
+        self,
+        device: torch.device,
+        config_path="v2-inference.yml",
+        weights_path="768-v-ema.ckpt",
     ):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
@@ -46,7 +46,7 @@ class StableDiffusionModel(LightningModule):
 
     @typing.no_type_check
     def predict_step(
-            self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
+        self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
     ) -> Any:
         batch_size = len(prompts)
 
