@@ -1,5 +1,4 @@
 import typing
-from pathlib import Path
 from typing import Any, List
 
 import numpy as np
@@ -29,14 +28,17 @@ def load_model_from_config(config: Any, ckpt: str, verbose: bool = False) -> tor
 
 
 class StableDiffusionModel(LightningModule):
-    def __init__(self, model_path: Path, device: torch.device):
+    def __init__(
+            self,
+            device: torch.device,
+            config_path="v1-inference.yml",
+            weights_path="sd-v1-4.ckpt",
+    ):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
 
         super().__init__()
 
-        config_path = model_path / "v1-inference.yml"
-        weights_path = model_path / "sd-v1-4.ckpt"
         config = OmegaConf.load(f"{config_path}")
         config.model.params.cond_stage_config["params"] = {"device": device}
         self.model = load_model_from_config(config, f"{weights_path}")
@@ -44,7 +46,7 @@ class StableDiffusionModel(LightningModule):
 
     @typing.no_type_check
     def predict_step(
-        self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
+            self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
     ) -> Any:
         batch_size = len(prompts)
 

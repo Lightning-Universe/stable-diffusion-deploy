@@ -50,10 +50,9 @@ class DiffusionBuildConfig(L.BuildConfig):
 
     def build_commands(self):
         return [
-            "git clone -b rel/pl_18 https://github.com/rohitgr7/stable-diffusion",
-            "python -m pip install -r stable-diffusion/requirements.txt",
-            "python -m pip install -e stable-diffusion",
-            "python -m pip install git+https://github.com/openai/CLIP.git",
+            "git clone -b lit https://github.com/aniketmaurya/stablediffusion.git",
+            "python -m pip install -r stablediffusion/requirements.txt",
+            "python -m pip install -e stablediffusion",
         ]
 
 
@@ -97,12 +96,13 @@ class StableDiffusionServe(L.LightningWork):
         weights_folder = Path("resources/stable_diffusion_weights")
         weights_folder.mkdir(parents=True, exist_ok=True)
 
-        self.download_weights(
-            "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/sd_weights.tar.gz", weights_folder
-        )
+        url = "https://huggingface.co/stabilityai/stable-diffusion-2/resolve/main/768-v-ema.ckpt"
+        config_path = "stablediffusion/configs/stable-diffusion/v2-inference-v.yaml"
+        weights_path = "768-v-ema.ckpt"
+        urllib.request.urlretrieve(url, weights_path)
 
         self._model = StableDiffusionModel(
-            weights_folder / "sd_weights", device=self._trainer.strategy.root_device.type
+            config_path=config_path, weights_path=weights_path, device=self._trainer.strategy.root_device.type
         )
         if torch.cuda.is_available():
             self._model = self._model.to(torch.float16)
