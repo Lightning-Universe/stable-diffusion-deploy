@@ -98,9 +98,9 @@ class StableDiffusionServe(L.LightningWork):
         weights_folder.mkdir(parents=True, exist_ok=True)
 
         if IMAGE_SIZE == 768:
-            url = "https://huggingface.co/stabilityai/stable-diffusion-2/resolve/main/768-v-ema.ckpt"
+            url = "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/768-v-ema.ckpt"
         elif IMAGE_SIZE == 512:
-            url = "https://huggingface.co/stabilityai/stable-diffusion-2-base/resolve/main/512-base-ema.ckpt"
+            url = "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/512-base-ema.ckpt"
         else:
             raise NotImplementedError(f"image size {IMAGE_SIZE} is not implemented")
 

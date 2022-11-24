@@ -65,7 +65,7 @@ class MuseFlow(L.LightningFlow):
         initial_num_workers: int = MUSE_MIN_WORKERS,
         autoscale_interval: int = 1 * 30,
         max_batch_size: int = 12,
-        batch_timeout_secs: int = 10,
+        batch_timeout_secs: int = 2,
         gpu_type: str = MUSE_GPU_TYPE,
         max_workers: int = 20,
         autoscale_down_limit: Optional[int] = None,
