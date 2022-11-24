@@ -31,8 +31,8 @@ class StableDiffusionModel(LightningModule):
     def __init__(
         self,
         device: torch.device,
-        config_path="v2-inference.yml",
-        weights_path="768-v-ema.ckpt",
+        config_path: str,
+        weights_path: str,
     ):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
@@ -45,6 +45,7 @@ class StableDiffusionModel(LightningModule):
         self.sampler = DDIMSampler(self.model)
 
     @typing.no_type_check
+    @torch.inference_mode()
     def predict_step(
         self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
     ) -> Any:
