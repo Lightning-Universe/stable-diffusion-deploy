@@ -10,7 +10,7 @@ KEEP_ALIVE_TIMEOUT = os.environ.get("KEEP_ALIVE_TIMEOUT", 160)
 RATE_LIMIT_KEY = os.environ.get("RATE_LIMIT_KEY", str(uuid.uuid4().hex))
 SENTRY_API_KEY = os.environ.get("SENTRY_API_KEY", None)
 MUSE_SYSTEM_PASSWORD = os.environ.get("MUSE_SYSTEM_PASSWORD", "")
-IMAGE_SIZE = 512  # 512 or 768
+IMAGE_SIZE = 768  # 512 or 768
 
 NSFW_PROMPTS = [
     "nudity",

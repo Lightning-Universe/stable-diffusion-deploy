@@ -6,6 +6,9 @@ import torch
 from PIL import Image
 from pytorch_lightning import LightningModule
 
+downsampling_factor = 8
+unconditional_guidance_scale = 9.0  # SD2 need higher than SD1 (~7.5)
+
 
 def load_model_from_config(config: Any, ckpt: str, verbose: bool = False) -> torch.nn.Module:
     from ldm.util import instantiate_from_config
@@ -54,17 +57,16 @@ class StableDiffusionModel(LightningModule):
         with self.model.ema_scope():
             uc = self.model.get_learned_conditioning(batch_size * [""])
             c = self.model.get_learned_conditioning(prompts)
-            shape = [4, height // 8, width // 8]
+            shape = [4, height // downsampling_factor, width // downsampling_factor]
             samples_ddim, _ = self.sampler.sample(
                 S=num_inference_steps,
                 conditioning=c,
                 batch_size=batch_size,
                 shape=shape,
                 verbose=False,
-                unconditional_guidance_scale=7.5,
+                unconditional_guidance_scale=unconditional_guidance_scale,
                 unconditional_conditioning=uc,
                 eta=0.0,
-                x_T=None,
             )
 
             x_samples_ddim = self.model.decode_first_stage(samples_ddim)
