@@ -41,7 +41,7 @@ class SafetyChecker:
 
         encoded_images = torch.nn.functional.normalize(encoded_images, p=2, dim=1)
         similarity = torch.mm(encoded_images, self.text_embeddings.transpose(0, 1))
-        return torch.any(similarity > 0.24, dim=1).tolist()
+        return torch.any(similarity > 0.3, dim=1).tolist()
 
 
 @dataclass
