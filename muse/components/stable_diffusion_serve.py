@@ -50,6 +50,7 @@ class DiffusionBuildConfig(L.BuildConfig):
 
     def build_commands(self):
         return [
+            "rm -rf stablediffusion",
             "git clone -b lit https://github.com/aniketmaurya/stablediffusion.git",
             "python -m pip install -r stablediffusion/requirements.txt",
             "python -m pip install -e stablediffusion",
@@ -96,9 +97,15 @@ class StableDiffusionServe(L.LightningWork):
         weights_folder = Path("resources/stable_diffusion_weights")
         weights_folder.mkdir(parents=True, exist_ok=True)
 
-        url = "https://huggingface.co/stabilityai/stable-diffusion-2/resolve/main/768-v-ema.ckpt"
+        if IMAGE_SIZE == 768:
+            url = "https://huggingface.co/stabilityai/stable-diffusion-2/resolve/main/768-v-ema.ckpt"
+        elif IMAGE_SIZE == 512:
+            url = "https://huggingface.co/stabilityai/stable-diffusion-2-base/resolve/main/512-base-ema.ckpt"
+        else:
+            raise NotImplementedError(f"image size {IMAGE_SIZE} is not implemented")
+
         config_path = "stablediffusion/configs/stable-diffusion/v2-inference-v.yaml"
-        weights_path = "768-v-ema.ckpt"
+        weights_path = "sd-weights.ckpt"
         urllib.request.urlretrieve(url, weights_path)
 
         self._model = StableDiffusionModel(
@@ -117,12 +124,14 @@ class StableDiffusionServe(L.LightningWork):
         num_inference_steps = 50 if dreams[0].high_quality else 25
 
         prompts = [dream.prompt for dream in dreams]
+        print(prompts)
         img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
         self._model.predict_step = partial(
             self._model.predict_step, height=height, width=width, num_inference_steps=num_inference_steps
         )
         pil_results = self._trainer.predict(self._model, dataloaders=img_dl)[0]
-
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
         nsfw_content = self._safety_checker(pil_results)
         for i, nsfw in enumerate(nsfw_content):
             if nsfw:
@@ -195,11 +204,6 @@ class StableDiffusionServe(L.LightningWork):
                 ).result(timeout=INFERENCE_REQUEST_TIMEOUT)
                 return result
             except (TimeoutError, TimeoutException):
-                # hack: once there is a timeout then all requests after that is getting timeout
-                # old_pool = app.POOL
-                # app.POOL = ThreadPoolExecutor(max_workers=1)
-                # old_pool.shutdown(wait=False)
-                # signal.signal(signal.SIGINT, lambda sig, frame: exit_threads(old_pool))
                 raise TimeoutException()
 
         uvicorn.run(
