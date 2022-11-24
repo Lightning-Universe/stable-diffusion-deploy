@@ -24,9 +24,7 @@ NSFW_PROMPTS = [
     "blood",
     "guns",
     "profanity",
-    "racist",
     "homophobic",
-    "sexist",
     "swastika",  # Nazi Symbol
     "penis",
     "anus",
