@@ -1,11 +1,13 @@
 import typing
-from pathlib import Path
 from typing import Any, List
 
 import numpy as np
 import torch
 from PIL import Image
 from pytorch_lightning import LightningModule
+
+downsampling_factor = 8
+unconditional_guidance_scale = 9.0  # SD2 need higher than SD1 (~7.5)
 
 
 def load_model_from_config(config: Any, ckpt: str, verbose: bool = False) -> torch.nn.Module:
@@ -29,20 +31,24 @@ def load_model_from_config(config: Any, ckpt: str, verbose: bool = False) -> tor
 
 
 class StableDiffusionModel(LightningModule):
-    def __init__(self, model_path: Path, device: torch.device):
+    def __init__(
+        self,
+        device: torch.device,
+        config_path: str,
+        weights_path: str,
+    ):
         from ldm.models.diffusion.ddim import DDIMSampler
         from omegaconf import OmegaConf
 
         super().__init__()
 
-        config_path = model_path / "v1-inference.yml"
-        weights_path = model_path / "sd-v1-4.ckpt"
         config = OmegaConf.load(f"{config_path}")
         config.model.params.cond_stage_config["params"] = {"device": device}
         self.model = load_model_from_config(config, f"{weights_path}")
         self.sampler = DDIMSampler(self.model)
 
     @typing.no_type_check
+    @torch.inference_mode()
     def predict_step(
         self, prompts: List[str], batch_idx: int, height: int, width: int, num_inference_steps: int
     ) -> Any:
@@ -51,17 +57,16 @@ class StableDiffusionModel(LightningModule):
         with self.model.ema_scope():
             uc = self.model.get_learned_conditioning(batch_size * [""])
             c = self.model.get_learned_conditioning(prompts)
-            shape = [4, height // 8, width // 8]
+            shape = [4, height // downsampling_factor, width // downsampling_factor]
             samples_ddim, _ = self.sampler.sample(
                 S=num_inference_steps,
                 conditioning=c,
                 batch_size=batch_size,
                 shape=shape,
                 verbose=False,
-                unconditional_guidance_scale=7.5,
+                unconditional_guidance_scale=unconditional_guidance_scale,
                 unconditional_conditioning=uc,
                 eta=0.0,
-                x_T=None,
             )
 
             x_samples_ddim = self.model.decode_first_stage(samples_ddim)
