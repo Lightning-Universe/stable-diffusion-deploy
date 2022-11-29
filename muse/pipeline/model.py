@@ -46,6 +46,16 @@ class StableDiffusionModel(LightningModule):
         config.model.params.cond_stage_config["params"] = {"device": device}
         self.model = load_model_from_config(config, f"{weights_path}")
         self.sampler = DDIMSampler(self.model)
+        self._uc = None
+        self._negative_prompts = [
+            "Deformed",
+            "blurry",
+            "bad anatomy",
+            "disfigured",
+            "blur",
+            "ugly",
+            "(((out of frame)))",
+        ]
 
     @typing.no_type_check
     @torch.inference_mode()
@@ -55,7 +65,8 @@ class StableDiffusionModel(LightningModule):
         batch_size = len(prompts)
 
         with self.model.ema_scope():
-            uc = self.model.get_learned_conditioning(batch_size * [""])
+            if not self._uc:
+                self._uc = self.model.get_learned_conditioning(self._negative_prompts)
             c = self.model.get_learned_conditioning(prompts)
             shape = [4, height // downsampling_factor, width // downsampling_factor]
             samples_ddim, _ = self.sampler.sample(
@@ -65,7 +76,7 @@ class StableDiffusionModel(LightningModule):
                 shape=shape,
                 verbose=False,
                 unconditional_guidance_scale=unconditional_guidance_scale,
-                unconditional_conditioning=uc,
+                unconditional_conditioning=self._uc,
                 eta=0.0,
             )
 
