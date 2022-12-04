@@ -32,7 +32,7 @@ class SafetyChecker:
         self.model, self.preprocess = openai_clip.load("ViT-B/32", device="cpu")
         self.text_embeddings = torch.load(embeddings_path)
 
-    def __call__(self, images):
+    def __call__(self, images: List[Image.Image]):
         images = torch.stack([self.preprocess(img) for img in images])
         encoded_images = self.model.encode_image(images)
 
@@ -98,9 +98,8 @@ class StableDiffusionServe(L.LightningWork):
         prompts: List[str] = [dream.prompt for dream in dreams]
         print(prompts)
 
-        pil_results = self._model(prompts, image_size=IMAGE_SIZE, inference_steps=inference_steps)
-        if not isinstance(pil_results, list):
-            pil_results = [pil_results]
+        predictions = self._model(prompts, image_size=IMAGE_SIZE, inference_steps=inference_steps)
+        pil_results: List[Image.Image] = [predictions] if isinstance(predictions, Image.Image) else predictions
 
         nsfw_content = self._safety_checker(pil_results)
         for i, nsfw in enumerate(nsfw_content):
