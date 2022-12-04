@@ -43,11 +43,9 @@ class SafetyChecker:
 
 @dataclass
 class DiffusionBuildConfig(L.BuildConfig):
-    requirements = ["fastapi==0.78.0", "uvicorn==0.17.6"]
-
     def build_commands(self):
         return [
-            "python -m pip install https://github.com/aniketmaurya/stable_diffusion_inference/archive/refs/tags/v0.0.1.tar.gz",
+            "python -m pip install https://github.com/aniketmaurya/stable_diffusion_inference/archive/refs/tags/v0.0.1.tar.gz",  # noqa: E501
             "pip install -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers -q",
             "pip install -U 'clip@ git+https://github.com/openai/CLIP.git@main' -q",
         ]
