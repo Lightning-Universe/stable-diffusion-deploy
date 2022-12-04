@@ -6,7 +6,6 @@ import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
-from functools import partial
 from io import BytesIO
 from pathlib import Path
 from typing import List, Optional
@@ -17,14 +16,12 @@ import lightning as L  # noqa: E402
 import torch  # noqa: E402
 from lightning.app.storage import Drive  # noqa: E402
 from PIL import Image  # noqa: E402
-from torch.utils.data import DataLoader  # noqa: E402
 
 from muse.CONST import (  # noqa: E402
     IMAGE_SIZE,
     INFERENCE_REQUEST_TIMEOUT,
     KEEP_ALIVE_TIMEOUT,
 )
-from muse.pipeline import ImageDataset, StableDiffusionModel  # noqa: E402
 from muse.utility.data_io import Data, DataBatch, TimeoutException  # noqa: E402
 
 
@@ -50,10 +47,9 @@ class DiffusionBuildConfig(L.BuildConfig):
 
     def build_commands(self):
         return [
-            "rm -rf stablediffusion",
-            "git clone -b lit https://github.com/aniketmaurya/stablediffusion.git",
-            "python -m pip install -r stablediffusion/requirements.txt",
-            "python -m pip install -e stablediffusion",
+            "python -m pip install https://github.com/aniketmaurya/stable_diffusion_inference/archive/refs/tags/v0.0.1.tar.gz",
+            "pip install -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers -q",
+            "pip install -U 'clip@ git+https://github.com/openai/CLIP.git@main' -q",
         ]
 
 
@@ -85,53 +81,27 @@ class StableDiffusionServe(L.LightningWork):
 
     def build_pipeline(self):
         """The `build_pipeline(...)` method builds a model and trainer."""
-        from pytorch_lightning import Trainer
-
-        precision = 16 if torch.cuda.is_available() else 32
-        self._trainer = Trainer(accelerator="auto", devices=1, precision=precision, enable_progress_bar=False)
-
-        self.safety_embeddings_drive.get(self.safety_embeddings_filename)
-        self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
+        from stable_diffusion_inference import create_text2image
 
         print("loading model...")
-        weights_folder = Path("resources/stable_diffusion_weights")
-        weights_folder.mkdir(parents=True, exist_ok=True)
-
-        if IMAGE_SIZE == 768:
-            url = "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/768-v-ema.ckpt"
-        elif IMAGE_SIZE == 512:
-            url = "https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/512-base-ema.ckpt"
-        else:
-            raise NotImplementedError(f"image size {IMAGE_SIZE} is not implemented")
-
-        config_path = "stablediffusion/configs/stable-diffusion/v2-inference-v.yaml"
-        weights_path = "sd-weights.ckpt"
-        urllib.request.urlretrieve(url, weights_path)
-
-        self._model = StableDiffusionModel(
-            config_path=config_path, weights_path=weights_path, device=self._trainer.strategy.root_device.type
-        )
-        if torch.cuda.is_available():
-            self._model = self._model.to(torch.float16)
-            torch.cuda.empty_cache()
+        self._model = create_text2image(sd_variant="sd1")
+        self.safety_embeddings_drive.get(self.safety_embeddings_filename)
+        self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
         print("model loaded")
 
     def predict(self, dreams: List[Data], entry_time: int):
         if time.time() - entry_time > INFERENCE_REQUEST_TIMEOUT:
             raise TimeoutException()
 
-        height = width = IMAGE_SIZE
-        num_inference_steps = 50 if dreams[0].high_quality else 25
+        inference_steps = 50 if dreams[0].high_quality else 25
 
-        prompts = [dream.prompt for dream in dreams]
+        prompts: List[str] = [dream.prompt for dream in dreams]
         print(prompts)
-        img_dl = DataLoader(ImageDataset(prompts), batch_size=len(prompts), shuffle=False)
-        self._model.predict_step = partial(
-            self._model.predict_step, height=height, width=width, num_inference_steps=num_inference_steps
-        )
-        pil_results = self._trainer.predict(self._model, dataloaders=img_dl)[0]
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+
+        pil_results = self._model(prompts, image_size=IMAGE_SIZE, inference_steps=inference_steps)
+        if not isinstance(pil_results, list):
+            pil_results = [pil_results]
+
         nsfw_content = self._safety_checker(pil_results)
         for i, nsfw in enumerate(nsfw_content):
             if nsfw:
