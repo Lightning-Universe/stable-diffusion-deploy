@@ -3,7 +3,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { styled } from '@mui/material/styles';
 import { useCallback, useEffect, useState } from 'react';
 
-export const ProgressBar = ({ maxTime = 60, title }: { maxTime?: number; title?: string }) => {
+export const ProgressBar = ({ maxTime = 5, title }: { maxTime?: number; title?: string }) => {
   const [time, setValue] = useState(0);
 
   useEffect(() => {
@@ -36,7 +36,8 @@ export const ProgressBar = ({ maxTime = 60, title }: { maxTime?: number; title?:
         <Typography {...fontStyles.header} textAlign={'left'}>
           {hasReachedMaximum() ? `Taking longer than usual, try reloading the page` : `${progressValue()}%`}
           <span style={{ color: fontStyles.body.color }}>
-            {!hasReachedMaximum() && ` - ${formatSeconds(maxTime - time)} left`}
+            {!hasReachedMaximum() &&
+              ` - ${formatSeconds(maxTime - time)} left, it takes 1-5 seconds to generate image`}
           </span>
         </Typography>
       </Box>
