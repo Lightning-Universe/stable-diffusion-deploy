@@ -107,7 +107,7 @@ function DreamSearch() {
           <DownloadImageButton imgResult={imgResult} query={query} />
           <Box
             sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%' }}>
-            <Dream loading={loading} dream={requestedDream} image={imgResult} maxTime={highQuality ? 60 : 10} />
+            <Dream loading={loading} dream={requestedDream} image={imgResult} maxTime={highQuality ? 60 : 5} />
           </Box>
           <Box
             sx={{
