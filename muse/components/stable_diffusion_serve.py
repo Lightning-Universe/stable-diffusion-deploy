@@ -45,7 +45,7 @@ class SafetyChecker:
 class DiffusionBuildConfig(L.BuildConfig):
     def build_commands(self):
         return [
-            "python -m pip install https://github.com/aniketmaurya/stable_diffusion_inference/archive/refs/tags/v0.0.1.tar.gz",  # noqa: E501
+            "python -m pip install https://github.com/aniketmaurya/stable_diffusion_inference/archive/refs/tags/v0.0.2.tar.gz",  # noqa: E501
             "pip install -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers -q",
             "pip install -U 'clip@ git+https://github.com/openai/CLIP.git@main' -q",
         ]
