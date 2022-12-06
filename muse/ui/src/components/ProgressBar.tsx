@@ -36,8 +36,7 @@ export const ProgressBar = ({ maxTime = 5, title }: { maxTime?: number; title?: 
         <Typography {...fontStyles.header} textAlign={'left'}>
           {hasReachedMaximum() ? `Taking longer than usual, try reloading the page` : `${progressValue()}%`}
           <span style={{ color: fontStyles.body.color }}>
-            {!hasReachedMaximum() &&
-              ` - ${formatSeconds(maxTime - time)} left, it takes 1-5 seconds to generate an image`}
+            {!hasReachedMaximum() && ` - ${formatSeconds(maxTime - time)} left`}
           </span>
         </Typography>
       </Box>

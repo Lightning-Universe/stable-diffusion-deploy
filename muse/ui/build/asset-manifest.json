@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.4e92baf3.css",
-    "main.js": "/static/js/main.481ef01c.js",
+    "main.css": "/static/css/main.d1c23a77.css",
+    "main.js": "/static/js/main.9cf6366a.js",
     "static/js/787.8c33e357.chunk.js": "/static/js/787.8c33e357.chunk.js",
     "static/media/header.png": "/static/media/header.1b3e67ecc5706f94a19d.png",
     "static/media/UCity-Regular.otf": "/static/media/UCity-Regular.e28f5006c1976d08baaa.otf",
@@ -11,12 +11,12 @@
     "static/media/Slack.svg": "/static/media/Slack.53435980573fa6fea1c93f596c9808c7.svg",
     "index.html": "/index.html",
     "static/media/Flashes.svg": "/static/media/Flashes.b681a57ea3fef62885ceced1b6630438.svg",
-    "main.4e92baf3.css.map": "/static/css/main.4e92baf3.css.map",
-    "main.481ef01c.js.map": "/static/js/main.481ef01c.js.map",
+    "main.d1c23a77.css.map": "/static/css/main.d1c23a77.css.map",
+    "main.9cf6366a.js.map": "/static/js/main.9cf6366a.js.map",
     "787.8c33e357.chunk.js.map": "/static/js/787.8c33e357.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.4e92baf3.css",
-    "static/js/main.481ef01c.js"
+    "static/css/main.d1c23a77.css",
+    "static/js/main.9cf6366a.js"
   ]
 }
