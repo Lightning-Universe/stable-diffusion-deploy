@@ -39,10 +39,7 @@ type DreamProps = {
 function Dream({ loading, dream, image, maxTime }: DreamProps) {
   if (image) return null;
 
-  if (dream && loading)
-    return (
-      <ProgressBar maxTime={maxTime} title={'Finding inspiration... It takes 1-5 seconds to generate an image'} />
-    );
+  if (dream && loading) return <ProgressBar maxTime={maxTime} title={'Finding inspiration (~1-5 seconds)…'} />;
 
   return (
     <Typography
