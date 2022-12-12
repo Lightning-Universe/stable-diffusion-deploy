@@ -98,8 +98,6 @@ conda activate muse_app
 git clone https://github.com/Lightning-AI/stable-diffusion-deploy.git
 cd stable-diffusion-deploy
 
-## [Install PyTorch](https://pytorch.org) that suits your system configuration (CUDA version preferable)
-pip install torch --extra-index-url https://download.pytorch.org/whl/cu116
 bash dev_install.sh
 
 ## To run the app locally
@@ -109,17 +107,7 @@ python -m lightning run app app.py
 python -m lightning run app app.py --cloud
 ```
 
-If you see the following error while running the app:
-
-```console
-OSError: [Errno 24] Too many open files
-```
-
-run the following command (Unix only):
-
-```shell
-ulimit -Sn 4096
-```
+You can configure Muse to select customize number of workers, batch size or select the stable diffusion version of your choice. [Learn more](./docs/configurations.md).
 
 ## About this Lightning App
 

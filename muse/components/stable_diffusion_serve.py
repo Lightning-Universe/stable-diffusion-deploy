@@ -82,7 +82,9 @@ class StableDiffusionServe(L.LightningWork):
         from stable_diffusion_inference import create_text2image
 
         print("loading model...")
-        self._model = create_text2image(sd_variant="sd1")
+        # model url is loaded from stable_diffusion_inference library
+        # url: https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/v1-5-pruned-emaonly.ckpt
+        self._model = create_text2image(sd_variant=os.environ.get("SD_VARIANT", "sd1"))
         self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
         print("model loaded")
