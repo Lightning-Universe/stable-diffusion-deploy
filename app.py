@@ -119,6 +119,10 @@ class MuseFlow(L.LightningFlow):
         self.safety_embeddings_ready = False
 
     @property
+    def ready(self) -> bool:
+        return self.load_balancer.ready
+
+    @property
     def model_servers(self) -> List[StableDiffusionServe]:
         works = []
         for i in range(self._num_workers):
