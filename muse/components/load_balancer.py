@@ -60,6 +60,8 @@ class LoadBalancer(L.LightningWork):
         self._responses = {}  # {request_id: response}
         self._last_batch_sent = 0
 
+        self.ready = False
+
     async def send_batch(self, batch):
         server = next(self._ITER)
         data = {"batch": [b[1] for b in batch]}
@@ -241,6 +243,8 @@ class LoadBalancer(L.LightningWork):
             if data.prompt.lower() == "surprise me":
                 data.prompt = random_prompt()
             return await self.process_request(data)
+
+        self.ready = True
 
         uvicorn.run(
             app, host=self.host, port=self.port, loop="uvloop", timeout_keep_alive=KEEP_ALIVE_TIMEOUT, access_log=False
