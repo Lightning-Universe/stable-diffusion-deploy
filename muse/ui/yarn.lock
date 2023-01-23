@@ -8005,9 +8005,9 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-"lightning-ui@git+ssh://git@github.com/Lightning-AI/lightning-ui.git#1fff090ab288199ad3596381a49ce69d5160b5bc":
+"lightning-ui@https://github.com/Lightning-AI/lightning-ui.git#1fff090ab288199ad3596381a49ce69d5160b5bc":
   version "0.1.0"
-  resolved "git+ssh://git@github.com/Lightning-AI/lightning-ui.git#1fff090ab288199ad3596381a49ce69d5160b5bc"
+  resolved "https://github.com/Lightning-AI/lightning-ui.git#1fff090ab288199ad3596381a49ce69d5160b5bc"
   dependencies:
     "@emotion/react" "^11.7.1"
     "@emotion/styled" "^11.6.0"
