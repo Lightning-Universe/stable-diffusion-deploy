@@ -30,7 +30,7 @@ class SafetyCheckerBuildConfig(BuildConfig):
 class SafetyCheckerEmbedding(LightningWork):
     def __init__(self, nsfw_list: Optional[List] = None, drive: Optional[Drive] = None):
         super().__init__(
-            parallel=False, cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=SafetyCheckerBuildConfig()
+            parallel=False, cloud_compute=L.CloudCompute("cpu-small"), cloud_build_config=SafetyCheckerBuildConfig()
         )
 
         self.drive = drive
