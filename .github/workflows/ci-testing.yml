@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -46,7 +46,7 @@ jobs:
           SLACK_CLIENT_ID: ${{secrets.SLACK_CLIENT_ID}}
           CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
         run: |
-          coverage run --source muse -m pytest muse tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+          coverage run --source muse -m pytest muse tests -v
 
       - name: Statistics
         if: success()
