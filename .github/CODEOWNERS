@@ -2,4 +2,13 @@
 
 # These owners will be the default owners for everything in the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for review when someone opens a pull request.
-* @aniketmaurya @kaushikb11 @pritamsoni-hsr @rohitgr7
+* @aniketmaurya @Lightning-Universe/engs
+
+# owners
+/.github/CODEOWNERS   @Lightning-Universe/eng-leads
+# main
+/README.md            @Lightning-Universe/eng-leads
+/LICENSE              @Lightning-Universe/eng-leads
+
+# CI/CD
+/.github/             @Lightning-Universe/eng-leads
