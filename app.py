@@ -10,13 +10,7 @@ from lightning.app.storage import Drive
 from lightning.app.utilities.frontend import AppInfo
 from lightning_api_access import APIAccessFrontend
 
-from muse import (
-    LoadBalancer,
-    Locust,
-    MuseSlackCommandBot,
-    SafetyCheckerEmbedding,
-    StableDiffusionServe,
-)
+from muse import LoadBalancer, Locust, MuseSlackCommandBot, SafetyCheckerEmbedding, StableDiffusionServe
 from muse.CONST import ENABLE_ANALYTICS, MUSE_GPU_TYPE, MUSE_MIN_WORKERS
 from muse.utility.analytics import analytics_headers
 

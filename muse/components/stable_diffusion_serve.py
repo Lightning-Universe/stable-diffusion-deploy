@@ -17,11 +17,7 @@ import torch  # noqa: E402
 from lightning.app.storage import Drive  # noqa: E402
 from PIL import Image  # noqa: E402
 
-from muse.CONST import (  # noqa: E402
-    IMAGE_SIZE,
-    INFERENCE_REQUEST_TIMEOUT,
-    KEEP_ALIVE_TIMEOUT,
-)
+from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT  # noqa: E402
 from muse.utility.data_io import Data, DataBatch, TimeoutException  # noqa: E402
 
 
