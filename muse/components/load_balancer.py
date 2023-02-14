@@ -45,7 +45,7 @@ class LoadBalancer(L.LightningWork):
     """
 
     def __init__(self, max_batch_size=8, batch_timeout_secs=10, **kwargs):
-        super().__init__(cloud_compute=L.CloudCompute("cpu-medium"), cloud_build_config=FastAPIBuildConfig(), **kwargs)
+        super().__init__(cloud_compute=L.CloudCompute("cpu-small"), cloud_build_config=FastAPIBuildConfig(), **kwargs)
         self._server_ready = False
         self.servers = []
         self.max_batch_size = max_batch_size
