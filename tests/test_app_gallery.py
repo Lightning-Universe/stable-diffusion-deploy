@@ -178,7 +178,7 @@ def clone_and_run_from_gallery_app_page(app_gallery_page) -> Generator:
             print(f"Failed to delete app {lightning_app_id}. Exception {e}")
 
 
-def validate_app_functionalities(app_page: "Page") -> None:
+def validate_app_functionalities(app_page) -> None:
     """
     app_page: The UI page of the app to be validated.
     """
