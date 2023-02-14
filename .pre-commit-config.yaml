@@ -21,6 +21,7 @@ repos:
         exclude: |
           (?x)(
               ^muse/ui/build|
+              muse/ui/src/assets/header.png|
               muse/ui/yarn.lock
           )
       - id: check-docstring-first
