@@ -1,13 +1,10 @@
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
 default_language_version:
-  python: python3.9
+  python: python3
 
 ci:
   autofix_prs: true
-  autoupdate_commit_msg: "[pre-commit.ci] pre-commit suggestions"
-  autoupdate_schedule: quarterly
-  # submodules: true
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'
+  autoupdate_schedule: 'quarterly'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -17,14 +14,14 @@ repos:
       - id: trailing-whitespace
       - id: check-case-conflict
       - id: check-yaml
-        exclude: redis/redis.yml
       - id: check-toml
       - id: check-json
       - id: check-added-large-files
-        args: ["--maxkb=450", "--enforce-all"]
+        args: ["--maxkb=250", "--enforce-all"]
         exclude: |
           (?x)(
               ^muse/ui/build|
+              muse/ui/src/assets/header.png|
               muse/ui/yarn.lock
           )
       - id: check-docstring-first
@@ -34,7 +31,7 @@ repos:
     rev: v3.3.1
     hooks:
       - id: pyupgrade
-        args: [--py37-plus]
+        args: [--py38-plus]
         name: Upgrade code
 
   - repo: https://github.com/PyCQA/docformatter
@@ -43,17 +40,12 @@ repos:
       - id: docformatter
         args: [--in-place, --wrap-summaries=120, --wrap-descriptions=120]
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.11.4
-    hooks:
-      - id: isort
-        args: [--profile, black]
-
   - repo: https://github.com/psf/black
     rev: 22.12.0
     hooks:
       - id: black
         name: Black code
+        args: ["--line-length=120"]
 
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.16
@@ -63,31 +55,9 @@ repos:
           - mdformat-gfm
           - mdformat-black
           - mdformat_frontmatter
-        exclude: ^resources
 
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.4.0
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.240
     hooks:
-      - id: yesqa
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.4
-    hooks:
-      - id: prettier
-        exclude: |
-          (?x)(
-              ^.github/ISSUE_TEMPLATE/bug_report.md|
-              ^.github/ISSUE_TEMPLATE/feature_request.md|
-              ^.github/ISSUE_TEMPLATE/documentation.md|
-              ^muse/ui/build|
-              ^README.md
-          )
-        additional_dependencies:
-          - prettier@2.7.1
-          - typescript@4.4.2
-          - prettier-plugin-organize-imports@3.1.0
+      - id: ruff
+        args: ["--fix", "--line-length=120"]
