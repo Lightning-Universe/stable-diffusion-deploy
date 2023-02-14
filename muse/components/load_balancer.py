@@ -18,12 +18,7 @@ from ratelimit import RateLimitMiddleware
 from ratelimit.backends.simple import MemoryBackend
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from muse.CONST import (
-    INFERENCE_REQUEST_TIMEOUT,
-    KEEP_ALIVE_TIMEOUT,
-    MUSE_SYSTEM_PASSWORD,
-    SENTRY_API_KEY,
-)
+from muse.CONST import INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT, MUSE_SYSTEM_PASSWORD, SENTRY_API_KEY
 from muse.utility.data_io import Data, SysInfo, TimeoutException, random_prompt
 from muse.utility.exception_handling import raise_granular_exception
 from muse.utility.rate_limiter import RULES, auth_function
