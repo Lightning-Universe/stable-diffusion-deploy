@@ -3,7 +3,6 @@ lightning_api_access@ git+https://github.com/Lightning-AI/LAI-API-Access-UI-Comp
 ftfy==6.1.1
 scipy
 slack_bolt==1.14.3
-slack-sdk==3.19.5
 slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
