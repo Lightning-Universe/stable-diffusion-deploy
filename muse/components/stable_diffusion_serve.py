@@ -9,8 +9,10 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 from typing import List, Optional
+from os.path import dirname
 
-os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+import stable_diffusion_inference
+from stable_diffusion_inference.model import SDInference
 
 import lightning as L  # noqa: E402
 import torch  # noqa: E402
@@ -19,6 +21,8 @@ from PIL import Image  # noqa: E402
 
 from muse.CONST import IMAGE_SIZE, INFERENCE_REQUEST_TIMEOUT, KEEP_ALIVE_TIMEOUT  # noqa: E402
 from muse.utility.data_io import Data, DataBatch, TimeoutException  # noqa: E402
+
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class SafetyChecker:
@@ -78,9 +82,29 @@ class StableDiffusionServe(L.LightningWork):
         from stable_diffusion_inference import create_text2image
 
         print("loading model...")
+
+        # If the stable_diffusion_inference library can't support SD_VARIANT, build custom pipeline.
+        # SD_VERSION: configuration version of stable diffusion, default=1
+        if os.environ.get("SD_VARIANT", None) not in ("sd1.4", "sd1.5", "sd1", "sd", "sd2_high", "sd2", "sd2_base"):
+            _ROOT_DIR = dirname(stable_diffusion_inference.__file__)
+            config_path = f"{_ROOT_DIR}/configs/stable-diffusion/v{os.environ.get('SD_VERSION', 1)}-inference.yaml"
+            checkpoint_path = os.environ["SD_VARIANT"]
+
+            self._model = SDInference(
+                config_path=config_path,
+                checkpoint_path=checkpoint_path,
+                version="1.5",
+                cache_dir=None,
+                force_download=None,
+                ckpt_filename=os.environ["SD_VARIANT"],
+            )
+            print(f"{os.environ['SD_VARIANT']} is loaded.")
+
         # model url is loaded from stable_diffusion_inference library
         # url: https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/v1-5-pruned-emaonly.ckpt
-        self._model = create_text2image(sd_variant=os.environ.get("SD_VARIANT", "sd1"))
+        else:
+            self._model = create_text2image(sd_variant=os.environ.get("SD_VARIANT", "sd1"))
+
         self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)
         print("model loaded")
