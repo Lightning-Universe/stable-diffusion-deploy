@@ -7,7 +7,7 @@ slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
 asgiref==3.6.0
-lightning==1.9.*
+lightning==2.0.*
 # pytorch-lightning>=1.8.0
 asgi-ratelimit==0.10.0
 sentry-sdk[fastapi]
