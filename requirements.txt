@@ -6,11 +6,12 @@ slack_bolt==1.14.3
 slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
-asgiref==3.5.2
-lightning==1.9.*
+asgiref==3.6.0
+lightning==2.0.*
 # pytorch-lightning>=1.8.0
-asgi-ratelimit==0.9.0
+asgi-ratelimit==0.10.0
 sentry-sdk[fastapi]
 starlette-exporter==0.15.1
-Pillow==9.4.0
+Pillow==9.5.0
 lightning@ git+https://github.com/Lightning-AI/lightning@release/stable
+sd_inference@ git+https://github.com/aniketmaurya/stable_diffusion_inference

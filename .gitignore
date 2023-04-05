@@ -308,6 +308,7 @@ data/
 lightning_logs/
 wandb/
 .idea/
+.vscode/
 flagged/
 .python-version
 github/

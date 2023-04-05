@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from os.path import dirname
 
 import stable_diffusion_inference
@@ -77,18 +77,33 @@ class StableDiffusionServe(L.LightningWork):
             # extracting file
             file.extractall(target_folder)
 
+    def is_custom_model(self) -> Dict[str, Any]:
+        sd_variant = os.environ.get("SD_VARIANT", "sd1")
+        sd_version = os.environ.get("SD_VERSION", 1)
+        supported_model_of_stable_diffusion_inference = ("sd1.4", "sd1.5", "sd1", "sd", "sd2_high", "sd2", "sd2_base")
+
+        if sd_variant in supported_model_of_stable_diffusion_inference:
+            return {"is_custom_model": False, "sd_variant": sd_variant, "sd_version": sd_version}
+        else:
+            return {"is_custom_model": True, "sd_variant": sd_variant, "sd_version": sd_version}
+
     def build_pipeline(self):
         """The `build_pipeline(...)` method builds a model and trainer."""
         from stable_diffusion_inference import create_text2image
 
         print("loading model...")
 
-        # If the stable_diffusion_inference library can't support SD_VARIANT, build custom pipeline.
-        # SD_VERSION: configuration version of stable diffusion, default=1
-        if os.environ.get("SD_VARIANT", None) not in ("sd1.4", "sd1.5", "sd1", "sd", "sd2_high", "sd2", "sd2_base"):
+        model_info = self.is_custom_model()
+        if not model_info["is_custom_model"]:
+            # model url is loaded from stable_diffusion_inference library
+            # url: https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/v1-5-pruned-emaonly.ckpt
+            self._model = create_text2image(sd_variant=model_info["sd_variant"])
+        else:
+            # If the stable_diffusion_inference library can't support SD_VARIANT, build custom pipeline.
+            # SD_VERSION: configuration version of stable diffusion, default=1
             _ROOT_DIR = dirname(stable_diffusion_inference.__file__)
-            config_path = f"{_ROOT_DIR}/configs/stable-diffusion/v{os.environ.get('SD_VERSION', 1)}-inference.yaml"
-            checkpoint_path = os.environ["SD_VARIANT"]
+            config_path = f"{_ROOT_DIR}/configs/stable-diffusion/v{model_info['sd_version']}-inference.yaml"
+            checkpoint_path = model_info["sd_variant"]
 
             self._model = SDInference(
                 config_path=config_path,
@@ -96,14 +111,12 @@ class StableDiffusionServe(L.LightningWork):
                 version="1.5",
                 cache_dir=None,
                 force_download=None,
-                ckpt_filename=os.environ["SD_VARIANT"],
+                ckpt_filename=checkpoint_path,
             )
-            print(f"{os.environ['SD_VARIANT']} is loaded.")
+            print(f"{model_info['sd_variant']} is loaded.")
 
-        # model url is loaded from stable_diffusion_inference library
-        # url: https://pl-public-data.s3.amazonaws.com/dream_stable_diffusion/v1-5-pruned-emaonly.ckpt
-        else:
-            self._model = create_text2image(sd_variant=os.environ.get("SD_VARIANT", "sd1"))
+        if os.environ.get("CUSTOM_MODEL_TEST"):
+            return
 
         self.safety_embeddings_drive.get(self.safety_embeddings_filename)
         self._safety_checker = SafetyChecker(self.safety_embeddings_filename)

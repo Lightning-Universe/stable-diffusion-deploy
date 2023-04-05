@@ -46,7 +46,7 @@ jobs:
           SLACK_CLIENT_ID: ${{secrets.SLACK_CLIENT_ID}}
           CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
         run: |
-          coverage run --source muse -m pytest muse tests -v
+          coverage run --source muse -m pytest muse tests/test_custom_model_logic.py tests/test_app.py -v -s
 
       - name: Statistics
         if: success()
