@@ -50,5 +50,4 @@ jobs:
 
       - name: Statistics
         if: success()
-        run: |
-          coverage report
+        run: coverage report
