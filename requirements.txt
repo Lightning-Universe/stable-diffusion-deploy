@@ -13,4 +13,6 @@ asgi-ratelimit==0.10.0
 sentry-sdk[fastapi]
 starlette-exporter==0.15.1
 Pillow==9.5.0
+python-dotenv==1.0.0
+uvloop>=0.16.0, <=0.17.0
 lightning@ git+https://github.com/Lightning-AI/lightning@release/stable
