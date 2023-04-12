@@ -45,10 +45,8 @@ jobs:
           SIGNING_SECRET: ${{secrets.SIGNING_SECRET}}
           SLACK_CLIENT_ID: ${{secrets.SLACK_CLIENT_ID}}
           CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
-        run: |
-          coverage run --source muse -m pytest muse tests -v
+        run: coverage run --source muse -m pytest muse tests -v
 
       - name: Statistics
         if: success()
-        run: |
-          coverage report
+        run: coverage report
