@@ -8,7 +8,7 @@ from muse.utility.data_io import TimeoutException
 
 
 def raise_granular_exception(exception: Exception):
-    """handle the exceptions coming from hitting the model servers."""
+    """Handle the exceptions coming from hitting the model servers."""
     if not isinstance(exception, Exception):
         return
 
