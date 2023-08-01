@@ -158,7 +158,7 @@ class MuseSlackCommandBot(SlackCommandBot):
         threading.Thread(target=self.run_app, daemon=False).start()
 
     def run_server(self, app: typing.Union[ASGIApplication, str], config: uvicorn.Config = None) -> None:
-        """copy of uvicorn.run."""
+        """Copy of uvicorn.run."""
 
         server = uvicorn.Server(config=config)
 
