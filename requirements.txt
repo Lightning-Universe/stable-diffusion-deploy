@@ -2,7 +2,7 @@ slack_command_bot@ git+https://github.com/Lightning-AI/LAI-slack-sommand-bot-Com
 lightning_api_access@ git+https://github.com/Lightning-AI/LAI-API-Access-UI-Component@main
 ftfy==6.1.1
 scipy
-slack_bolt==1.18.0
+# slack_bolt - it is already pin in slack-command-bot
 slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
