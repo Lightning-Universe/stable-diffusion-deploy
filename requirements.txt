@@ -6,7 +6,7 @@ scipy
 slackeventsapi==3.0.1
 slackclient==2.9.4
 flask-cors
-asgiref==3.6.0
+asgiref==3.7.2
 lightning==2.0.*
 # pytorch-lightning>=1.8.0
 asgi-ratelimit==0.10.0
