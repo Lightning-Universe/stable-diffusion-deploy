@@ -99,6 +99,7 @@ class MuseFlow(L.LightningFlow):
                 parallel=True,
                 start_with_flow=False,
             )
+            print(f"Starting work {i}...")
             self.add_work(work)
 
         self.slack_bot = MuseSlackCommandBot(command="/muse")
@@ -148,6 +149,16 @@ class MuseFlow(L.LightningFlow):
     def run(self):  # noqa: C901
         if os.environ.get("TESTING_LAI"):
             print("⚡ Lightning Dream App! ⚡")
+        if os.environ.get("CUSTOM_MODEL_TEST"):
+            work = StableDiffusionServe(
+                safety_embeddings_drive=self.safety_embeddings_drive,
+                safety_embeddings_filename=self.safety_checker_embedding_work.safety_embeddings_filename,
+                cloud_compute=L.CloudCompute(self.gpu_type, disk_size=30),
+                cache_calls=True,
+                parallel=True,
+                start_with_flow=False,
+            )
+            work.build_pipeline()
 
         # provision these works early
         if not self.load_balancer.is_running:
